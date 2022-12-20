@@ -1,0 +1,16 @@
+project(protocolgen)
+
+add_executable(protocolgen)
+target_sources(protocolgen PRIVATE
+    main.cpp
+    cppgenerator.cpp
+    cpphelper.cpp
+    nodetree.cpp
+    typehelper.cpp
+    xmlparser.cpp
+)
+
+set_target_properties(protocolgen PROPERTIES MACOSX_BUNDLE FALSE)
+target_link_libraries(protocolgen
+    Qt::Core
+)

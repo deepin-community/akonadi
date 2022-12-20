@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+include /usr/share/dpkg/pkg-info.mk
+
+ifneq (,$(filter $(DEB_HOST_ARCH), armel m68k mipsel powerpc sh4))
+	export DEB_LDFLAGS_MAINT_APPEND = -Wl,--no-as-needed -latomic -Wl,--as-needed
+endif
+
+AbiVirtualPackageVersion = $(call dpkg_late_eval,AbiVirtualPackageVersion,echo '${DEB_VERSION_UPSTREAM}' | sed -e 's/\.[0-9]\+$$//')
+pkgs_lib = $(filter-out %-dev %-dbg %-bin %-data,$(filter lib%,$(shell dh_listpackages)))
+backend_packages = $(filter akonadi-backend-%,$(shell dh_listpackages))
+
+%:
+	dh $@ --with kf5,pkgkde_symbolshelper  --buildsystem kf5 --without build_stamp
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+	    -DINSTALL_QSQLITE_IN_QT_PREFIX=ON \
+	    -DBUILD_TOOLS=ON \
+	    -DBUILD_DESIGNERPLUGIN=ON
+
+execute_after_dh_install:
+	dh_apparmor -pakonadi-server --profile-name=mariadbd_akonadi
+	dh_apparmor -pakonadi-server --profile-name=mysqld_akonadi
+	dh_apparmor -pakonadi-server --profile-name=postgresql_akonadi
+	dh_apparmor -pakonadi-server --profile-name=usr.bin.akonadiserver
+
+override_dh_installdocs:
+	# Install README.Debian to backend packages
+	dh_installdocs -A -pakonadi-server $(foreach p,$(backend_packages),-p$(p)) debian/README.Debian
+	dh_installdocs --remaining-packages
+
+override_dh_makeshlibs:
+	for pkg in $(pkgs_lib); do \
+		name=$$( echo "$${pkg}" | sed -e 's/abi[0-9]\+\s*//'); \
+		echo "ABI:VirtualPackage=$${name}-$(AbiVirtualPackageVersion)" >> debian/$${pkg}.substvars; \
+		dh_makeshlibs -p$${pkg} -V "$${pkg} (>= $(DEB_VERSION_EPOCH_UPSTREAM)), $${name}-$(AbiVirtualPackageVersion)"; \
+	done
+
+override_dh_auto_test:
+	# Avoid tests extra build dependencies, check them with autopkgtests
+	- xvfb-run -a --server-args="-screen 0 1024x768x24 +extension GLX" --\
+	           dh_auto_test --no-parallel

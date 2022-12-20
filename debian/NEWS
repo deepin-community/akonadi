@@ -1,0 +1,25 @@
+akonadi (4:17.08.0-1) experimental; urgency=medium
+
+  With this version the internal Akonadi database needs to be migrated for
+  every user using Akonadi. Akonadi will start the migration automatically,
+  when it is started the next time. The migration step can take a longer period
+  of time to start and will need a lot of ram and tmp space, because some
+  database tables need to be temporarily copied.
+  To see errors of the migration, you want to start akonadi by hand:
+     akonadictl start or akonadictl restart
+  and/or look into ~/.xsessions-errors. You may also need to set the tmpdir
+  to some filesystem with more space. You can tweak the database settings under
+  ~/.local/share/akonadi/ mysql.conf or other conf file for the different
+  supported databases.
+
+ -- Sandro Knauß <hefee@debian.org>  Tue, 12 Dec 2017 16:45:12 +0100
+
+akonadi (1.3.1-3+squeeze1) stable-proposed-updates; urgency=low
+
+  The location of the socket used to communicate with the Akonadi server was
+  changed to better support home directories on network file systems. After
+  updating to this version, applications making use of Akonadi will only
+  work correctly after restarting both the Akonadi server and client
+  applications.
+
+ -- Modestas Vainius <modax@debian.org>  Sat, 30 Apr 2011 12:50:31 +0300
