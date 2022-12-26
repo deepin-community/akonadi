@@ -1,0 +1,51 @@
+Description: Load Apparmor site-specific additions and overrides.
+ Debian allows users to add site-specific additions and overrides via local
+ apparmor rule files. Those local rule files are created and handled by
+ dh_apparmor.
+Author: Hefee <hefee@debian.org>
+Origin: Debian
+Bug-Debian: https://bugs.debian.org/985080
+Last-Update: 2021-04-13
+Forwarded: Not-needed
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/apparmor/mariadbd_akonadi
++++ b/apparmor/mariadbd_akonadi
+@@ -36,4 +36,7 @@ profile mariadbd_akonadi {
+   owner @{xdg_data_home}/akonadi/** rwk,
+   owner @{PROC}/@{pid}/loginuid r,
+   owner /{,var/}run/user/@{uid}/akonadi** rwk,
++
++  # Site-specific additions and overrides.  See local/README for details.
++  #include <local/mariadbd_akonadi>
+ }
+--- a/apparmor/mysqld_akonadi
++++ b/apparmor/mysqld_akonadi
+@@ -36,4 +36,7 @@ profile mysqld_akonadi {
+   owner @{xdg_data_home}/akonadi/** rwk,
+   owner @{PROC}/@{pid}/loginuid r,
+   owner /{,var/}run/user/@{uid}/akonadi** rwk,
++
++  # Site-specific additions and overrides.  See local/README for details.
++  #include <local/mysqld_akonadi>
+ }
+--- a/apparmor/postgresql_akonadi
++++ b/apparmor/postgresql_akonadi
+@@ -38,4 +38,7 @@ profile postgresql_akonadi {
+   /{usr/,usr/lib/postgresql/*/,opt/pgsql*/}bin/psql mrix,
+   /{usr/,usr/lib/postgresql/*/,opt/pgsql*/}bin/pg_restore mrix,
+   /{usr/,}bin/cp mrix,
++
++  # Site-specific additions and overrides.  See local/README for details.
++  #include <local/postgresql_akonadi>
+ }
+--- a/apparmor/usr.bin.akonadiserver
++++ b/apparmor/usr.bin.akonadiserver
+@@ -77,4 +77,7 @@
+   owner /{,var/}run/user/@{uid}/kdeinit** rwk,
+   owner /{,var/}run/user/@{uid}/kcrash** rwk,
+   owner /tmp/#[0-9]* m,
++
++  # Site-specific additions and overrides.  See local/README for details.
++  #include <local/usr.bin.akonadiserver>
+ }
