@@ -11,7 +11,8 @@
 #pragma once
 
 #include "akonadiagentbase_export.h"
-#include "item.h"
+// AkonadiCore
+#include <akonadi/item.h>
 
 #include <QApplication>
 
@@ -19,6 +20,8 @@
 
 #include <QDBusConnection>
 #include <QDBusContext>
+
+#include <memory>
 
 class Akonadi__ControlAdaptor;
 class Akonadi__StatusAdaptor;
@@ -446,7 +449,8 @@ public:
      * @param argc number of arguments
      * @param argv arguments for the function
      */
-    template<typename T> static int init(int argc, char **argv)
+    template<typename T>
+    static int init(int argc, char **argv)
     {
         // Disable session management
         qunsetenv("SESSION_MANAGER");
@@ -661,7 +665,7 @@ protected:
     /**
      * Destroys the agent base.
      */
-    ~AgentBase();
+    ~AgentBase() override;
 
     /**
      * This method is called whenever the agent application is about to
@@ -741,7 +745,7 @@ protected:
     /// @cond PRIVATE
     static void debugAgent(int argc, char **argv);
 
-    AgentBasePrivate *d_ptr;
+    std::unique_ptr<AgentBasePrivate> const d_ptr;
     explicit AgentBase(AgentBasePrivate *d, const QString &id);
     friend class ObserverV2;
     /// @endcond
@@ -795,4 +799,3 @@ private:
         return Akonadi::AgentBase::init<agentClass>(argc, argv);                                                                                               \
     }
 #endif
-

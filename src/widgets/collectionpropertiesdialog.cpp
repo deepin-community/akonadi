@@ -25,10 +25,10 @@ using namespace Akonadi;
 /**
  * @internal
  */
-class Q_DECL_HIDDEN CollectionPropertiesDialog::Private
+class Akonadi::CollectionPropertiesDialogPrivate
 {
 public:
-    Private(CollectionPropertiesDialog *parent, const Akonadi::Collection &collection, const QStringList &pageNames);
+    CollectionPropertiesDialogPrivate(CollectionPropertiesDialog *parent, const Akonadi::Collection &collection, const QStringList &pageNames);
 
     void init();
 
@@ -44,7 +44,7 @@ public:
 
         // We use WA_DeleteOnClose => Don't use dialog as parent otherwise we can't save modified collection.
         auto job = new CollectionModifyJob(mCollection);
-        connect(job, &CollectionModifyJob::result, q, [this](KJob *job) {
+        QObject::connect(job, &CollectionModifyJob::result, q, [this](KJob *job) {
             saveResult(job);
         });
         Q_EMIT q->settingsSaved();
@@ -92,18 +92,19 @@ Q_GLOBAL_STATIC(CollectionPropertiesPageFactoryList, s_pages) // NOLINT(readabil
 
 static bool s_defaultPage = true;
 
-CollectionPropertiesDialog::Private::Private(CollectionPropertiesDialog *qq, const Akonadi::Collection &collection, const QStringList &pageNames)
+CollectionPropertiesDialogPrivate::CollectionPropertiesDialogPrivate(CollectionPropertiesDialog *qq,
+                                                                     const Akonadi::Collection &collection,
+                                                                     const QStringList &pageNames)
     : q(qq)
     , mCollection(collection)
     , mPageNames(pageNames)
-    , mTabWidget(nullptr)
 {
     if (s_defaultPage) {
         registerBuiltinPages();
     }
 }
 
-void CollectionPropertiesDialog::Private::registerBuiltinPages()
+void CollectionPropertiesDialogPrivate::registerBuiltinPages()
 {
     static bool registered = false;
 
@@ -117,7 +118,7 @@ void CollectionPropertiesDialog::Private::registerBuiltinPages()
     registered = true;
 }
 
-void CollectionPropertiesDialog::Private::init()
+void CollectionPropertiesDialogPrivate::init()
 {
     auto mainLayout = new QVBoxLayout(q);
     q->setAttribute(Qt::WA_DeleteOnClose);
@@ -181,14 +182,14 @@ void CollectionPropertiesDialog::Private::init()
 
 CollectionPropertiesDialog::CollectionPropertiesDialog(const Collection &collection, QWidget *parent)
     : QDialog(parent)
-    , d(new Private(this, collection, QStringList()))
+    , d(new CollectionPropertiesDialogPrivate(this, collection, QStringList()))
 {
     d->init();
 }
 
 CollectionPropertiesDialog::CollectionPropertiesDialog(const Collection &collection, const QStringList &pages, QWidget *parent)
     : QDialog(parent)
-    , d(new Private(this, collection, pages))
+    , d(new CollectionPropertiesDialogPrivate(this, collection, pages))
 {
     d->init();
 }
@@ -197,13 +198,12 @@ CollectionPropertiesDialog::~CollectionPropertiesDialog()
 {
     KConfigGroup group(KSharedConfig::openStateConfig(), "CollectionPropertiesDialog");
     group.writeEntry("Size", size());
-    delete d;
 }
 
 void CollectionPropertiesDialog::registerPage(CollectionPropertiesPageFactory *factory)
 {
     if (s_pages->isEmpty() && s_defaultPage) {
-        Private::registerBuiltinPages();
+        CollectionPropertiesDialogPrivate::registerBuiltinPages();
     }
     s_pages->append(factory);
 }

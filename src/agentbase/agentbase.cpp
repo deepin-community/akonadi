@@ -29,13 +29,17 @@
 
 #include <KAboutData>
 #include <kcoreaddons_version.h>
-#if KCOREADDONS_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <Kdelibs4ConfigMigrator>
 #endif
 
 #include <QCommandLineParser>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QNetworkConfiguration>
 #include <QNetworkConfigurationManager>
+#else
+#include <QNetworkInformation>
+#endif
 #include <QPointer>
 #include <QSettings>
 #include <QTimer>
@@ -55,7 +59,7 @@
 #include <thread>
 
 using namespace Akonadi;
-
+using namespace std::chrono_literals;
 static AgentBase *sAgentBase = nullptr;
 
 AgentBase::Observer::Observer()
@@ -133,7 +137,7 @@ void AgentBase::ObserverV2::itemLinked(const Akonadi::Item &item, const Akonadi:
     Q_UNUSED(collection)
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimizations in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemLinked, sAgentBase->d_ptr, &AgentBasePrivate::itemLinked);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemLinked, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemLinked);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -144,7 +148,7 @@ void AgentBase::ObserverV2::itemUnlinked(const Akonadi::Item &item, const Akonad
     Q_UNUSED(collection)
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimizations in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemUnlinked, sAgentBase->d_ptr, &AgentBasePrivate::itemUnlinked);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemUnlinked, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemUnlinked);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -173,7 +177,7 @@ void AgentBase::ObserverV3::itemsFlagsChanged(const Akonadi::Item::List &items, 
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimizations in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsFlagsChanged, sAgentBase->d_ptr, &AgentBasePrivate::itemsFlagsChanged);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsFlagsChanged, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsFlagsChanged);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -186,7 +190,7 @@ void AgentBase::ObserverV3::itemsMoved(const Akonadi::Item::List &items, const C
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimizations in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsMoved, sAgentBase->d_ptr, &AgentBasePrivate::itemsMoved);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsMoved, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsMoved);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -197,7 +201,7 @@ void AgentBase::ObserverV3::itemsRemoved(const Akonadi::Item::List &items)
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimizations in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsRemoved, sAgentBase->d_ptr, &AgentBasePrivate::itemsRemoved);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsRemoved, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsRemoved);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -209,7 +213,7 @@ void AgentBase::ObserverV3::itemsLinked(const Akonadi::Item::List &items, const 
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimizations in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsLinked, sAgentBase->d_ptr, &AgentBasePrivate::itemsLinked);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsLinked, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsLinked);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -221,7 +225,7 @@ void AgentBase::ObserverV3::itemsUnlinked(const Akonadi::Item::List &items, cons
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimizations in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsUnlinked, sAgentBase->d_ptr, &AgentBasePrivate::itemsUnlinked);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsUnlinked, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsUnlinked);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -232,7 +236,7 @@ void AgentBase::ObserverV4::tagAdded(const Tag &tag)
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagAdded, sAgentBase->d_ptr, &AgentBasePrivate::tagAdded);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagAdded, sAgentBase->d_ptr.get(), &AgentBasePrivate::tagAdded);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -243,7 +247,7 @@ void AgentBase::ObserverV4::tagChanged(const Tag &tag)
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagChanged, sAgentBase->d_ptr, &AgentBasePrivate::tagChanged);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagChanged, sAgentBase->d_ptr.get(), &AgentBasePrivate::tagChanged);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -254,7 +258,7 @@ void AgentBase::ObserverV4::tagRemoved(const Tag &tag)
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagRemoved, sAgentBase->d_ptr, &AgentBasePrivate::tagRemoved);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagRemoved, sAgentBase->d_ptr.get(), &AgentBasePrivate::tagRemoved);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -267,7 +271,7 @@ void AgentBase::ObserverV4::itemsTagsChanged(const Item::List &items, const QSet
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsTagsChanged, sAgentBase->d_ptr, &AgentBasePrivate::itemsTagsChanged);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsTagsChanged, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsTagsChanged);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -278,7 +282,7 @@ void AgentBase::ObserverV4::relationAdded(const Akonadi::Relation &relation)
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::relationAdded, sAgentBase->d_ptr, &AgentBasePrivate::relationAdded);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::relationAdded, sAgentBase->d_ptr.get(), &AgentBasePrivate::relationAdded);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -289,7 +293,7 @@ void AgentBase::ObserverV4::relationRemoved(const Akonadi::Relation &relation)
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::relationRemoved, sAgentBase->d_ptr, &AgentBasePrivate::relationRemoved);
+        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::relationRemoved, sAgentBase->d_ptr.get(), &AgentBasePrivate::relationRemoved);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -304,7 +308,7 @@ void AgentBase::ObserverV4::itemsRelationsChanged(const Akonadi::Item::List &ite
 
     if (sAgentBase) {
         // not implementation, let's disconnect the signal to enable optimization in Monitor
-        disconnect(sAgentBase->changeRecorder(), &Monitor::itemsRelationsChanged, sAgentBase->d_ptr, &AgentBasePrivate::itemsRelationsChanged);
+        disconnect(sAgentBase->changeRecorder(), &Monitor::itemsRelationsChanged, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsRelationsChanged);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
@@ -326,7 +330,9 @@ AgentBasePrivate::AgentBasePrivate(AgentBase *parent)
     , mPowerInterface(nullptr)
     , mTemporaryOfflineTimer(nullptr)
     , mEventLoopLocker(nullptr)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     , mNetworkManager(nullptr)
+#endif
 {
     Internal::setClientType(Internal::Agent);
 }
@@ -340,7 +346,7 @@ AgentBasePrivate::~AgentBasePrivate()
 void AgentBasePrivate::init()
 {
     Q_Q(AgentBase);
-#if KCOREADDONS_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     Kdelibs4ConfigMigrator migrate(mId);
     migrate.setConfigFiles(QStringList() << QStringLiteral("%1rc").arg(mId));
     migrate.migrate();
@@ -422,7 +428,7 @@ void AgentBasePrivate::init()
     mResourceTypeName = AgentManager::self()->instance(mId).type().name();
     setProgramName();
 
-    QTimer::singleShot(0, q, [this] {
+    QTimer::singleShot(0s, q, [this] {
         delayedInit();
     });
 }
@@ -734,7 +740,7 @@ void AgentBasePrivate::collectionUnsubscribed(const Akonadi::Collection &collect
 void AgentBasePrivate::changeProcessed()
 {
     mChangeRecorder->changeProcessed();
-    QTimer::singleShot(0, mChangeRecorder, &ChangeRecorder::replayNext);
+    QTimer::singleShot(0s, mChangeRecorder, &ChangeRecorder::replayNext);
 }
 
 void AgentBasePrivate::slotStatus(int status, const QString &message)
@@ -804,7 +810,11 @@ void AgentBasePrivate::slotNetworkStatusChange(bool isOnline)
 void AgentBasePrivate::slotResumedFromSuspend()
 {
     if (mNeedsNetwork) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         slotNetworkStatusChange(mNetworkManager->isOnline());
+#else
+        slotNetworkStatusChange(QNetworkInformation::instance()->reachability() != QNetworkInformation::Reachability::Online);
+#endif
     }
 }
 
@@ -868,17 +878,14 @@ AgentBase::AgentBase(AgentBasePrivate *d, const QString &id)
     d_ptr->init();
 }
 
-AgentBase::~AgentBase()
-{
-    delete d_ptr;
-}
+AgentBase::~AgentBase() = default;
 
 void AgentBase::debugAgent(int argc, char **argv)
 {
     Q_UNUSED(argc)
 #ifdef Q_OS_WIN
     if (qEnvironmentVariableIsSet("AKONADI_DEBUG_WAIT")) {
-        if (QByteArray(argv[0]).endsWith(qgetenv("AKONADI_DEBUG_WAIT") + ".exe")) {
+        if (QByteArray(argv[0]).endsWith(QByteArray(qgetenv("AKONADI_DEBUG_WAIT") + QByteArrayLiteral(".exe")))) {
             while (!IsDebuggerPresent()) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
@@ -979,16 +986,25 @@ void AgentBase::setNeedsNetwork(bool needsNetwork)
     }
 
     d->mNeedsNetwork = needsNetwork;
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (d->mNeedsNetwork) {
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
+        QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
         d->mNetworkManager = new QNetworkConfigurationManager(this);
         connect(d->mNetworkManager, &QNetworkConfigurationManager::onlineStateChanged, d, &AgentBasePrivate::slotNetworkStatusChange, Qt::UniqueConnection);
-
+        QT_WARNING_POP
     } else {
         delete d->mNetworkManager;
         d->mNetworkManager = nullptr;
         setOnlineInternal(d->mDesiredOnlineState);
     }
+#else
+    QNetworkInformation::load(QNetworkInformation::Feature::Reachability);
+    connect(QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this, [this, d](auto reachability) {
+        d->slotNetworkStatusChange(reachability == QNetworkInformation::Reachability::Online);
+    });
+#endif
 }
 
 void AgentBase::setOnline(bool state)
@@ -1028,10 +1044,17 @@ void AgentBase::setOnlineInternal(bool state)
 {
     Q_D(AgentBase);
     if (state && d->mNeedsNetwork) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         if (!d->mNetworkManager->isOnline()) {
             // Don't go online if the resource needs network but there is none
             state = false;
         }
+#else
+        if (QNetworkInformation::instance()->reachability() != QNetworkInformation::Reachability::Online) {
+            // Don't go online if the resource needs network but there is none
+            state = false;
+        }
+#endif
     }
     d->mOnline = state;
 
@@ -1055,7 +1078,12 @@ void AgentBase::doSetOnline(bool online)
 
 KAboutData AgentBase::aboutData() const
 {
-    return KAboutData(qApp->applicationName(), agentName(), qApp->applicationVersion());
+    // akonadi_google_resource_1 -> org.kde.akonadi_google_resource
+    const QString desktopEntry = QLatin1String("org.kde.") + qApp->applicationName().remove(QRegularExpression(QStringLiteral("_[0-9]+$")));
+
+    KAboutData data(qApp->applicationName(), agentName(), qApp->applicationVersion());
+    data.setDesktopFileName(desktopEntry);
+    return data;
 }
 
 void AgentBase::configure(WId windowId)
@@ -1169,45 +1197,47 @@ void AgentBase::cleanup()
 
 void AgentBase::registerObserver(Observer *observer)
 {
+    Q_D(AgentBase);
+
     // TODO in theory we should re-connect change recorder signals here that we disconnected previously
-    d_ptr->mObserver = observer;
+    d->mObserver = observer;
 
-    const bool hasObserverV3 = (dynamic_cast<AgentBase::ObserverV3 *>(d_ptr->mObserver) != nullptr);
-    const bool hasObserverV4 = (dynamic_cast<AgentBase::ObserverV4 *>(d_ptr->mObserver) != nullptr);
+    const bool hasObserverV3 = (dynamic_cast<AgentBase::ObserverV3 *>(d->mObserver) != nullptr);
+    const bool hasObserverV4 = (dynamic_cast<AgentBase::ObserverV4 *>(d->mObserver) != nullptr);
 
-    disconnect(d_ptr->mChangeRecorder, &Monitor::tagAdded, d_ptr, &AgentBasePrivate::tagAdded);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::tagChanged, d_ptr, &AgentBasePrivate::tagChanged);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::tagRemoved, d_ptr, &AgentBasePrivate::tagRemoved);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemsTagsChanged, d_ptr, &AgentBasePrivate::itemsTagsChanged);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemsFlagsChanged, d_ptr, &AgentBasePrivate::itemsFlagsChanged);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemsMoved, d_ptr, &AgentBasePrivate::itemsMoved);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemsRemoved, d_ptr, &AgentBasePrivate::itemsRemoved);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemsLinked, d_ptr, &AgentBasePrivate::itemsLinked);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemsUnlinked, d_ptr, &AgentBasePrivate::itemsUnlinked);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemMoved, d_ptr, &AgentBasePrivate::itemMoved);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemRemoved, d_ptr, &AgentBasePrivate::itemRemoved);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemLinked, d_ptr, &AgentBasePrivate::itemLinked);
-    disconnect(d_ptr->mChangeRecorder, &Monitor::itemUnlinked, d_ptr, &AgentBasePrivate::itemUnlinked);
+    disconnect(d->mChangeRecorder, &Monitor::tagAdded, d, &AgentBasePrivate::tagAdded);
+    disconnect(d->mChangeRecorder, &Monitor::tagChanged, d, &AgentBasePrivate::tagChanged);
+    disconnect(d->mChangeRecorder, &Monitor::tagRemoved, d, &AgentBasePrivate::tagRemoved);
+    disconnect(d->mChangeRecorder, &Monitor::itemsTagsChanged, d, &AgentBasePrivate::itemsTagsChanged);
+    disconnect(d->mChangeRecorder, &Monitor::itemsFlagsChanged, d, &AgentBasePrivate::itemsFlagsChanged);
+    disconnect(d->mChangeRecorder, &Monitor::itemsMoved, d, &AgentBasePrivate::itemsMoved);
+    disconnect(d->mChangeRecorder, &Monitor::itemsRemoved, d, &AgentBasePrivate::itemsRemoved);
+    disconnect(d->mChangeRecorder, &Monitor::itemsLinked, d, &AgentBasePrivate::itemsLinked);
+    disconnect(d->mChangeRecorder, &Monitor::itemsUnlinked, d, &AgentBasePrivate::itemsUnlinked);
+    disconnect(d->mChangeRecorder, &Monitor::itemMoved, d, &AgentBasePrivate::itemMoved);
+    disconnect(d->mChangeRecorder, &Monitor::itemRemoved, d, &AgentBasePrivate::itemRemoved);
+    disconnect(d->mChangeRecorder, &Monitor::itemLinked, d, &AgentBasePrivate::itemLinked);
+    disconnect(d->mChangeRecorder, &Monitor::itemUnlinked, d, &AgentBasePrivate::itemUnlinked);
 
     if (hasObserverV4) {
-        connect(d_ptr->mChangeRecorder, &Monitor::tagAdded, d_ptr, &AgentBasePrivate::tagAdded);
-        connect(d_ptr->mChangeRecorder, &Monitor::tagChanged, d_ptr, &AgentBasePrivate::tagChanged);
-        connect(d_ptr->mChangeRecorder, &Monitor::tagRemoved, d_ptr, &AgentBasePrivate::tagRemoved);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemsTagsChanged, d_ptr, &AgentBasePrivate::itemsTagsChanged);
+        connect(d->mChangeRecorder, &Monitor::tagAdded, d, &AgentBasePrivate::tagAdded);
+        connect(d->mChangeRecorder, &Monitor::tagChanged, d, &AgentBasePrivate::tagChanged);
+        connect(d->mChangeRecorder, &Monitor::tagRemoved, d, &AgentBasePrivate::tagRemoved);
+        connect(d->mChangeRecorder, &Monitor::itemsTagsChanged, d, &AgentBasePrivate::itemsTagsChanged);
     }
 
     if (hasObserverV3) {
-        connect(d_ptr->mChangeRecorder, &Monitor::itemsFlagsChanged, d_ptr, &AgentBasePrivate::itemsFlagsChanged);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemsMoved, d_ptr, &AgentBasePrivate::itemsMoved);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemsRemoved, d_ptr, &AgentBasePrivate::itemsRemoved);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemsLinked, d_ptr, &AgentBasePrivate::itemsLinked);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemsUnlinked, d_ptr, &AgentBasePrivate::itemsUnlinked);
+        connect(d->mChangeRecorder, &Monitor::itemsFlagsChanged, d, &AgentBasePrivate::itemsFlagsChanged);
+        connect(d->mChangeRecorder, &Monitor::itemsMoved, d, &AgentBasePrivate::itemsMoved);
+        connect(d->mChangeRecorder, &Monitor::itemsRemoved, d, &AgentBasePrivate::itemsRemoved);
+        connect(d->mChangeRecorder, &Monitor::itemsLinked, d, &AgentBasePrivate::itemsLinked);
+        connect(d->mChangeRecorder, &Monitor::itemsUnlinked, d, &AgentBasePrivate::itemsUnlinked);
     } else {
         // V2 - don't connect these if we have V3
-        connect(d_ptr->mChangeRecorder, &Monitor::itemMoved, d_ptr, &AgentBasePrivate::itemMoved);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemRemoved, d_ptr, &AgentBasePrivate::itemRemoved);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemLinked, d_ptr, &AgentBasePrivate::itemLinked);
-        connect(d_ptr->mChangeRecorder, &Monitor::itemUnlinked, d_ptr, &AgentBasePrivate::itemUnlinked);
+        connect(d->mChangeRecorder, &Monitor::itemMoved, d, &AgentBasePrivate::itemMoved);
+        connect(d->mChangeRecorder, &Monitor::itemRemoved, d, &AgentBasePrivate::itemRemoved);
+        connect(d->mChangeRecorder, &Monitor::itemLinked, d, &AgentBasePrivate::itemLinked);
+        connect(d->mChangeRecorder, &Monitor::itemUnlinked, d, &AgentBasePrivate::itemUnlinked);
     }
 }
 

@@ -9,7 +9,6 @@
 
 #include "changemediator_p.h"
 #include "collectionfetchscope.h"
-#include "itemfetchjob.h"
 #include "session.h"
 
 #include <shared/akranges.h>
@@ -44,8 +43,6 @@ Monitor::Monitor(MonitorPrivate *d, QObject *parent)
 Monitor::~Monitor()
 {
     ChangeMediator::unregisterMonitor(this);
-
-    delete d_ptr;
 }
 
 void Monitor::setCollectionMonitored(const Collection &collection, bool monitored)

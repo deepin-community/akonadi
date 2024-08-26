@@ -37,7 +37,7 @@ QString DbInitializerMySql::buildCreateTableStatement(const TableDescription &ta
     QStringList columns;
     QStringList references;
 
-    Q_FOREACH (const ColumnDescription &columnDescription, tableDescription.columns) {
+    for (const ColumnDescription &columnDescription : tableDescription.columns) {
         columns.append(buildColumnStatement(columnDescription, tableDescription));
 
         if (!columnDescription.refTable.isEmpty() && !columnDescription.refColumn.isEmpty()) {
@@ -240,7 +240,7 @@ QStringList DbInitializerSqlite::buildRemoveForeignKeyConstraintStatements(const
 
 QStringList DbInitializerSqlite::buildUpdateForeignKeyConstraintsStatements(const TableDescription &table) const
 {
-    // Unforunately, SQLite does not support add or removing foreign keys through ALTER TABLE,
+    // Unfortunately, SQLite does not support adding or removing foreign keys through ALTER TABLE,
     // this is the only way how to do it.
     return {QStringLiteral("PRAGMA defer_foreign_keys=ON"),
             QStringLiteral("BEGIN TRANSACTION"),
@@ -284,7 +284,7 @@ QString DbInitializerPostgreSql::buildCreateTableStatement(const TableDescriptio
     QStringList columns;
     columns.reserve(tableDescription.columns.size() + 1);
 
-    Q_FOREACH (const ColumnDescription &columnDescription, tableDescription.columns) {
+    for (const ColumnDescription &columnDescription : tableDescription.columns) {
         columns.append(buildColumnStatement(columnDescription, tableDescription));
     }
 

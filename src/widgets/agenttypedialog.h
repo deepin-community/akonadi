@@ -7,13 +7,18 @@
 
 #pragma once
 
-#include "agenttype.h"
 #include "agenttypewidget.h"
+// AkonadiCore
+#include <akonadi/agenttype.h>
 
 #include <QDialog>
 
+#include <memory>
+
 namespace Akonadi
 {
+class AgentTypeDialogPrivate;
+
 /**
  * @short A dialog to select an available agent type.
  *
@@ -73,10 +78,8 @@ public Q_SLOTS:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<AgentTypeDialogPrivate> const d;
     /// @endcond
 };
 
 }
-

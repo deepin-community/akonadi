@@ -60,6 +60,18 @@ class CollectionStatistics;
  */
 class AKONADICORE_EXPORT Collection
 {
+    Q_GADGET
+    Q_PROPERTY(Id id READ id WRITE setId)
+    Q_PROPERTY(QString remoteIdd READ remoteId WRITE setRemoteId)
+    Q_PROPERTY(bool isValid READ isValid)
+    Q_PROPERTY(QString remoteRevision READ remoteRevision WRITE setRemoteRevision)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(bool isVirtual READ isVirtual WRITE setVirtual)
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString displayName READ displayName)
+    Q_PROPERTY(Rights rights READ rights WRITE setRights)
+    Q_PROPERTY(QStringList contentMimeTypes READ contentMimeTypes WRITE setContentMimeTypes)
+    Q_PROPERTY(QString resource READ resource WRITE setResource)
 public:
     /**
      * Describes the unique id type.
@@ -88,6 +100,7 @@ public:
                      | CanDeleteCollection) ///< Has all rights on this storage collection
     };
     Q_DECLARE_FLAGS(Rights, Right)
+    Q_ENUM(Right)
 
     /**
      * Creates an invalid collection.
@@ -276,22 +289,26 @@ public:
      *
      * @param option The create options.
      */
-    template<typename T> inline T *attribute(CreateOption option = DontCreate);
+    template<typename T>
+    inline T *attribute(CreateOption option = DontCreate);
 
     /**
      * Returns the attribute of the requested type or 0 if it is not available.
      */
-    template<typename T> inline const T *attribute() const;
+    template<typename T>
+    inline const T *attribute() const;
 
     /**
      * Removes and deletes the attribute of the requested type.
      */
-    template<typename T> inline void removeAttribute();
+    template<typename T>
+    inline void removeAttribute();
 
     /**
      * Returns whether the collection has an attribute of the requested type.
      */
-    template<typename T> inline bool hasAttribute() const;
+    template<typename T>
+    inline bool hasAttribute() const;
 
     /**
      * Returns the i18n'ed name of the collection.
@@ -533,7 +550,8 @@ private:
 
 AKONADICORE_EXPORT uint qHash(const Akonadi::Collection &collection);
 
-template<typename T> inline T *Akonadi::Collection::attribute(Collection::CreateOption option)
+template<typename T>
+inline T *Akonadi::Collection::attribute(Collection::CreateOption option)
 {
     const QByteArray type = T().type();
     markAttributeModified(type); // do this first in case it detaches
@@ -551,7 +569,8 @@ template<typename T> inline T *Akonadi::Collection::attribute(Collection::Create
     return nullptr;
 }
 
-template<typename T> inline const T *Akonadi::Collection::attribute() const
+template<typename T>
+inline const T *Akonadi::Collection::attribute() const
 {
     const QByteArray type = T().type();
     if (hasAttribute(type)) {
@@ -564,12 +583,14 @@ template<typename T> inline const T *Akonadi::Collection::attribute() const
     return nullptr;
 }
 
-template<typename T> inline void Akonadi::Collection::removeAttribute()
+template<typename T>
+inline void Akonadi::Collection::removeAttribute()
 {
     removeAttribute(T().type());
 }
 
-template<typename T> inline bool Akonadi::Collection::hasAttribute() const
+template<typename T>
+inline bool Akonadi::Collection::hasAttribute() const
 {
     return hasAttribute(T().type());
 }
@@ -585,4 +606,3 @@ Q_DECLARE_METATYPE(Akonadi::Collection)
 Q_DECLARE_METATYPE(Akonadi::Collection::List)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Akonadi::Collection::Rights)
 Q_DECLARE_TYPEINFO(Akonadi::Collection, Q_MOVABLE_TYPE);
-

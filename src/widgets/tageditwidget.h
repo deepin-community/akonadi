@@ -9,12 +9,18 @@
 #pragma once
 
 #include "akonadiwidgets_export.h"
-#include "tag.h"
+// AkonadiCore
+#include <akonadi/tag.h>
+
 #include <QWidget>
+
+#include <memory>
 
 namespace Akonadi
 {
 class TagModel;
+class TagEditWidgetPrivate;
+
 /**
  * A widget that offers facilities to add/remove tags and optionally provides a way to select tags.
  *
@@ -41,9 +47,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
-    class Private;
-    QScopedPointer<Private> d;
+    std::unique_ptr<TagEditWidgetPrivate> const d;
 };
 
 }
-

@@ -1,5 +1,5 @@
 /*
-    SPDX-FileCopyrightText: 2014-2021 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2014-2022 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -8,6 +8,8 @@
 
 #include "akonadiwidgets_export.h"
 #include <QWidget>
+
+#include <memory>
 
 class QAbstractItemDelegate;
 class QAbstractItemView;
@@ -63,7 +65,8 @@ private Q_SLOTS:
 
 private:
     void slotSearchAgentType(const QString &str);
-    QScopedPointer<ManageAccountWidgetPrivate> const d;
+
+private:
+    std::unique_ptr<ManageAccountWidgetPrivate> const d;
 };
 }
-

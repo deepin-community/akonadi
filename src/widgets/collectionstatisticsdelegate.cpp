@@ -1,6 +1,6 @@
 /*
     SPDX-FileCopyrightText: 2008 Thomas McGuire <thomas.mcguire@gmx.net>
-    SPDX-FileCopyrightText: 2012-2021 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2012-2022 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -9,7 +9,7 @@
 
 #include "akonadiwidgets_debug.h"
 #include <KColorScheme>
-#include <KFormat>
+#include <KIO/Global>
 
 #include <QAbstractItemView>
 #include <QPainter>
@@ -88,10 +88,7 @@ CollectionStatisticsDelegate::CollectionStatisticsDelegate(QTreeView *parent)
 {
 }
 
-CollectionStatisticsDelegate::~CollectionStatisticsDelegate()
-{
-    delete d_ptr;
-}
+CollectionStatisticsDelegate::~CollectionStatisticsDelegate() = default;
 
 void CollectionStatisticsDelegate::setUnreadCountShown(bool enable)
 {
@@ -318,7 +315,7 @@ void CollectionStatisticsDelegate::paint(QPainter *painter, const QStyleOptionVi
 
     // total size
     if (index.column() == 3 && !expanded) {
-        painter->drawText(textRect, option4.displayAlignment | Qt::AlignVCenter, KFormat().formatByteSize(totalSize));
+        painter->drawText(textRect, option4.displayAlignment | Qt::AlignVCenter, KIO::convertSize(totalSize));
         return;
     }
 

@@ -9,8 +9,12 @@
 #include "akonadicore_export.h"
 #include <QSortFilterProxyModel>
 
+#include <memory>
+
 namespace Akonadi
 {
+class AgentFilterProxyModelPrivate;
+
 /**
  * @short A proxy model for filtering AgentType or AgentInstance
  *
@@ -78,10 +82,8 @@ protected:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<AgentFilterProxyModelPrivate> const d;
     /// @endcond
 };
 
 }
-

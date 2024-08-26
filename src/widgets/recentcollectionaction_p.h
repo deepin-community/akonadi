@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2011-2021 Laurent Montel <montel@kde.org>
+ * SPDX-FileCopyrightText: 2011-2022 Laurent Montel <montel@kde.org>
  *
  * SPDX-License-Identifier: LGPL-2.0-or-later
  */
@@ -36,7 +36,7 @@ public:
     /**
      * Destroys the collection recent action.
      */
-    ~RecentCollectionAction();
+    ~RecentCollectionAction() override;
 
     /**
      * Add new collection. Will create a new item.

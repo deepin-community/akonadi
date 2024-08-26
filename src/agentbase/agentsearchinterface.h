@@ -9,6 +9,8 @@
 #include "akonadiagentbase_export.h"
 #include <QString>
 
+#include <memory>
+
 namespace Akonadi
 {
 class Collection;
@@ -74,9 +76,8 @@ public:
 
 private:
     /// @cond PRIVATE
-    AgentSearchInterfacePrivate *const d;
+    std::unique_ptr<AgentSearchInterfacePrivate> const d;
     /// @endcond
 };
 
 }
-

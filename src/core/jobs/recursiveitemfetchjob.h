@@ -11,10 +11,13 @@
 
 #include <KJob>
 
+#include <memory>
+
 namespace Akonadi
 {
 class Collection;
 class ItemFetchScope;
+class RecursiveItemFetchJobPrivate;
 
 /**
  * @short Job that fetches all items of a collection recursive.
@@ -125,10 +128,9 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    friend class RecursiveItemFetchJobPrivate;
+    std::unique_ptr<RecursiveItemFetchJobPrivate> const d;
     /// @endcond
 };
 
 }
-

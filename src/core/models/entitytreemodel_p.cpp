@@ -20,11 +20,9 @@
 #include "collectionfetchscope.h"
 #include "collectionmovejob.h"
 #include "collectionstatistics.h"
-#include "collectionstatisticsjob.h"
 #include "entityhiddenattribute.h"
 #include "itemcopyjob.h"
 #include "itemfetchjob.h"
-#include "itemmodifyjob.h"
 #include "itemmovejob.h"
 #include "linkjob.h"
 #include "monitor.h"
@@ -272,7 +270,8 @@ void EntityTreeModelPrivate::fetchCollections(const Collection &collection, Coll
 
 namespace Akonadi
 {
-template<typename T> inline bool EntityTreeModelPrivate::isHiddenImpl(const T &entity, Node::Type type) const
+template<typename T>
+inline bool EntityTreeModelPrivate::isHiddenImpl(const T &entity, Node::Type type) const
 {
     if (m_showSystemEntities) {
         return false;
@@ -365,7 +364,8 @@ void EntityTreeModelPrivate::collectionsFetched(const Akonadi::Collection::List 
     {
         // Build a child-parent map that allows us to build the subtrees afterwards
         std::unordered_map<Collection::Id, Collection::Id> childParentMap;
-        for (const auto &col : collectionsToInsert) {
+        const auto initialCollectionsToInsert(collectionsToInsert);
+        for (const auto &col : initialCollectionsToInsert) {
             childParentMap.insert({col.id(), col.parentCollection().id()});
 
             // Complete the subtree up to the last known parent

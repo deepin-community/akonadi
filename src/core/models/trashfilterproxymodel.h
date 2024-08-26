@@ -10,8 +10,12 @@
 
 #include <QSortFilterProxyModel>
 
+#include <memory>
+
 namespace Akonadi
 {
+class TrashFilterProxyModelPrivate;
+
 /**
  * @short Filter model which hides/shows entities marked as trash
  *
@@ -51,17 +55,15 @@ public:
 
 protected:
     /**
-     * Sort filter criterias, according to how expensive the operation is
+     * Sort filter criteria, according to how expensive the operation is
      */
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
 private:
     /// @cond PRIVATE
-    class TrashFilterProxyModelPrivate;
-    TrashFilterProxyModelPrivate *const d_ptr;
+    std::unique_ptr<TrashFilterProxyModelPrivate> const d_ptr;
     Q_DECLARE_PRIVATE(TrashFilterProxyModel)
     /// @endcond
 };
 
 }
-

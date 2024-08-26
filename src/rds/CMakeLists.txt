@@ -4,6 +4,8 @@ add_executable(akonadi_rds)
 target_sources(akonadi_rds PRIVATE
     bridgeserver.cpp
     bridgeconnection.cpp
+    bridgeserver.h
+    bridgeconnection.h
     main.cpp
 )
 
@@ -17,6 +19,6 @@ target_link_libraries(akonadi_rds
 )
 
 install(TARGETS akonadi_rds
-        ${KF5_INSTALL_TARGETS_DEFAULT_ARGS}
+        ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 

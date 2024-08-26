@@ -43,15 +43,17 @@ void CollectionJobTest::initTestCase()
 
 static Collection findCol(const Collection::List &list, const QString &name)
 {
-    foreach (const Collection &col, list)
+    for (const Collection &col : list) {
         if (col.name() == name) {
             return col;
         }
+    }
     return Collection();
 }
 
 // list compare which ignores the order
-template<class T> static void compareLists(const QList<T> &l1, const QList<T> &l2)
+template<class T>
+static void compareLists(const QList<T> &l1, const QList<T> &l2)
 {
     QCOMPARE(l1.count(), l2.count());
     for (const T &entry : l1) {
@@ -59,13 +61,16 @@ template<class T> static void compareLists(const QList<T> &l1, const QList<T> &l
     }
 }
 
-template<class T> static void compareLists(const QVector<T> &l1, const QVector<T> &l2)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+template<class T>
+static void compareLists(const QVector<T> &l1, const QVector<T> &l2)
 {
     QCOMPARE(l1.count(), l2.count());
     for (const T &entry : l1) {
         QVERIFY(l2.contains(entry));
     }
 }
+#endif
 
 template<typename T>
 static T *extractAttribute(const QList<Attribute *> &attrs)
@@ -363,10 +368,10 @@ void CollectionJobTest::testCreateDeleteFolder()
     // fetch parent to compare inherited collection properties
     Collection parentCol = Collection::root();
     if (collection.parentCollection().isValid()) {
-        auto listJob = new CollectionFetchJob(collection.parentCollection(), CollectionFetchJob::Base, this);
-        AKVERIFYEXEC(listJob);
-        QCOMPARE(listJob->collections().count(), 1);
-        parentCol = listJob->collections().first();
+        auto newListJob = new CollectionFetchJob(collection.parentCollection(), CollectionFetchJob::Base, this);
+        AKVERIFYEXEC(newListJob);
+        QCOMPARE(newListJob->collections().count(), 1);
+        parentCol = newListJob->collections().first();
     }
 
     if (collection.contentMimeTypes().isEmpty()) {

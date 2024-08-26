@@ -15,8 +15,7 @@
 #include "akonadicore_debug.h"
 
 #include <KLocalizedString>
-#include <kcoreaddons_version.h>
-#if KCOREADDONS_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <Kdelibs4ConfigMigrator>
 #endif
 
@@ -32,6 +31,7 @@
 #include <QDBusServiceWatcher>
 #include <QProcess>
 #include <QScopedPointer>
+#include <QStandardPaths>
 #include <QTimer>
 #include <qnamespace.h>
 
@@ -80,7 +80,7 @@ public:
                 Q_EMIT instance->stopped();
             }
             if (state == ServerManager::Starting || state == ServerManager::Stopping) {
-                QMetaObject::invokeMethod(mSafetyTimer.data(), QOverload<>::of(&QTimer::start), Qt::QueuedConnection); // in case we are in a different thread
+                QMetaObject::invokeMethod(mSafetyTimer.data(), qOverload<>(&QTimer::start), Qt::QueuedConnection); // in case we are in a different thread
             } else {
                 QMetaObject::invokeMethod(mSafetyTimer.data(), &QTimer::stop, Qt::QueuedConnection); // in case we are in a different thread
             }
@@ -114,7 +114,7 @@ Q_GLOBAL_STATIC(ServerManagerPrivate, sInstance) // NOLINT(readability-redundant
 ServerManager::ServerManager(ServerManagerPrivate *dd)
     : d(dd)
 {
-#if KCOREADDONS_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     Kdelibs4ConfigMigrator migrate(QStringLiteral("servermanager"));
     migrate.setConfigFiles(QStringList() << QStringLiteral("akonadi-firstrunrc"));
     migrate.migrate();
@@ -208,8 +208,8 @@ bool ServerManager::start()
     if (hasInstanceIdentifier()) {
         args << QStringLiteral("--instance") << instanceIdentifier();
     }
-    const bool ok = QProcess::startDetached(QStringLiteral("akonadi_control"), args);
-    if (!ok) {
+    const QString exec = QStandardPaths::findExecutable(QStringLiteral("akonadi_control"));
+    if (exec.isEmpty() || !QProcess::startDetached(exec, args)) {
         qCWarning(AKONADICORE_LOG) << "Unable to execute akonadi_control, falling back to D-Bus auto-launch";
         QDBusReply<void> reply = QDBusConnection::sessionBus().interface()->startService(ServerManager::serviceName(ServerManager::Control));
         if (!reply.isValid()) {
@@ -237,7 +237,10 @@ bool ServerManager::stop()
 void ServerManager::showSelfTestDialog(QWidget *parent)
 {
     Q_UNUSED(parent)
-    QProcess::startDetached(QStringLiteral("akonadiselftest"), QStringList());
+    const QString exec = QStandardPaths::findExecutable(QStringLiteral("akonadiselftest"));
+    if (exec.isEmpty() || !QProcess::startDetached(exec, QStringList())) {
+        qCWarning(AKONADICORE_LOG) << "Could not find akonadiselftest in PATH.";
+    }
 }
 
 bool ServerManager::isRunning()

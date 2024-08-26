@@ -18,8 +18,10 @@
 #include <QAction>
 #include <QIcon>
 
+#include <KLazyLocalizedString>
 #include <QItemSelectionModel>
 #include <QPointer>
+#include <kwidgetsaddons_version.h>
 
 using namespace Akonadi;
 
@@ -27,13 +29,13 @@ using namespace Akonadi;
 
 static const struct {
     const char *name;
-    const char *label;
+    const KLazyLocalizedString label;
     const char *icon;
     int shortcut;
     const char *slot;
-} agentActionData[] = {{"akonadi_agentinstance_create", I18N_NOOP("&New Agent Instance..."), "folder-new", 0, SLOT(slotCreateAgentInstance())},
-                       {"akonadi_agentinstance_delete", I18N_NOOP("&Delete Agent Instance"), "edit-delete", 0, SLOT(slotDeleteAgentInstance())},
-                       {"akonadi_agentinstance_configure", I18N_NOOP("&Configure Agent Instance"), "configure", 0, SLOT(slotConfigureAgentInstance())}};
+} agentActionData[] = {{"akonadi_agentinstance_create", kli18n("&New Agent Instance..."), "folder-new", 0, SLOT(slotCreateAgentInstance())},
+                       {"akonadi_agentinstance_delete", kli18n("&Delete Agent Instance"), "edit-delete", 0, SLOT(slotDeleteAgentInstance())},
+                       {"akonadi_agentinstance_configure", kli18n("&Configure Agent Instance"), "configure", 0, SLOT(slotConfigureAgentInstance())}};
 static const int numAgentActionData = sizeof agentActionData / sizeof *agentActionData;
 
 static_assert(numAgentActionData == AgentActionManager::LastType, "agentActionData table does not match AgentActionManager types");
@@ -41,10 +43,10 @@ static_assert(numAgentActionData == AgentActionManager::LastType, "agentActionDa
 /**
  * @internal
  */
-class Q_DECL_HIDDEN AgentActionManager::Private
+class Akonadi::AgentActionManagerPrivate
 {
 public:
-    explicit Private(AgentActionManager *parent)
+    explicit AgentActionManagerPrivate(AgentActionManager *parent)
         : q(parent)
     {
         mActions.fill(nullptr, AgentActionManager::LastType);
@@ -53,7 +55,7 @@ public:
 
         setContextText(AgentActionManager::CreateAgentInstance, AgentActionManager::ErrorMessageText, ki18n("Could not create agent instance: %1"));
 
-        setContextText(AgentActionManager::CreateAgentInstance, AgentActionManager::ErrorMessageTitle, i18n("Agent instance creation failed"));
+        setContextText(AgentActionManager::CreateAgentInstance, AgentActionManager::ErrorMessageTitle, i18nc("@title:window", "Agent Instance Creation Failed"));
 
         setContextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxTitle, i18nc("@title:window", "Delete Agent Instance?"));
 
@@ -90,9 +92,9 @@ public:
             }
         }
 
-        enableAction(CreateAgentInstance, createActionEnabled);
-        enableAction(DeleteAgentInstance, deleteActionEnabled);
-        enableAction(ConfigureAgentInstance, configureActionEnabled);
+        enableAction(AgentActionManager::CreateAgentInstance, createActionEnabled);
+        enableAction(AgentActionManager::DeleteAgentInstance, deleteActionEnabled);
+        enableAction(AgentActionManager::ConfigureAgentInstance, configureActionEnabled);
 
         Q_EMIT q->actionStateUpdated();
     }
@@ -148,14 +150,23 @@ public:
     {
         const AgentInstance::List instances = selectedAgentInstances();
         if (!instances.isEmpty()) {
+#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
+            if (KMessageBox::questionTwoActions(mParentWidget,
+#else
             if (KMessageBox::questionYesNo(mParentWidget,
-                                           contextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxText),
-                                           contextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxTitle),
-                                           KStandardGuiItem::del(),
-                                           KStandardGuiItem::cancel(),
-                                           QString(),
-                                           KMessageBox::Dangerous)
+
+#endif
+                                                contextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxText),
+                                                contextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxTitle),
+                                                KStandardGuiItem::del(),
+                                                KStandardGuiItem::cancel(),
+                                                QString(),
+                                                KMessageBox::Dangerous)
+#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
+                == KMessageBox::ButtonCode::PrimaryAction) {
+#else
                 == KMessageBox::Yes) {
+#endif
                 for (const AgentInstance &instance : instances) {
                     AgentManager::self()->removeInstance(instance);
                 }
@@ -213,16 +224,13 @@ public:
 
 AgentActionManager::AgentActionManager(KActionCollection *actionCollection, QWidget *parent)
     : QObject(parent)
-    , d(new Private(this))
+    , d(new AgentActionManagerPrivate(this))
 {
     d->mParentWidget = parent;
     d->mActionCollection = actionCollection;
 }
 
-AgentActionManager::~AgentActionManager()
-{
-    delete d;
-}
+AgentActionManager::~AgentActionManager() = default;
 
 void AgentActionManager::setSelectionModel(QItemSelectionModel *selectionModel)
 {
@@ -251,7 +259,7 @@ QAction *AgentActionManager::createAction(Type type)
     }
 
     auto action = new QAction(d->mParentWidget);
-    action->setText(i18n(agentActionData[type].label));
+    action->setText(agentActionData[type].label.toString());
 
     if (agentActionData[type].icon) {
         action->setIcon(QIcon::fromTheme(QString::fromLatin1(agentActionData[type].icon)));

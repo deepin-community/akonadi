@@ -10,9 +10,12 @@
 
 #include <QWidget>
 
+#include <memory>
+
 namespace Akonadi
 {
 class Collection;
+class CollectionPropertiesPagePrivate;
 
 /**
  * @short A single page in a collection properties dialog.
@@ -96,7 +99,7 @@ public:
     /**
      * Destroys the collection properties page.
      */
-    ~CollectionPropertiesPage();
+    ~CollectionPropertiesPage() override;
 
     /**
      * Loads the page content from the given collection.
@@ -132,12 +135,11 @@ public:
     /**
      * Returns the page title.
      */
-    QString pageTitle() const;
+    Q_REQUIRED_RESULT QString pageTitle() const;
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<CollectionPropertiesPagePrivate> const d;
     /// @endcond
 };
 
@@ -207,4 +209,3 @@ private:
     };
 
 }
-

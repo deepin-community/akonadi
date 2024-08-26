@@ -5,14 +5,14 @@
 */
 
 #include "cachepolicy.h"
-#include "collection.h"
+#include <QDebug>
 
 using namespace Akonadi;
 
 /**
  * @internal
  */
-class Q_DECL_HIDDEN CachePolicy::Private : public QSharedData
+class Akonadi::CachePolicyPrivate : public QSharedData
 {
 public:
     QStringList localParts;
@@ -24,7 +24,7 @@ public:
 
 CachePolicy::CachePolicy()
 {
-    static QSharedDataPointer<Private> sharedPrivate(new Private);
+    static QSharedDataPointer<CachePolicyPrivate> sharedPrivate(new CachePolicyPrivate);
     d = sharedPrivate;
 }
 

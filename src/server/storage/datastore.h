@@ -255,7 +255,7 @@ public:
 
     /**
       Commits all changes within the current transaction and emits all
-      collected notfication signals. If committing fails, the transaction
+      collected notification signals. If committing fails, the transaction
       will be rolled back.
     */
     virtual bool commitTransaction();
@@ -368,4 +368,3 @@ private:
 
 } // namespace Server
 } // namespace Akonadi
-

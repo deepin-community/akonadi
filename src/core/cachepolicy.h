@@ -13,6 +13,8 @@
 
 namespace Akonadi
 {
+class CachePolicyPrivate;
+
 /**
  * @short Represents the caching policy for a collection.
  *
@@ -142,8 +144,7 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    QSharedDataPointer<Private> d;
+    QSharedDataPointer<CachePolicyPrivate> d;
     /// @endcond
 };
 
@@ -153,4 +154,3 @@ private:
  * Allows a cache policy to be output for debugging purposes.
  */
 AKONADICORE_EXPORT QDebug operator<<(QDebug, const Akonadi::CachePolicy &);
-

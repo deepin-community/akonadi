@@ -1,6 +1,6 @@
 /*
     SPDX-FileCopyrightText: 2009 Stephen Kelly <steveire@gmail.com>
-    SPDX-FileCopyrightText: 2012-2021 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2012-2022 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -10,6 +10,8 @@
 #include "akonadicore_export.h"
 
 #include <QSortFilterProxyModel>
+
+#include <memory>
 
 namespace Akonadi
 {
@@ -94,9 +96,8 @@ protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
 protected:
-    RecursiveCollectionFilterProxyModelPrivate *const d_ptr;
+    std::unique_ptr<RecursiveCollectionFilterProxyModelPrivate> const d_ptr;
     Q_DECLARE_PRIVATE(RecursiveCollectionFilterProxyModel)
 };
 
 }
-

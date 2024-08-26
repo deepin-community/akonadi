@@ -10,8 +10,12 @@
 
 #include <QAbstractItemModel>
 
+#include <memory>
+
 namespace Akonadi
 {
+class AgentInstanceModelPrivate;
+
 /**
  * @short Provides a data model for agent instances.
  *
@@ -80,10 +84,9 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    friend class AgentInstanceModelPrivate;
+    std::unique_ptr<AgentInstanceModelPrivate> const d;
     /// @endcond
 };
 
 }
-

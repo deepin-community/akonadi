@@ -13,17 +13,18 @@
 
 namespace Akonadi
 {
-class ImapInterval::Private : public QSharedData
+class ImapIntervalPrivate : public QSharedData
 {
 public:
-    Id begin = 0;
-    Id end = 0;
+    ImapInterval::Id begin = 0;
+    ImapInterval::Id end = 0;
 };
 
-class ImapSet::Private : public QSharedData
+class ImapSetPrivate : public QSharedData
 {
 public:
-    template<typename T> void add(const T &values)
+    template<typename T>
+    void add(const T &values)
     {
         T vals = values;
         std::sort(vals.begin(), vals.end());
@@ -50,7 +51,7 @@ public:
 };
 
 ImapInterval::ImapInterval()
-    : d(new Private)
+    : d(new ImapIntervalPrivate)
 {
 }
 
@@ -60,7 +61,7 @@ ImapInterval::ImapInterval(const ImapInterval &other)
 }
 
 ImapInterval::ImapInterval(Id begin, Id end)
-    : d(new Private)
+    : d(new ImapIntervalPrivate)
 {
     d->begin = begin;
     d->end = end;
@@ -151,30 +152,30 @@ QByteArray Akonadi::ImapInterval::toImapSequence() const
 }
 
 ImapSet::ImapSet()
-    : d(new Private)
+    : d(new ImapSetPrivate)
 {
 }
 
 ImapSet::ImapSet(Id id)
-    : d(new Private)
+    : d(new ImapSetPrivate)
 {
     add(QVector<Id>() << id);
 }
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 ImapSet::ImapSet(const QVector<qint64> &ids)
-    : d(new Private)
+    : d(new ImapSetPrivate)
 {
     add(ids);
 }
-
+#endif
 ImapSet::ImapSet(const QList<qint64> &ids)
-    : d(new Private)
+    : d(new ImapSetPrivate)
 {
     add(ids);
 }
 
 ImapSet::ImapSet(const ImapInterval &interval)
-    : d(new Private)
+    : d(new ImapSetPrivate)
 {
     add(interval);
 }
@@ -208,12 +209,12 @@ bool ImapSet::operator==(const ImapSet &other) const
 {
     return d->intervals == other.d->intervals;
 }
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void ImapSet::add(const QVector<Id> &values)
 {
     d->add(values);
 }
-
+#endif
 void ImapSet::add(const QList<Id> &values)
 {
     d->add(values);

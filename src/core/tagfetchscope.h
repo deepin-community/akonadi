@@ -12,6 +12,8 @@
 
 namespace Akonadi
 {
+class TagFetchScopePrivate;
+
 /**
  * @short Specifies which parts of a tag should be fetched from the Akonadi storage.
  *
@@ -50,7 +52,7 @@ public:
      *
      * @see fetchAttribute()
      */
-    QSet<QByteArray> attributes() const;
+    Q_REQUIRED_RESULT QSet<QByteArray> attributes() const;
 
     /**
      * Sets whether to fetch tag remote ID.
@@ -62,7 +64,7 @@ public:
     /**
      * Returns whether tag remote ID should be fetched.
      */
-    bool fetchRemoteId() const;
+    Q_REQUIRED_RESULT bool fetchRemoteId() const;
 
     /**
      * Sets whether to fetch all attributes.
@@ -72,7 +74,7 @@ public:
     /**
      * Returns whether to fetch all attributes
      */
-    bool fetchAllAttributes() const;
+    Q_REQUIRED_RESULT bool fetchAllAttributes() const;
 
     /**
      * Sets whether the attribute of the given @p type should be fetched.
@@ -87,7 +89,8 @@ public:
      *
      * @param fetch @c true if the attribute should be fetched, @c false otherwise.
      */
-    template<typename T> inline void fetchAttribute(bool fetch = true)
+    template<typename T>
+    inline void fetchAttribute(bool fetch = true)
     {
         T dummy;
         fetchAttribute(dummy.type(), fetch);
@@ -103,21 +106,19 @@ public:
     void setFetchIdOnly(bool fetchIdOnly);
 
     /**
-     * Sets whether only the id of the tags should be retieved or the complete tag.
+     * Sets whether only the id of the tags should be retrieved or the complete tag.
      *
      * @see tagFetchScope()
      * @since 4.15
      */
-    bool fetchIdOnly() const;
+    Q_REQUIRED_RESULT bool fetchIdOnly() const;
 
 private:
-    struct Private;
     /// @cond PRIVATE
-    QSharedPointer<Private> d;
+    QSharedPointer<TagFetchScopePrivate> d;
     /// @endcond
 };
 
 }
 
 // Q_DECLARE_METATYPE(Akonadi::TagFetchScope)
-

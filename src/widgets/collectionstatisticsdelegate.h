@@ -9,6 +9,8 @@
 
 #include <QStyledItemDelegate>
 
+#include <memory>
+
 class QAbstractItemView;
 class QTreeView;
 
@@ -92,14 +94,14 @@ public:
     /**
      * Returns whether the unread count is drawn next to the folder name.
      */
-    bool unreadCountShown() const;
+    Q_REQUIRED_RESULT bool unreadCountShown() const;
 
     /**
      * @param enable new mode of progress animation
      */
     void setProgressAnimationEnabled(bool enable);
 
-    bool progressAnimationEnabled() const;
+    Q_REQUIRED_RESULT bool progressAnimationEnabled() const;
 
 protected:
     /**
@@ -117,11 +119,10 @@ protected:
 
 private:
     /// @cond PRIVATE
-    CollectionStatisticsDelegatePrivate *const d_ptr;
+    std::unique_ptr<CollectionStatisticsDelegatePrivate> const d_ptr;
     /// @endcond
 
     Q_DECLARE_PRIVATE(CollectionStatisticsDelegate)
 };
 
 }
-

@@ -8,7 +8,6 @@
 
 #include "servermanager.h"
 #include "specialcollectionattribute.h"
-#include "specialcollections.h"
 #include <QDBusConnection>
 
 #include "agentinstance.h"
@@ -53,7 +52,7 @@ static QString defaultResourceId(KCoreConfigSkeleton *settings)
 
 static QString dbusServiceName()
 {
-    QString service = QStringLiteral("org.kde.pim.SpecialCollections");
+    const QString service = QStringLiteral("org.kde.pim.SpecialCollections");
     if (ServerManager::hasInstanceIdentifier()) {
         return service + ServerManager::instanceIdentifier();
     }
@@ -87,10 +86,10 @@ static QVariant::Type argumentType(const QMetaObject *mo, const QString &method)
 /**
   @internal
 */
-class Q_DECL_HIDDEN Akonadi::ResourceScanJob::Private
+class Akonadi::ResourceScanJobPrivate
 {
 public:
-    Private(KCoreConfigSkeleton *settings, ResourceScanJob *qq);
+    ResourceScanJobPrivate(KCoreConfigSkeleton *settings, ResourceScanJob *qq);
 
     void fetchResult(KJob *job); // slot
 
@@ -105,13 +104,13 @@ public:
     Collection::List mSpecialCollections;
 };
 
-ResourceScanJob::Private::Private(KCoreConfigSkeleton *settings, ResourceScanJob *qq)
+ResourceScanJobPrivate::ResourceScanJobPrivate(KCoreConfigSkeleton *settings, ResourceScanJob *qq)
     : q(qq)
     , mSettings(settings)
 {
 }
 
-void ResourceScanJob::Private::fetchResult(KJob *job)
+void ResourceScanJobPrivate::fetchResult(KJob *job)
 {
     if (job->error()) {
         qCWarning(AKONADICORE_LOG) << job->errorText();
@@ -142,7 +141,7 @@ void ResourceScanJob::Private::fetchResult(KJob *job)
                              << "(total" << fetchJob->collections().count() << "collections).";
 
     if (!mRootCollection.isValid()) {
-        q->setError(Unknown);
+        q->setError(ResourceScanJob::Unknown);
         q->setErrorText(i18n("Could not fetch root collection of resource %1.", mResourceId));
         q->emitResult();
         return;
@@ -154,15 +153,12 @@ void ResourceScanJob::Private::fetchResult(KJob *job)
 
 ResourceScanJob::ResourceScanJob(const QString &resourceId, KCoreConfigSkeleton *settings, QObject *parent)
     : Job(parent)
-    , d(new Private(settings, this))
+    , d(new ResourceScanJobPrivate(settings, this))
 {
     setResourceId(resourceId);
 }
 
-ResourceScanJob::~ResourceScanJob()
-{
-    delete d;
-}
+ResourceScanJob::~ResourceScanJob() = default;
 
 QString ResourceScanJob::resourceId() const
 {
@@ -267,15 +263,15 @@ void DefaultResourceJobPrivate::tryFetchResource()
         //             without updating the config file, in this case search for a resource
         //             of the same type and the default name
         const AgentInstance::List resources = AgentManager::self()->instances();
-        for (const AgentInstance &resource : resources) {
-            if (resource.type().identifier() == mDefaultResourceType) {
-                if (resource.name() == mDefaultResourceOptions.value(QStringLiteral("Name")).toString()) {
+        for (const AgentInstance &resourceInstance : resources) {
+            if (resourceInstance.type().identifier() == mDefaultResourceType) {
+                if (resourceInstance.name() == mDefaultResourceOptions.value(QStringLiteral("Name")).toString()) {
                     // found a matching one...
-                    setDefaultResourceId(mSettings, resource.identifier());
+                    setDefaultResourceId(mSettings, resourceInstance.identifier());
                     mSettings->save();
                     mResourceWasPreexisting = true;
-                    qCDebug(AKONADICORE_LOG) << "Found resource" << resource.identifier();
-                    q->setResourceId(resource.identifier());
+                    qCDebug(AKONADICORE_LOG) << "Found resource" << resourceInstance.identifier();
+                    q->setResourceId(resourceInstance.identifier());
                     q->ResourceScanJob::doStart();
                     return;
                 }
@@ -496,10 +492,7 @@ DefaultResourceJob::DefaultResourceJob(KCoreConfigSkeleton *settings, QObject *p
 {
 }
 
-DefaultResourceJob::~DefaultResourceJob()
-{
-    delete d;
-}
+DefaultResourceJob::~DefaultResourceJob() = default;
 
 void DefaultResourceJob::setDefaultResourceType(const QString &type)
 {
@@ -550,10 +543,10 @@ void DefaultResourceJob::slotResult(KJob *job)
 
 // ===================== GetLockJob ============================
 
-class Q_DECL_HIDDEN Akonadi::GetLockJob::Private
+class Akonadi::GetLockJobPrivate
 {
 public:
-    explicit Private(GetLockJob *qq);
+    explicit GetLockJobPrivate(GetLockJob *qq);
 
     void doStart(); // slot
     void timeout(); // slot
@@ -562,13 +555,13 @@ public:
     QTimer *mSafetyTimer = nullptr;
 };
 
-GetLockJob::Private::Private(GetLockJob *qq)
+GetLockJobPrivate::GetLockJobPrivate(GetLockJob *qq)
     : q(qq)
     , mSafetyTimer(nullptr)
 {
 }
 
-void GetLockJob::Private::doStart()
+void GetLockJobPrivate::doStart()
 {
     // Just doing registerService() and checking its return value is not sufficient,
     // since we may *already* own the name, and then registerService() returns true.
@@ -582,7 +575,7 @@ void GetLockJob::Private::doStart()
         q->emitResult();
     } else {
         auto watcher = new QDBusServiceWatcher(dbusServiceName(), QDBusConnection::sessionBus(), QDBusServiceWatcher::WatchForUnregistration, q);
-        connect(watcher, &QDBusServiceWatcher::serviceUnregistered, q, [this]() {
+        QObject::connect(watcher, &QDBusServiceWatcher::serviceUnregistered, q, [this]() {
             if (QDBusConnection::sessionBus().registerService(dbusServiceName())) {
                 mSafetyTimer->stop();
                 q->emitResult();
@@ -593,13 +586,13 @@ void GetLockJob::Private::doStart()
         mSafetyTimer->setSingleShot(true);
         mSafetyTimer->setInterval(LOCK_WAIT_TIMEOUT_SECONDS * 1000);
         mSafetyTimer->start();
-        connect(mSafetyTimer, &QTimer::timeout, q, [this]() {
+        QObject::connect(mSafetyTimer, &QTimer::timeout, q, [this]() {
             timeout();
         });
     }
 }
 
-void GetLockJob::Private::timeout()
+void GetLockJobPrivate::timeout()
 {
     qCWarning(AKONADICORE_LOG) << "Timeout trying to get lock. Check who has acquired the name" << dbusServiceName() << "on DBus, using qdbus or qdbusviewer.";
     q->setError(Job::Unknown);
@@ -609,14 +602,11 @@ void GetLockJob::Private::timeout()
 
 GetLockJob::GetLockJob(QObject *parent)
     : KJob(parent)
-    , d(new Private(this))
+    , d(new GetLockJobPrivate(this))
 {
 }
 
-GetLockJob::~GetLockJob()
-{
-    delete d;
-}
+GetLockJob::~GetLockJob() = default;
 
 void GetLockJob::start()
 {

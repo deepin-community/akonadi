@@ -11,6 +11,8 @@
 
 #include <KJob>
 
+#include <memory>
+
 namespace Akonadi
 {
 class AgentInstance;
@@ -100,9 +102,8 @@ public:
 private:
     /// @cond PRIVATE
     friend class Akonadi::AgentInstanceCreateJobPrivate;
-    AgentInstanceCreateJobPrivate *const d;
+    std::unique_ptr<AgentInstanceCreateJobPrivate> const d;
     /// @endcond
 };
 
 }
-

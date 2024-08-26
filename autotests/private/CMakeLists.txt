@@ -11,7 +11,7 @@ macro(add_unit_test _source)
     endif()
     target_link_libraries(${_name}
         akonadi_shared
-        akonadiprivate_static
+        KF5AkonadiPrivate
         Qt::Network
         Qt::Widgets
         Qt::Test
@@ -23,11 +23,7 @@ add_unit_test(akstandarddirstest.cpp)
 add_unit_test(akdbustest.cpp)
 add_unit_test(notificationmessagetest.cpp)
 add_unit_test(externalpartstoragetest.cpp)
-if (NOT MSVC)
-    # TODO: Make compile on Windows, right now it
-    # causes some weird linking issues.
-    add_unit_test(protocoltest.cpp)
-endif()
+add_unit_test(protocoltest.cpp)
 add_unit_test(imapparsertest.cpp)
 add_unit_test(imapsettest.cpp)
 add_unit_test(compressionstreamtest.cpp)

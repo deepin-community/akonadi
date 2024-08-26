@@ -254,7 +254,6 @@ bool DbConfigMysql::startInternalServer()
     qCDebug(AKONADISERVER_LOG).nospace() << "mysqld reports version " << (localVersion >> 16) << "." << ((localVersion >> 8) & 0x0000FF) << "."
                                          << (localVersion & 0x0000FF) << " (" << (isMariaDB ? "MariaDB" : "Oracle MySQL") << ")";
 
-    bool confUpdate = false;
     QFile actualFile(actualConfig);
     // update conf only if either global (or local) is newer than actual
     if ((QFileInfo(globalConfig).lastModified() > QFileInfo(actualFile).lastModified())
@@ -271,7 +270,6 @@ bool DbConfigMysql::startInternalServer()
             }
             globalFile.close();
             actualFile.close();
-            confUpdate = true;
         } else {
             qCCritical(AKONADISERVER_LOG) << "Unable to create MySQL server configuration file.";
             qCCritical(AKONADISERVER_LOG) << "This means that either the default configuration file (mysql-global.conf) was not readable";
@@ -390,12 +388,6 @@ bool DbConfigMysql::startInternalServer()
             }
         }
 
-        // clear mysql ib_logfile's in case innodb_log_file_size option changed in last confUpdate
-        if (confUpdate) {
-            QFile(dataDir + QDir::separator() + QLatin1String("ib_logfile0")).remove();
-            QFile(dataDir + QDir::separator() + QLatin1String("ib_logfile1")).remove();
-        }
-
         qCDebug(AKONADISERVER_LOG) << "Executing:" << mMysqldPath << arguments.join(QLatin1Char(' '));
         mDatabaseProcess = new QProcess;
         mDatabaseProcess->start(mMysqldPath, arguments);
@@ -407,7 +399,7 @@ bool DbConfigMysql::startInternalServer()
             return false;
         }
 
-        connect(mDatabaseProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &DbConfigMysql::processFinished);
+        connect(mDatabaseProcess, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &DbConfigMysql::processFinished);
 
         // wait until mysqld has created the socket file (workaround for QTBUG-47475 in Qt5.5.0)
         int counter = 50; // avoid an endless loop in case mysqld terminated
@@ -580,7 +572,7 @@ int DbConfigMysql::parseCommandLineToolsVersion() const
         return 0;
     }
 
-    return (match.capturedRef(1).toInt() << 16) | (match.capturedRef(2).toInt() << 8) | match.capturedRef(3).toInt();
+    return (match.capturedView(1).toInt() << 16) | (match.capturedView(2).toInt() << 8) | match.capturedView(3).toInt();
 }
 
 bool DbConfigMysql::initializeMariaDBDatabase(const QString &confFile, const QString &dataDir) const

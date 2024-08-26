@@ -27,7 +27,8 @@ using namespace Akonadi;
 
 namespace
 {
-template<typename List> List tagsFromSelection(const QItemSelection &selection, int role)
+template<typename List>
+List tagsFromSelection(const QItemSelection &selection, int role)
 {
     List tags;
     for (int i = 0; i < selection.size(); ++i) {
@@ -50,10 +51,10 @@ QString getEditText(const QItemSelection &selection)
 
 } // namespace
 
-class TagSelectionComboBox::Private
+class Akonadi::TagSelectionComboBoxPrivate
 {
 public:
-    explicit Private(TagSelectionComboBox *parent)
+    explicit TagSelectionComboBoxPrivate(TagSelectionComboBox *parent)
         : q(parent)
     {
     }
@@ -63,7 +64,8 @@ public:
         Continue,
     };
 
-    template<typename Selection, typename Comp> void setSelection(const Selection &entries, Comp &&cmp)
+    template<typename Selection, typename Comp>
+    void setSelection(const Selection &entries, Comp &&cmp)
     {
         if (!mModelReady) {
             mPendingSelection = entries;
@@ -177,7 +179,7 @@ private:
 
 TagSelectionComboBox::TagSelectionComboBox(QWidget *parent)
     : QComboBox(parent)
-    , d(new Private(this))
+    , d(new TagSelectionComboBoxPrivate(this))
 {
     auto monitor = new Monitor(this);
     monitor->setObjectName(QStringLiteral("TagSelectionComboBoxMonitor"));

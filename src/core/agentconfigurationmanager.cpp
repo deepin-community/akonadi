@@ -17,7 +17,7 @@
 
 namespace Akonadi
 {
-class Q_DECL_HIDDEN AgentConfigurationManager::Private
+class AgentConfigurationManagerPrivate
 {
 public:
     QString serviceName(const QString &instance) const
@@ -79,8 +79,9 @@ bool AgentConfigurationManager::isInstanceRegistered(const QString &instance) co
 QString AgentConfigurationManager::findConfigPlugin(const QString &type) const
 {
     const auto libPaths = QCoreApplication::libraryPaths();
+    const QString prefixPluginPath = QStringLiteral("pim" QT_STRINGIFY(QT_VERSION_MAJOR)) + QStringLiteral("/akonadi/config");
     for (const auto &libPath : libPaths) {
-        const QString pluginPath = QStringLiteral("%1/akonadi/config/").arg(libPath);
+        const QString pluginPath = QStringLiteral("%1/%2/").arg(libPath, prefixPluginPath);
         const auto libs = QDir(pluginPath).entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
         for (const auto &lib : libs) {
             QPluginLoader loader(lib.absoluteFilePath());

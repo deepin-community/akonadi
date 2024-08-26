@@ -1,6 +1,6 @@
 /*
     SPDX-FileCopyrightText: 2008 Ingo Klöcker <kloecker@kde.org>
-    SPDX-FileCopyrightText: 2010-2021 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2010-2022 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -8,13 +8,18 @@
 #pragma once
 
 #include "akonadiwidgets_export.h"
-#include "collection.h"
+// AkonadiCore
+#include <akonadi/collection.h>
 
 #include <QAbstractItemView>
 #include <QDialog>
 
+#include <memory>
+
 namespace Akonadi
 {
+class CollectionDialogPrivate;
+
 /**
  * @short A collection selection dialog.
  *
@@ -102,7 +107,7 @@ public:
     /**
      * Destroys the collection dialog.
      */
-    ~CollectionDialog();
+    ~CollectionDialog() override;
 
     /**
      * Sets the mime types any of which the selected collection(s) shall support.
@@ -193,10 +198,8 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<CollectionDialogPrivate> const d;
     /// @endcond
 };
 
 } // namespace Akonadi
-

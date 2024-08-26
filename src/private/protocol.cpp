@@ -32,8 +32,6 @@
         return reinterpret_cast<const Class##Private *>(d_ptr.constData());                                                                                    \
     }
 
-#define COMPARE(prop) ((prop) == ((decltype(this))other)->prop)
-
 namespace Akonadi
 {
 namespace Protocol
@@ -140,13 +138,15 @@ QDebug operator<<(QDebug _dbg, Command::Type type)
     return dbg << static_cast<int>(type);
 }
 
-template<typename T> DataStream &operator<<(DataStream &stream, const QSharedPointer<T> &ptr)
+template<typename T>
+DataStream &operator<<(DataStream &stream, const QSharedPointer<T> &ptr)
 {
     Protocol::serialize(stream, ptr);
     return stream;
 }
 
-template<typename T> DataStream &operator>>(DataStream &stream, QSharedPointer<T> &ptr)
+template<typename T>
+DataStream &operator>>(DataStream &stream, QSharedPointer<T> &ptr)
 {
     ptr = Protocol::deserialize(stream.device()).staticCast<T>();
     return stream;
@@ -420,20 +420,23 @@ public:
     QHash<std::underlying_type<Command::Type>::type, QPair<CommandFactoryFunc, ResponseFactoryFunc>> registrar;
 
 private:
-    template<typename T> static CommandPtr commandFactoryFunc()
+    template<typename T>
+    static CommandPtr commandFactoryFunc()
     {
         return QSharedPointer<T>::create();
     }
-    template<typename T> static ResponsePtr responseFactoryFunc()
+    template<typename T>
+    static ResponsePtr responseFactoryFunc()
     {
         return QSharedPointer<T>::create();
     }
 
-    template<Command::Type T, typename CmdType, typename RespType> void registerType()
+    template<Command::Type T, typename CmdType, typename RespType>
+    void registerType()
     {
         CommandFactoryFunc cmdFunc = &commandFactoryFunc<CmdType>;
         ResponseFactoryFunc respFunc = &responseFactoryFunc<RespType>;
-        registrar.insert(T, qMakePair<CommandFactoryFunc, ResponseFactoryFunc>(cmdFunc, respFunc));
+        registrar.insert(T, qMakePair(cmdFunc, respFunc));
     }
 };
 
@@ -719,7 +722,7 @@ bool ChangeNotification::isMove() const
 
 bool ChangeNotification::appendAndCompress(ChangeNotificationList &list, const ChangeNotificationPtr &msg)
 {
-    // It is likely that compressable notifications are within the last few notifications, so avoid searching a list that is potentially huge
+    // It is likely that compressible notifications are within the last few notifications, so avoid searching a list that is potentially huge
     static const int maxCompressionSearchLength = 10;
     int searchCounter = 0;
     // There are often multiple Collection Modify notifications in the queue,
@@ -817,7 +820,8 @@ namespace Akonadi
 {
 namespace Protocol
 {
-template<typename Value, template<typename> class Container> inline bool containerComparator(const Container<Value> &c1, const Container<Value> &c2)
+template<typename Value, template<typename> class Container>
+inline bool containerComparator(const Container<Value> &c1, const Container<Value> &c2)
 {
     return c1 == c2;
 }

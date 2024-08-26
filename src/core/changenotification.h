@@ -11,7 +11,7 @@
 #include <QSharedPointer>
 #include <QVector>
 
-#include <akonadicore_export.h>
+#include "akonadicore_export.h"
 
 namespace Akonadi
 {
@@ -20,6 +20,8 @@ namespace Protocol
 class ChangeNotification;
 using ChangeNotificationPtr = QSharedPointer<ChangeNotification>;
 }
+
+class ChangeNotificationPrivate;
 
 /**
  * Emitted by Monitor::debugNotification() signal.
@@ -61,9 +63,7 @@ public:
     void setNotification(const Protocol::ChangeNotificationPtr &ntf);
 
 private:
-    class Private;
-    QSharedDataPointer<Private> d;
+    QSharedDataPointer<ChangeNotificationPrivate> d;
 };
 
 }
-

@@ -18,7 +18,8 @@
 using namespace Akonadi;
 using namespace Akonadi::Server;
 
-template<typename T> static bool intersect(const QVector<typename T::Id> &l1, const QVector<T> &l2)
+template<typename T>
+static bool intersect(const QVector<typename T::Id> &l1, const QVector<T> &l2)
 {
     for (const T &e2 : l2) {
         if (l1.contains(e2.id())) {
@@ -265,7 +266,8 @@ void CollectionFetchHandler::retrieveCollections(const Collection &topParent, in
         if (!qb.exec()) {
             throw HandlerException("Unable to retrieve collection for listing");
         }
-        Q_FOREACH (const Collection &col, qb.result()) {
+        const auto result{qb.result()};
+        for (const Collection &col : result) {
             mCollections.insert(col.id(), col);
         }
     }
@@ -302,7 +304,7 @@ void CollectionFetchHandler::retrieveCollections(const Collection &topParent, in
     QVariantList mimeTypeIds;
     QVariantList attributeIds;
     QVariantList ancestorIds;
-    const int collectionSize{mCollections.size()};
+    const auto collectionSize{mCollections.size()};
     mimeTypeIds.reserve(collectionSize);
     attributeIds.reserve(collectionSize);
     // We'd only require the non-leaf collections, but we don't know which those are, so we take all.
@@ -362,7 +364,8 @@ void CollectionFetchHandler::retrieveCollections(const Collection &topParent, in
         }
 
         missingCollections.clear();
-        Q_FOREACH (const Collection &missingCol, qb.result()) {
+        const auto missingCols = qb.result();
+        for (const Collection &missingCol : missingCols) {
             mCollections.insert(missingCol.id(), missingCol);
             ancestorIds << missingCol.id();
             attributeIds << missingCol.id();

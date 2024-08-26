@@ -34,7 +34,7 @@ public:
      */
     explicit AsyncSelectionHandler(QAbstractItemModel *model, QObject *parent = nullptr);
 
-    ~AsyncSelectionHandler();
+    ~AsyncSelectionHandler() override;
 
     void waitForCollection(const Collection &collection);
     void waitForItem(const Item &item);
@@ -55,4 +55,3 @@ private:
 };
 
 }
-

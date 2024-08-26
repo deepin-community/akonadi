@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
-set(PIM_VERSION "5.18.1")
+set(PIM_VERSION "5.22.3")
 project(Akonadi VERSION ${PIM_VERSION})
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ECM setup
-set(KF5_MIN_VERSION "5.83.0")
+set(KF5_MIN_VERSION "5.99.0")
 
 find_package(ECM ${KF5_MIN_VERSION} CONFIG REQUIRED)
 
@@ -15,7 +13,7 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modul
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
-include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
+include(KDECompilerSettings NO_POLICY_SCOPE)
 
 include(GenerateExportHeader)
 include(ECMGenerateHeaders)
@@ -24,9 +22,14 @@ include(ECMGeneratePriFile)
 include(ECMSetupVersion)
 include(FeatureSummary)
 include(KDEGitCommitHooks)
+include(KDEClangFormat)
+file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES *.cpp *.h *.c)
+kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
+
 include(CheckAtomic)
 include(CheckIncludeFiles)
 include(ECMQtDeclareLoggingCategory)
+include(ECMDeprecationSettings)
 include(CheckSymbolExists)
 
 include(KDEPackageAppTemplates)
@@ -35,9 +38,17 @@ include(ECMAddTests)
 include(ECMSetupQtPluginMacroNames)
 
 include(AkonadiMacros)
+include(ECMAddQch)
 
-set(QT_REQUIRED_VERSION "5.15.0")
-set(RELEASE_SERVICE_VERSION "21.08.1")
+
+option(BUILD_QCH "Build API documentation in QCH format (for e.g. Qt Assistant, Qt Creator & KDevelop)" OFF)
+add_feature_info(QCH ${BUILD_QCH} "API documentation in QCH format (for e.g. Qt Assistant, Qt Creator & KDevelop)")
+
+set(QT_REQUIRED_VERSION "5.15.2")
+if (QT_MAJOR_VERSION STREQUAL "6")
+    set(QT_REQUIRED_VERSION "6.4.0")
+endif()
+set(RELEASE_SERVICE_VERSION "22.12.3")
 set(AKONADI_FULL_VERSION "${PIM_VERSION} (${RELEASE_SERVICE_VERSION})")
 
 configure_file(akonadifull-version.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/akonadifull-version.h @ONLY)
@@ -50,13 +61,13 @@ ecm_setup_version(PROJECT
     SOVERSION 5)
 
 # Find packages
-find_package(Qt5Core ${QT_REQUIRED_VERSION} REQUIRED COMPONENTS Private)
-find_package(Qt5Sql ${QT_REQUIRED_VERSION} REQUIRED COMPONENTS Private)
-find_package(Qt5DBus ${QT_REQUIRED_VERSION} REQUIRED)
-find_package(Qt5Network ${QT_REQUIRED_VERSION} REQUIRED)
-find_package(Qt5Test ${QT_REQUIRED_VERSION} REQUIRED)
-find_package(Qt5Widgets ${QT_REQUIRED_VERSION} REQUIRED)
-find_package(Qt5Xml ${QT_REQUIRED_VERSION} REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION}Core ${QT_REQUIRED_VERSION} REQUIRED COMPONENTS Private)
+find_package(Qt${QT_MAJOR_VERSION}Sql ${QT_REQUIRED_VERSION} REQUIRED COMPONENTS Private)
+find_package(Qt${QT_MAJOR_VERSION}DBus ${QT_REQUIRED_VERSION} REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION}Network ${QT_REQUIRED_VERSION} REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION}Test ${QT_REQUIRED_VERSION} REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION}Widgets ${QT_REQUIRED_VERSION} REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION}Xml ${QT_REQUIRED_VERSION} REQUIRED)
 
 find_package(KF5Config ${KF5_MIN_VERSION} CONFIG REQUIRED)
 find_package(KF5ConfigWidgets ${KF5_MIN_VERSION} CONFIG REQUIRED)
@@ -70,30 +81,19 @@ find_package(KF5WidgetsAddons ${KF5_MIN_VERSION} CONFIG REQUIRED)
 find_package(KF5WindowSystem ${KF5_MIN_VERSION} CONFIG REQUIRED)
 find_package(KF5XmlGui ${KF5_MIN_VERSION} CONFIG REQUIRED)
 find_package(KF5Crash ${KF5_MIN_VERSION} CONFIG REQUIRED)
-find_package(Qt5Designer NO_MODULE)
-set_package_properties(Qt5Designer PROPERTIES
+find_package(Qt${QT_MAJOR_VERSION}Designer NO_MODULE)
+set_package_properties(Qt${QT_MAJOR_VERSION}Designer PROPERTIES
    PURPOSE "Required to build the Qt Designer plugins"
    TYPE OPTIONAL
 )
 
 option(BUILD_DESIGNERPLUGIN "Build plugin for Qt Designer" ON)
 add_feature_info(DESIGNERPLUGIN ${BUILD_DESIGNERPLUGIN} "Build plugin for Qt Designer")
+if (QT_MAJOR_VERSION STREQUAL "6")
+    find_package(Qt6Core5Compat)
+endif()
 
-set(Boost_MINIMUM_VERSION "1.34.0")
-
-# The Boost CMake config files have been incompatible with the CMake files for
-# a long time. We'll only use what CMake's FindBoost.cmake module provides
-# until the minimum Boost version is raised to 1.70.
-set(Boost_NO_BOOST_CMAKE ON)
-
-find_package(Boost ${Boost_MINIMUM_VERSION} MODULE REQUIRED)
-set_package_properties(Boost PROPERTIES
-    DESCRIPTION "Boost C++ Libraries"
-    URL "https://www.boost.org"
-    TYPE REQUIRED
-)
-
-set(AccountsQt5_MINIMUM_VERSION "1.15")
+set(AccountsQt5_MINIMUM_VERSION "1.16")
 find_package(AccountsQt5 ${AccountsQt5_MINIMUM_VERSION})
 set_package_properties(AccountsQt5 PROPERTIES
     DESCRIPTION "Qt bindings for the Accounts framework"
@@ -135,10 +135,10 @@ ecm_setup_qtplugin_macro_names(
 
 # Make sure the KF5Akonadi_DATA_DIR is absolute before passing it to KF5AkonadiConfig.cmake.in
 # otherwise build fails either on OSX CI, or for normal users
-if (IS_ABSOLUTE "${KDE_INSTALL_DATADIR_KF5}")
-    set(KF5Akonadi_DATA_DIR "${KDE_INSTALL_DATADIR_KF5}/akonadi")
+if (IS_ABSOLUTE "${KDE_INSTALL_DATADIR_KF}")
+    set(KF5Akonadi_DATA_DIR "${KDE_INSTALL_DATADIR_KF}/akonadi")
 else()
-    set(KF5Akonadi_DATA_DIR "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_DATADIR_KF5}/akonadi")
+    set(KF5Akonadi_DATA_DIR "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_DATADIR_KF}/akonadi")
 endif()
 
 check_symbol_exists(malloc_trim "malloc.h" HAVE_MALLOC_TRIM)
@@ -226,34 +226,25 @@ endif()
 
 check_include_files(unistd.h HAVE_UNISTD_H)
 
-if (IS_ABSOLUTE "${DBUS_INTERFACES_INSTALL_DIR}")
-    set(AKONADI_DBUS_INTERFACES_INSTALL_DIR "${DBUS_INTERFACES_INSTALL_DIR}")
+if (IS_ABSOLUTE "${KDE_INSTALL_DBUSINTERFACEDIR}")
+    set(AKONADI_DBUS_INTERFACES_INSTALL_DIR "${KDE_INSTALL_DBUSINTERFACEDIR}")
 else()
-    set(AKONADI_DBUS_INTERFACES_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${DBUS_INTERFACES_INSTALL_DIR}")
+    set(AKONADI_DBUS_INTERFACES_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_DBUSINTERFACEDIR}")
 endif()
 
-if (IS_ABSOLUTE "${KDE_INSTALL_INCLUDEDIR_KF5}")
-    set(AKONADI_INCLUDE_DIR "${KDE_INSTALL_INCLUDEDIR_KF5}")
+if (IS_ABSOLUTE "${KDE_INSTALL_INCLUDEDIR_KF}")
+    set(AKONADI_INCLUDE_DIR "${KDE_INSTALL_INCLUDEDIR_KF}")
 else()
-    set(AKONADI_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_INCLUDEDIR_KF5}")
+    set(AKONADI_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_INCLUDEDIR_KF}")
 endif()
 
 ############### Build Options ###############
 
 include(CTest)  # Calls enable_testing().
-include(CTestConfig.cmake)
 
 if(NOT DEFINED DATABASE_BACKEND)
     set(DATABASE_BACKEND "MYSQL" CACHE STRING "The default database backend to use for Akonadi. Can be either MYSQL, POSTGRES or SQLITE")
 endif()
-
-############### CTest options ###############
-# Set a timeout value of 1 minute per test
-set(DART_TESTING_TIMEOUT 60)
-
-# CTestCustom.cmake has to be in the CTEST_BINARY_DIR.
-# in the KDE build system, this is the same as CMAKE_BINARY_DIR.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 ############### Macros ###############
 
@@ -309,6 +300,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_ENABLE_EXCEPTIONS}")
 configure_file(config-akonadi.h.cmake ${Akonadi_BINARY_DIR}/config-akonadi.h)
 
 ############### build targets ###############
+set(CMAKECONFIG_INSTALL_DIR "${KDE_INSTALL_CMAKEPACKAGEDIR}/KF5Akonadi")
 
 add_definitions(-DTRANSLATION_DOMAIN=\"libakonadi5\")
 
@@ -318,12 +310,8 @@ include_directories(
     src
 )
 
-add_definitions(-DKF_DISABLE_DEPRECATED_BEFORE_AND_AT=0x055400)
-#add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x050f00)
-add_definitions(-DQT_NO_EMIT)
-remove_definitions(-DQT_NO_FOREACH)
-remove_definitions(-DQT_NO_KEYWORDS)
-add_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
+
+ecm_set_disabled_deprecation_versions(QT 5.15.2 KF 5.99.0)
 
 add_subdirectory(src)
 add_subdirectory(icons)
@@ -354,7 +342,6 @@ update_xdg_mimetypes(${KDE_INSTALL_MIMEDIR})
 
 ############### CMake Config Files ###############
 
-set(CMAKECONFIG_INSTALL_DIR "${KDE_INSTALL_CMAKEPACKAGEDIR}/KF5Akonadi")
 
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/KF5AkonadiConfig.cmake.in"
@@ -387,7 +374,7 @@ ecm_qt_install_logging_categories(
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/akonadi_version.h
-    DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF5} COMPONENT Devel
+    DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiCore COMPONENT Devel
 )
 
 kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)

@@ -10,10 +10,13 @@
 
 #include <QWidget>
 
+#include <memory>
+
 namespace Akonadi
 {
 class AgentFilterProxyModel;
 class AgentType;
+class AgentTypeWidgetPrivate;
 
 /**
  * @short Provides a widget that lists all available agent types.
@@ -50,7 +53,7 @@ public:
     /**
      * Destroys the agent type widget.
      */
-    ~AgentTypeWidget();
+    ~AgentTypeWidget() override;
 
     /**
      * Returns the current agent type or an invalid agent type
@@ -81,10 +84,8 @@ Q_SIGNALS:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<AgentTypeWidgetPrivate> const d;
     /// @endcond
 };
 
 }
-

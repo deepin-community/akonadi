@@ -8,10 +8,13 @@
 
 #include "akonadiwidgets_export.h"
 
+// AkonadiCore
+#include <akonadi/collection.h>
+#include <akonadi/item.h>
+
 #include <QObject>
 
-#include "collection.h"
-#include "item.h"
+#include <memory>
 
 class QAction;
 class KActionCollection;
@@ -23,6 +26,7 @@ class QMenu;
 namespace Akonadi
 {
 class FavoriteCollectionsModel;
+class StandardActionManagerPrivate;
 
 /**
  * @short Manages generic actions for collection and item views.
@@ -184,7 +188,7 @@ public:
     /**
      * Destroys the standard action manager.
      */
-    ~StandardActionManager();
+    ~StandardActionManager() override;
 
     /**
      * Sets the collection selection model based on which the collection
@@ -370,8 +374,8 @@ Q_SIGNALS:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    friend class StandardActionManagerPrivate;
+    std::unique_ptr<StandardActionManagerPrivate> const d;
 
     Q_PRIVATE_SLOT(d, void updateActions())
 
@@ -425,4 +429,3 @@ private:
 };
 
 }
-

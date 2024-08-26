@@ -20,7 +20,6 @@ using namespace Akonadi;
 DelegateAnimator::DelegateAnimator(QAbstractItemView *view)
     : QObject(view)
     , m_view(view)
-    , m_timerId(-1)
 {
     m_pixmapSequence = KIconLoader::global()->loadPixmapSequence(QStringLiteral("process-working"), 22);
 }
@@ -51,8 +50,9 @@ void DelegateAnimator::timerEvent(QTimerEvent *event)
     }
 
     QRegion region;
-    // Do no port this to for(:)! The pop() inside the loop invalidates (even implicit) iterators.
-    Q_FOREACH (const Animation &animation, m_animations) {
+    // working copy as m_animations could be modified in the loop by pop()
+    const QSet<Animation> currentAnimations(m_animations);
+    for (const Animation &animation : currentAnimations) {
         // Check if loading is finished (we might not be notified, if the index is scrolled out of view)
         const QVariant fetchState = animation.index.data(Akonadi::EntityTreeModel::FetchStateRole);
         if (fetchState.toInt() != Akonadi::EntityTreeModel::FetchingState) {

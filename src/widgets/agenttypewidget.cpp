@@ -42,10 +42,10 @@ using Akonadi::Internal::AgentTypeWidgetDelegate;
 /**
  * @internal
  */
-class Q_DECL_HIDDEN AgentTypeWidget::Private
+class AgentTypeWidgetPrivate
 {
 public:
-    explicit Private(AgentTypeWidget *parent)
+    explicit AgentTypeWidgetPrivate(AgentTypeWidget *parent)
         : mParent(parent)
     {
     }
@@ -65,7 +65,7 @@ public:
     AgentFilterProxyModel *proxyModel = nullptr;
 };
 
-void AgentTypeWidget::Private::currentAgentTypeChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex)
+void AgentTypeWidgetPrivate::currentAgentTypeChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex)
 {
     AgentType currentType;
     if (currentIndex.isValid()) {
@@ -82,10 +82,10 @@ void AgentTypeWidget::Private::currentAgentTypeChanged(const QModelIndex &curren
 
 AgentTypeWidget::AgentTypeWidget(QWidget *parent)
     : QWidget(parent)
-    , d(new Private(this))
+    , d(new AgentTypeWidgetPrivate(this))
 {
     auto layout = new QHBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setContentsMargins({});
 
     d->mView = new QListView(this);
     d->mView->setItemDelegate(new AgentTypeWidgetDelegate(d->mView));
@@ -104,15 +104,12 @@ AgentTypeWidget::AgentTypeWidget(QWidget *parent)
     connect(d->mView->selectionModel(), &QItemSelectionModel::currentChanged, this, [this](const QModelIndex &start, const QModelIndex &end) {
         d->currentAgentTypeChanged(start, end);
     });
-    connect(d->mView, QOverload<const QModelIndex &>::of(&QListView::activated), this, [this](const QModelIndex &index) {
+    connect(d->mView, qOverload<const QModelIndex &>(&QListView::activated), this, [this](const QModelIndex &index) {
         d->typeActivated(index);
     });
 }
 
-AgentTypeWidget::~AgentTypeWidget()
-{
-    delete d;
-}
+AgentTypeWidget::~AgentTypeWidget() = default;
 
 AgentType AgentTypeWidget::currentAgentType() const
 {

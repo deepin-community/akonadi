@@ -12,6 +12,8 @@
 
 #include <QObject>
 
+#include <memory>
+
 class KCoreConfigSkeleton;
 
 namespace Akonadi
@@ -54,7 +56,7 @@ public:
     /**
      * Destroys the special collections object.
      */
-    ~SpecialCollections();
+    ~SpecialCollections() override;
 
     /**
      * Returns whether the given agent @p instance has a special collection of
@@ -149,9 +151,8 @@ private:
     friend class LocalFoldersTest;
 #endif
 
-    SpecialCollectionsPrivate *const d;
+    std::unique_ptr<SpecialCollectionsPrivate> const d;
     /// @endcond
 };
 
 } // namespace Akonadi
-

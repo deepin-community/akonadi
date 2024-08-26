@@ -12,7 +12,13 @@
 
 class QObject;
 class QString;
-template<typename T> class QVector;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+template<typename T>
+class QVector;
+#else
+template<typename T>
+class QList;
+#endif
 
 namespace Akonadi
 {
@@ -79,4 +85,3 @@ AKONADICORE_EXPORT void overridePluginLookup(QObject *plugin);
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Akonadi::TypePluginLoader::Options)
-

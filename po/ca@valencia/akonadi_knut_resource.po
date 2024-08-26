@@ -4,7 +4,7 @@
 # version 3 or later versions approved by the membership of KDE e.V.
 #
 # Manuel Tortosa Moreno <manutortosa@gmail.com>, 2009, 2010.
-# Josep Ma. Ferrer <txemaq@gmail.com>, 2010.
+# Josep M. Ferrer <txemaq@gmail.com>, 2010.
 # Manuel Tortosa <manutortosa@chakra-project.org>, 2010.
 # Antoni Bella Pérez <antonibella5@yahoo.com>, 2014.
 msgid ""
@@ -42,7 +42,7 @@ msgstr "Seleccioneu un fitxer de dades"
 #, kde-format
 msgctxt "Filedialog filter for Akonadi data file"
 msgid "Akonadi Knut Data File"
-msgstr "Fitxer de dades Knut de l'Akonadi"
+msgstr "Fitxer de dades Knut d'Akonadi"
 
 #: knutresource.cpp:148 knutresource.cpp:168 knutresource.cpp:321
 #, kde-format
@@ -52,7 +52,7 @@ msgstr "No s'ha trobat cap element per a l'ID remot %1"
 #: knutresource.cpp:186
 #, kde-format
 msgid "Parent collection not found in DOM tree."
-msgstr "No s'ha trobat la col·lecció pare a l'arbre DOM."
+msgstr "No s'ha trobat la col·lecció pare en l'arbre DOM."
 
 #: knutresource.cpp:194
 #, kde-format
@@ -62,17 +62,17 @@ msgstr "No s'ha pogut escriure la col·lecció."
 #: knutresource.cpp:206
 #, kde-format
 msgid "Modified collection not found in DOM tree."
-msgstr "No s'ha trobat la col·lecció modificada a l'arbre DOM."
+msgstr "No s'ha trobat la col·lecció modificada en l'arbre DOM."
 
 #: knutresource.cpp:236
 #, kde-format
 msgid "Deleted collection not found in DOM tree."
-msgstr "No s'ha trobat la col·lecció eliminada a l'arbre DOM."
+msgstr "No s'ha trobat la col·lecció eliminada en l'arbre DOM."
 
 #: knutresource.cpp:250 knutresource.cpp:308 knutresource.cpp:315
 #, kde-format
 msgid "Parent collection '%1' not found in DOM tree."
-msgstr "No s'ha trobat la col·lecció pare «%1» a l'arbre DOM."
+msgstr "No s'ha trobat la col·lecció pare «%1» en l'arbre DOM."
 
 #: knutresource.cpp:258 knutresource.cpp:328
 #, kde-format
@@ -82,9 +82,9 @@ msgstr "No s'ha pogut escriure l'element."
 #: knutresource.cpp:272
 #, kde-format
 msgid "Modified item not found in DOM tree."
-msgstr "No s'ha trobat l'element modificat a l'arbre DOM."
+msgstr "No s'ha trobat l'element modificat en l'arbre DOM."
 
 #: knutresource.cpp:287
 #, kde-format
 msgid "Deleted item not found in DOM tree."
-msgstr "No s'ha trobat l'element eliminat a l'arbre DOM."
+msgstr "No s'ha trobat l'element eliminat en l'arbre DOM."

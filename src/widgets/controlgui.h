@@ -10,8 +10,12 @@
 
 #include <QObject>
 
+#include <memory>
+
 namespace Akonadi
 {
+class ControlGuiPrivate;
+
 /**
  * @short Provides methods to ControlGui the Akonadi server process.
  *
@@ -54,7 +58,7 @@ public:
     /**
      * Destroys the ControlGui object.
      */
-    ~ControlGui();
+    ~ControlGui() override;
 
     /**
      * Starts the Akonadi server synchronously if it is not already running.
@@ -117,10 +121,8 @@ protected:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<ControlGuiPrivate> const d;
     /// @endcond
 };
 
 }
-

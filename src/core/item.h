@@ -25,8 +25,13 @@
 #include <typeinfo>
 
 class QUrl;
-
-template<typename T> class QVector;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+template<typename T>
+class QVector;
+#else
+template<typename T>
+class QList;
+#endif
 
 namespace Akonadi
 {
@@ -55,7 +60,7 @@ class ItemPrivate;
  * Technically the only restriction on payload objects is that they have to be copyable.
  * For safety reasons, pointer payloads are forbidden as well though, as the
  * ownership would not be clear. In this case, usage of a shared pointer is
- * recommended (such as boost::shared_ptr, QSharedPointer or std::shared_ptr).
+ * recommended (such as QSharedPointer or std::shared_ptr).
  *
  * Using a shared pointer is also required in case the payload is a polymorphic
  * type. For supported shared pointer types implicit casting is provided when possible.
@@ -67,7 +72,7 @@ class ItemPrivate;
  * Since KDE 4.6, Item supports multiple payload types per mime type,
  * and will automatically convert between them using the serialiser
  * plugins (which is slow). It also supports mixing shared pointer
- * types, e.g. inserting a boost::shared_ptr<Foo> and extracting a
+ * types, e.g. inserting a std::shared_ptr<Foo> and extracting a
  * QSharedPointer<Foo>. Since the two shared pointer types cannot
  * share ownership of the same object, the payload class @c T needs to
  * provide a @c clone() method with the usual signature, ie.
@@ -87,7 +92,7 @@ class ItemPrivate;
  * of the class), you want to restrict yourself to just one type and
  * one shared pointer type. This mechanism was mainly introduced for
  * backwards compatibility (e.g., putting in a
- * boost::shared_ptr<KCal::Incidence> and extracting a
+ * std::shared_ptr<KCal::Incidence> and extracting a
  * QSharedPointer<KCalCore::Incidence>), so it is not optimized for
  * performance.
  *
@@ -315,22 +320,26 @@ public:
      *
      * @param option The create options.
      */
-    template<typename T> inline T *attribute(CreateOption option = DontCreate);
+    template<typename T>
+    inline T *attribute(CreateOption option = DontCreate);
 
     /**
      * Returns the attribute of the requested type or 0 if it is not available.
      */
-    template<typename T> inline const T *attribute() const;
+    template<typename T>
+    inline const T *attribute() const;
 
     /**
      * Removes and deletes the attribute of the requested type.
      */
-    template<typename T> inline void removeAttribute();
+    template<typename T>
+    inline void removeAttribute();
 
     /**
      * Returns whether the item has an attribute of the requested type.
      */
-    template<typename T> inline bool hasAttribute() const;
+    template<typename T>
+    inline bool hasAttribute() const;
 
     /**
      * Returns all flags of this item.
@@ -557,20 +566,21 @@ public:
      * fast (such as implicitly shared classes) is recommended.
      * If the payload type is polymorphic and you intend to set and retrieve payload
      * objects with mismatching but castable types, make sure to use a supported
-     * shared pointer implementation (currently boost::shared_ptr, QSharedPointer
-     * and std::shared_ptr and make sure there is a specialization of
-     * Akonadi::super_trait for your class.
+     * shared pointer implementation (currently QSharedPointer and std::shared_ptr)
+     * and make sure there is a specialization of Akonadi::super_trait for your class.
      */
-    template<typename T> void setPayload(const T &p);
+    template<typename T>
+    void setPayload(const T &p);
     /// @cond PRIVATE
-    template<typename T> void setPayload(T *p);
+    template<typename T>
+    void setPayload(T *p);
     /// @endcond
 
     /**
      * Returns the payload object of this PIM item. This method will only succeed if either
      * you requested the exact same payload type that was put in or the payload uses a
-     * supported shared pointer type (currently boost::shared_ptr, QSharedPointer and
-     * std::shared_ptr), and is castable to the requested type. For this to work there needs
+     * supported shared pointer type (currently QSharedPointer and std::shared_ptr),
+     * and is castable to the requested type. For this to work there needs
      * to be a specialization of Akonadi::super_trait of the used classes.
      *
      * If a mismatching or non-castable payload type is requested, an Akonadi::PayloadException
@@ -579,7 +589,8 @@ public:
      *
      * Trying to retrieve a pointer type will fail to compile.
      */
-    template<typename T> T payload() const;
+    template<typename T>
+    T payload() const;
 
     /**
      * Returns whether the item has a payload object.
@@ -589,13 +600,14 @@ public:
     /**
      * Returns whether the item has a payload of type @c T.
      * This method will only return @c true if either you requested the exact same payload type
-     * that was put in or the payload uses a supported shared pointer type (currently boost::shared_ptr,
+     * that was put in or the payload uses a supported shared pointer type (currently
      * QSharedPointer and std::shared_ptr), and is castable to the requested type. For this to work there needs
      * to be a specialization of Akonadi::super_trait of the used classes.
      *
      * Trying to retrieve a pointer type will fail to compile.
      */
-    template<typename T> bool hasPayload() const;
+    template<typename T>
+    bool hasPayload() const;
 
     /**
      * Describes the type of url which is returned in url().
@@ -668,22 +680,28 @@ private:
 
     template<typename T>
     typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, void>::type setPayloadImpl(const T &p, const int * /*disambiguate*/ = nullptr);
-    template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, void>::type setPayloadImpl(const T &p);
+    template<typename T>
+    typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, void>::type setPayloadImpl(const T &p);
 
-    template<typename T> typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, T>::type payloadImpl(const int * /*disambiguate*/ = nullptr) const;
-    template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, T>::type payloadImpl() const;
+    template<typename T>
+    typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, T>::type payloadImpl(const int * /*disambiguate*/ = nullptr) const;
+    template<typename T>
+    typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, T>::type payloadImpl() const;
 
     template<typename T>
     typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, bool>::type hasPayloadImpl(const int * /*disambiguate*/ = nullptr) const;
-    template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, bool>::type hasPayloadImpl() const;
+    template<typename T>
+    typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, bool>::type hasPayloadImpl() const;
 
     template<typename T>
     typename std::enable_if<Internal::is_shared_pointer<T>::value, bool>::type tryToClone(T *ret, const int * /*disambiguate*/ = nullptr) const;
-    template<typename T> typename std::enable_if<!Internal::is_shared_pointer<T>::value, bool>::type tryToClone(T *ret) const;
+    template<typename T>
+    typename std::enable_if<!Internal::is_shared_pointer<T>::value, bool>::type tryToClone(T *ret) const;
 
     template<typename T, typename NewT>
     typename std::enable_if<!std::is_same<T, NewT>::value, bool>::type tryToCloneImpl(T *ret, const int * /*disambiguate*/ = nullptr) const;
-    template<typename T, typename NewT> typename std::enable_if<std::is_same<T, NewT>::value, bool>::type tryToCloneImpl(T *ret) const;
+    template<typename T, typename NewT>
+    typename std::enable_if<std::is_same<T, NewT>::value, bool>::type tryToCloneImpl(T *ret) const;
 
     /**
      * Set the collection ID to where the item is stored in. Should be set only by the ItemFetchJob.
@@ -718,7 +736,8 @@ private:
 
 AKONADICORE_EXPORT uint qHash(const Akonadi::Item &item);
 
-template<typename T> inline T *Item::attribute(Item::CreateOption option)
+template<typename T>
+inline T *Item::attribute(Item::CreateOption option)
 {
     const QByteArray type = T().type();
     if (hasAttribute(type)) {
@@ -735,7 +754,8 @@ template<typename T> inline T *Item::attribute(Item::CreateOption option)
     return nullptr;
 }
 
-template<typename T> inline const T *Item::attribute() const
+template<typename T>
+inline const T *Item::attribute() const
 {
     const QByteArray type = T().type();
     if (hasAttribute(type)) {
@@ -748,17 +768,20 @@ template<typename T> inline const T *Item::attribute() const
     return nullptr;
 }
 
-template<typename T> inline void Item::removeAttribute()
+template<typename T>
+inline void Item::removeAttribute()
 {
     removeAttribute(T().type());
 }
 
-template<typename T> inline bool Item::hasAttribute() const
+template<typename T>
+inline bool Item::hasAttribute() const
 {
     return hasAttribute(T().type());
 }
 
-template<typename T> T Item::payload() const
+template<typename T>
+T Item::payload() const
 {
     static_assert(!std::is_pointer<T>::value, "Payload must not be a pointer");
 
@@ -769,7 +792,8 @@ template<typename T> T Item::payload() const
     return payloadImpl<T>();
 }
 
-template<typename T> typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, T>::type Item::payloadImpl(const int *) const
+template<typename T>
+typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, T>::type Item::payloadImpl(const int *) const
 {
     using PayloadType = Internal::PayloadTrait<T>;
     static_assert(PayloadType::isPolymorphic, "Non-polymorphic payload type in polymorphic implementation is not allowed");
@@ -782,7 +806,8 @@ template<typename T> typename std::enable_if<Internal::PayloadTrait<T>::isPolymo
     return PayloadType::castFrom(payloadImpl<Root_T>());
 }
 
-template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, T>::type Item::payloadImpl() const
+template<typename T>
+typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, T>::type Item::payloadImpl() const
 {
     using PayloadType = Internal::PayloadTrait<T>;
     static_assert(!PayloadType::isPolymorphic, "Polymorphic payload type in non-polymorphic implementation is not allowed");
@@ -807,7 +832,8 @@ template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolym
     return ret;
 }
 
-template<typename T, typename NewT> typename std::enable_if<!std::is_same<T, NewT>::value, bool>::type Item::tryToCloneImpl(T *ret, const int *) const
+template<typename T, typename NewT>
+typename std::enable_if<!std::is_same<T, NewT>::value, bool>::type Item::tryToCloneImpl(T *ret, const int *) const
 {
     using PayloadType = Internal::PayloadTrait<T>;
     using NewPayloadType = Internal::PayloadTrait<NewT>;
@@ -832,12 +858,14 @@ template<typename T, typename NewT> typename std::enable_if<!std::is_same<T, New
     return tryToCloneImpl<T, typename Internal::shared_pointer_traits<NewT>::next_shared_ptr>(ret);
 }
 
-template<typename T, typename NewT> typename std::enable_if<std::is_same<T, NewT>::value, bool>::type Item::tryToCloneImpl(T *) const
+template<typename T, typename NewT>
+typename std::enable_if<std::is_same<T, NewT>::value, bool>::type Item::tryToCloneImpl(T *) const
 {
     return false;
 }
 
-template<typename T> typename std::enable_if<Internal::is_shared_pointer<T>::value, bool>::type Item::tryToClone(T *ret, const int *) const
+template<typename T>
+typename std::enable_if<Internal::is_shared_pointer<T>::value, bool>::type Item::tryToClone(T *ret, const int *) const
 {
     using PayloadType = Internal::PayloadTrait<T>;
     static_assert(!PayloadType::isPolymorphic, "Polymorphic payload type in non-polymorphic implementation is not allowed");
@@ -845,7 +873,8 @@ template<typename T> typename std::enable_if<Internal::is_shared_pointer<T>::val
     return tryToCloneImpl<T, typename Internal::shared_pointer_traits<T>::next_shared_ptr>(ret);
 }
 
-template<typename T> typename std::enable_if<!Internal::is_shared_pointer<T>::value, bool>::type Item::tryToClone(T *) const
+template<typename T>
+typename std::enable_if<!Internal::is_shared_pointer<T>::value, bool>::type Item::tryToClone(T *) const
 {
     using PayloadType = Internal::PayloadTrait<T>;
     static_assert(!PayloadType::isPolymorphic, "Polymorphic payload type in non-polymorphic implementation is not allowed");
@@ -853,13 +882,15 @@ template<typename T> typename std::enable_if<!Internal::is_shared_pointer<T>::va
     return false;
 }
 
-template<typename T> bool Item::hasPayload() const
+template<typename T>
+bool Item::hasPayload() const
 {
     static_assert(!std::is_pointer<T>::value, "Payload type cannot be a pointer");
     return hasPayload() && hasPayloadImpl<T>();
 }
 
-template<typename T> typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, bool>::type Item::hasPayloadImpl(const int *) const
+template<typename T>
+typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic, bool>::type Item::hasPayloadImpl(const int *) const
 {
     using PayloadType = Internal::PayloadTrait<T>;
     static_assert(PayloadType::isPolymorphic, "Non-polymorphic payload type in polymorphic implementation is no allowed");
@@ -878,7 +909,8 @@ template<typename T> typename std::enable_if<Internal::PayloadTrait<T>::isPolymo
     }
 }
 
-template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, bool>::type Item::hasPayloadImpl() const
+template<typename T>
+typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic, bool>::type Item::hasPayloadImpl() const
 {
     using PayloadType = Internal::PayloadTrait<T>;
     static_assert(!PayloadType::isPolymorphic, "Polymorphic payload type in non-polymorphic implementation is not allowed");
@@ -899,13 +931,15 @@ template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolym
     return tryToClone<T>(nullptr);
 }
 
-template<typename T> void Item::setPayload(const T &p)
+template<typename T>
+void Item::setPayload(const T &p)
 {
     static_assert(!std::is_pointer<T>::value, "Payload type must not be a pointer");
     setPayloadImpl(p);
 }
 
-template<typename T> typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic>::type Item::setPayloadImpl(const T &p, const int *)
+template<typename T>
+typename std::enable_if<Internal::PayloadTrait<T>::isPolymorphic>::type Item::setPayloadImpl(const T &p, const int *)
 {
     using PayloadType = Internal::PayloadTrait<T>;
     static_assert(PayloadType::isPolymorphic, "Non-polymorphic payload type in polymorphic implementation is not allowed");
@@ -918,14 +952,16 @@ template<typename T> typename std::enable_if<Internal::PayloadTrait<T>::isPolymo
     setPayloadImpl<Root_T>(p);
 }
 
-template<typename T> typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic>::type Item::setPayloadImpl(const T &p)
+template<typename T>
+typename std::enable_if<!Internal::PayloadTrait<T>::isPolymorphic>::type Item::setPayloadImpl(const T &p)
 {
     using PayloadType = Internal::PayloadTrait<T>;
     std::unique_ptr<Internal::PayloadBase> pb(new Internal::Payload<T>(p));
     setPayloadBaseV2(PayloadType::sharedPointerId, PayloadType::elementMetaTypeId(), pb);
 }
 
-template<typename T> void Item::setPayload(T *p)
+template<typename T>
+void Item::setPayload(T *p)
 {
     p->You_MUST_NOT_use_a_pointer_as_payload;
 }
@@ -934,4 +970,4 @@ template<typename T> void Item::setPayload(T *p)
 
 Q_DECLARE_METATYPE(Akonadi::Item)
 Q_DECLARE_METATYPE(Akonadi::Item::List)
-
+Q_DECLARE_TYPEINFO(Akonadi::Item, Q_MOVABLE_TYPE);

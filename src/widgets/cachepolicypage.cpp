@@ -16,15 +16,15 @@
 
 using namespace Akonadi;
 
-class Q_DECL_HIDDEN CachePolicyPage::Private
+class Akonadi::CachePolicyPagePrivate
 {
 public:
-    Private()
+    CachePolicyPagePrivate()
         : mUi(new Ui::CachePolicyPage)
     {
     }
 
-    ~Private()
+    ~CachePolicyPagePrivate()
     {
         delete mUi;
     }
@@ -34,21 +34,27 @@ public:
     void slotRetrievalOptionsGroupBoxDisabled(bool disable);
 
     Ui::CachePolicyPage *const mUi;
+    CachePolicyPage::GuiMode mode;
 };
 
-void CachePolicyPage::Private::slotIntervalValueChanged(int interval)
+void CachePolicyPagePrivate::slotIntervalValueChanged(int interval)
 {
     mUi->checkInterval->setSuffix(QLatin1Char(' ') + i18np("minute", "minutes", interval));
 }
 
-void CachePolicyPage::Private::slotCacheValueChanged(int interval)
+void CachePolicyPagePrivate::slotCacheValueChanged(int interval)
 {
     mUi->localCacheTimeout->setSuffix(QLatin1Char(' ') + i18np("minute", "minutes", interval));
 }
 
-void CachePolicyPage::Private::slotRetrievalOptionsGroupBoxDisabled(bool disable)
+void CachePolicyPagePrivate::slotRetrievalOptionsGroupBoxDisabled(bool disable)
 {
-    mUi->retrievalOptionsGroupBox->setDisabled(disable);
+    mUi->retrieveFullMessages->setDisabled(disable);
+    mUi->retrieveFullMessages->setDisabled(disable);
+    mUi->retrieveOnlyHeaders->setDisabled(disable);
+    mUi->localCacheTimeout->setDisabled(disable);
+    mUi->retrievalOptionsLabel->setDisabled(disable);
+    mUi->label->setDisabled(disable);
     if (!disable) {
         mUi->label->setEnabled(mUi->retrieveOnlyHeaders->isChecked());
         mUi->localCacheTimeout->setEnabled(mUi->retrieveOnlyHeaders->isChecked());
@@ -57,30 +63,34 @@ void CachePolicyPage::Private::slotRetrievalOptionsGroupBoxDisabled(bool disable
 
 CachePolicyPage::CachePolicyPage(QWidget *parent, GuiMode mode)
     : CollectionPropertiesPage(parent)
-    , d(new Private)
+    , d(new CachePolicyPagePrivate)
 {
     setObjectName(QStringLiteral("Akonadi::CachePolicyPage"));
     setPageTitle(i18n("Retrieval"));
+    d->mode = mode;
 
     d->mUi->setupUi(this);
-    connect(d->mUi->checkInterval, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int value) {
+    connect(d->mUi->checkInterval, qOverload<int>(&QSpinBox::valueChanged), this, [this](int value) {
         d->slotIntervalValueChanged(value);
     });
-    connect(d->mUi->localCacheTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int value) {
+    connect(d->mUi->localCacheTimeout, qOverload<int>(&QSpinBox::valueChanged), this, [this](int value) {
         d->slotCacheValueChanged(value);
     });
     connect(d->mUi->inherit, &QCheckBox::toggled, this, [this](bool checked) {
         d->slotRetrievalOptionsGroupBoxDisabled(checked);
     });
     if (mode == AdvancedMode) {
-        d->mUi->stackedWidget->setCurrentWidget(d->mUi->rawPage);
+        d->mUi->retrievalOptionsLabel->hide();
+        d->mUi->retrieveFullMessages->hide();
+        d->mUi->retrieveOnlyHeaders->hide();
+        d->mUi->localCacheTimeout->hide();
+    } else {
+        d->mUi->localParts->hide();
+        d->mUi->localPartsLabel->hide();
     }
 }
 
-CachePolicyPage::~CachePolicyPage()
-{
-    delete d;
-}
+CachePolicyPage::~CachePolicyPage() = default;
 
 bool Akonadi::CachePolicyPage::canHandle(const Collection &collection) const
 {
@@ -101,7 +111,6 @@ void CachePolicyPage::load(const Collection &collection)
         cache = 0;
     }
 
-    d->mUi->inherit->setChecked(policy.inheritFromParent());
     d->mUi->checkInterval->setValue(interval);
     d->mUi->localCacheTimeout->setValue(cache);
     d->mUi->syncOnDemand->setChecked(policy.syncOnDemand());
@@ -114,6 +123,9 @@ void CachePolicyPage::load(const Collection &collection)
     d->mUi->retrieveOnlyHeaders->setChecked(!fetchBodies);
     d->mUi->label->setEnabled(!fetchBodies);
     d->mUi->localCacheTimeout->setEnabled(!fetchBodies);
+    // last code otherwise it will call slotRetrievalOptionsGroupBoxDisabled before
+    // calling d->mUi->label->setEnabled(!fetchBodies);
+    d->mUi->inherit->setChecked(policy.inheritFromParent());
 }
 
 void CachePolicyPage::save(Collection &collection)
@@ -140,7 +152,7 @@ void CachePolicyPage::save(Collection &collection)
     // parts to keep around locally, if the user selected that, or remove
     // it otherwise. In "raw" mode we simple use the values from the list
     // view.
-    if (d->mUi->stackedWidget->currentWidget() != d->mUi->rawPage) {
+    if (d->mode != AdvancedMode) {
         if (d->mUi->retrieveFullMessages->isChecked() && !localParts.contains(QLatin1String("RFC822"))) {
             localParts.append(QStringLiteral("RFC822"));
         } else if (!d->mUi->retrieveFullMessages->isChecked() && localParts.contains(QLatin1String("RFC822"))) {

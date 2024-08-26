@@ -7,9 +7,12 @@
 #pragma once
 
 #include "akonadiagentbase_export.h"
-#include "item.h"
+// AkonadiCore
+#include <akonadi/item.h>
 
 #include <QString>
+
+#include <memory>
 
 namespace Akonadi
 {
@@ -80,9 +83,8 @@ public:
 
 private:
     /// @cond PRIVATE
-    TransportResourceBasePrivate *const d;
+    std::unique_ptr<TransportResourceBasePrivate> const d;
     /// @endcond
 };
 
 }
-

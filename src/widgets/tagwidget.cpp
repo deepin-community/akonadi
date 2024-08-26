@@ -3,7 +3,7 @@
 
     SPDX-FileCopyrightText: 2010 Tobias Koenig <tokoe@kde.org>
     SPDX-FileCopyrightText: 2014 Christian Mollekopf <mollekopf@kolabsys.com>
-    SPDX-FileCopyrightText: 2016-2021 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2016-2022 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -26,7 +26,7 @@ using namespace Akonadi;
 
 namespace Akonadi
 {
-class Q_DECL_HIDDEN TagView : public QLineEdit
+class TagView : public QLineEdit
 {
     Q_OBJECT
 public:
@@ -55,7 +55,7 @@ Q_SIGNALS:
 // include after defining TagView
 #include "ui_tagwidget.h"
 
-class Q_DECL_HIDDEN TagWidget::Private
+class Akonadi::TagWidgetPrivate
 {
 public:
     Ui::TagWidget ui;
@@ -65,7 +65,7 @@ public:
 
 TagWidget::TagWidget(QWidget *parent)
     : QWidget(parent)
-    , d(new Private)
+    , d(new TagWidgetPrivate)
 {
     auto monitor = new Monitor(this);
     monitor->setObjectName(QStringLiteral("TagWidgetMonitor"));

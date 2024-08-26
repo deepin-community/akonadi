@@ -20,7 +20,7 @@ class FakeIntervalCheck : public IntervalCheck
 {
     Q_OBJECT
 public:
-    FakeIntervalCheck(ItemRetrievalManager &retrievalManager);
+    explicit FakeIntervalCheck(ItemRetrievalManager &retrievalManager);
     void waitForInit();
 
 protected:
@@ -37,4 +37,3 @@ private:
 
 } // namespace Server
 } // namespace Akonadi
-

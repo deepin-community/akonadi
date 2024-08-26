@@ -64,7 +64,7 @@ public:
     }
 
     struct PartHelper {
-        PartHelper(const QString &type_, const QByteArray &data_, int size_, Part::Storage storage_ = Part::Internal, int version_ = 0)
+        PartHelper(const QString &type_, const QByteArray &data_, qsizetype size_, Part::Storage storage_ = Part::Internal, int version_ = 0)
             : type(type_)
             , data(data_)
             , size(size_)
@@ -74,7 +74,7 @@ public:
         }
         QString type;
         QByteArray data;
-        int size;
+        qsizetype size;
         Part::Storage storage;
         int version;
     };
@@ -82,7 +82,7 @@ public:
     void updateParts(QVector<FakePart> &parts, const std::vector<PartHelper> &updatedParts)
     {
         parts.clear();
-        Q_FOREACH (const PartHelper &helper, updatedParts) {
+        for (const PartHelper &helper : updatedParts) {
             FakePart part;
 
             const QStringList types = helper.type.split(QLatin1Char(':'));
@@ -120,7 +120,7 @@ public:
     void updateTags(QVector<FakeTag> &tags, const std::vector<TagHelper> &updatedTags)
     {
         tags.clear();
-        Q_FOREACH (const TagHelper &helper, updatedTags) {
+        for (const TagHelper &helper : updatedTags) {
             FakeTag tag;
 
             TagType tagType;
@@ -270,7 +270,8 @@ private Q_SLOTS:
             << TestScenario::create(5, TestScenario::ServerCmd, Protocol::CreateItemResponsePtr::create());
         QTest::newRow("multi-part") << scenarios << Notifications{notification} << pimItem << parts << flags << tags << uidnext << datetime << false;
 
-        TestScenario inScenario, outScenario;
+        TestScenario inScenario;
+        TestScenario outScenario;
         {
             auto cmd = Protocol::CreateItemCommandPtr::create();
             cmd->setCollection(Scope(100));
@@ -830,7 +831,7 @@ private Q_SLOTS:
 
             const auto actualFlags = actualItem.flags() | AkRanges::Actions::toQList;
             QCOMPARE(actualFlags.count(), flags.count());
-            Q_FOREACH (const Flag &flag, flags) {
+            for (const Flag &flag : std::as_const(flags)) {
                 const QList<Flag>::const_iterator actualFlagIter =
                     std::find_if(actualFlags.constBegin(), actualFlags.constEnd(), [flag](Flag const &actualFlag) {
                         return flag.name() == actualFlag.name();
@@ -842,7 +843,7 @@ private Q_SLOTS:
 
             const auto actualTags = actualItem.tags() | AkRanges::Actions::toQList;
             QCOMPARE(actualTags.count(), tags.count());
-            Q_FOREACH (const FakeTag &tag, tags) {
+            for (const FakeTag &tag : std::as_const(tags)) {
                 const QList<Tag>::const_iterator actualTagIter = std::find_if(actualTags.constBegin(), actualTags.constEnd(), [tag](Tag const &actualTag) {
                     return tag.gid() == actualTag.gid();
                 });
@@ -864,7 +865,7 @@ private Q_SLOTS:
 
             const auto actualParts = actualItem.parts() | AkRanges::Actions::toQList;
             QCOMPARE(actualParts.count(), parts.count());
-            Q_FOREACH (const FakePart &part, parts) {
+            for (const FakePart &part : std::as_const(parts)) {
                 const QList<Part>::const_iterator actualPartIter =
                     std::find_if(actualParts.constBegin(), actualParts.constEnd(), [part](Part const &actualPart) {
                         return part.partType().ns() == actualPart.partType().ns() && part.partType().name() == actualPart.partType().name();

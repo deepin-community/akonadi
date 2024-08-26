@@ -47,10 +47,7 @@ EntityOrderProxyModel::EntityOrderProxyModel(QObject *parent)
     // setSortCaseSensitivity( Qt::CaseInsensitive );
 }
 
-EntityOrderProxyModel::~EntityOrderProxyModel()
-{
-    delete d_ptr;
-}
+EntityOrderProxyModel::~EntityOrderProxyModel() = default;
 
 void EntityOrderProxyModel::setOrderConfig(const KConfigGroup &configGroup)
 {
@@ -104,7 +101,7 @@ QStringList EntityOrderProxyModel::configStringsForDroppedUrls(const QList<QUrl>
     QStringList droppedList;
     droppedList.reserve(urls.count());
     for (const QUrl &url : urls) {
-        Collection col = Collection::fromUrl(url);
+        const Collection col = Collection::fromUrl(url);
 
         if (!col.isValid()) {
             Item item = Item::fromUrl(url);

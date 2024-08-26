@@ -10,7 +10,6 @@
 #include "job.h"
 #include "job_p.h"
 #include "private/protocol_p.h"
-#include "private/standarddirs_p.h"
 #include "protocolhelper_p.h"
 #include "servermanager.h"
 #include "servermanager_p.h"
@@ -37,7 +36,7 @@
 //#define PIPELINE_LENGTH 2
 
 using namespace Akonadi;
-
+using namespace std::chrono_literals;
 /// @cond PRIVATE
 
 void SessionPrivate::startNext()
@@ -104,7 +103,7 @@ bool SessionPrivate::handleCommands()
             if (hello.isError()) {
                 qCWarning(AKONADICORE_LOG) << "Error when establishing connection with Akonadi server:" << hello.errorMessage();
                 connection->closeConnection();
-                QTimer::singleShot(1000, connection, &Connection::reconnect);
+                QTimer::singleShot(1s, connection, &Connection::reconnect);
                 return false;
             }
 
@@ -123,7 +122,7 @@ bool SessionPrivate::handleCommands()
             if (login.isError()) {
                 qCWarning(AKONADICORE_LOG) << "Unable to login to Akonadi server:" << login.errorMessage();
                 connection->closeConnection();
-                QTimer::singleShot(1000, mParent, [this]() {
+                QTimer::singleShot(1s, mParent, [this]() {
                     reconnect();
                 });
                 return false;
@@ -394,7 +393,6 @@ Session::Session(SessionPrivate *dd, const QByteArray &sessionId, QObject *paren
 Session::~Session()
 {
     d->clear(false);
-    delete d;
 }
 
 QByteArray Session::sessionId() const

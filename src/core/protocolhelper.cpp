@@ -12,10 +12,8 @@
 #include "item_p.h"
 #include "itemfetchscope.h"
 #include "itemserializer_p.h"
-#include "itemserializerplugin.h"
 #include "persistentsearchattribute.h"
 #include "protocolhelper_p.h"
-#include "servermanager.h"
 #include "tag_p.h"
 #include "tagfetchscope.h"
 
@@ -52,7 +50,8 @@ Protocol::CachePolicy ProtocolHelper::cachePolicyToProtocol(const CachePolicy &p
     return proto;
 }
 
-template<typename T> inline static void parseAttributesImpl(const Protocol::Attributes &attributes, T *entity)
+template<typename T>
+inline static void parseAttributesImpl(const Protocol::Attributes &attributes, T *entity)
 {
     for (auto iter = attributes.cbegin(), end = attributes.cend(); iter != end; ++iter) {
         Attribute *attribute = AttributeFactory::createAttribute(iter.key());
@@ -85,7 +84,8 @@ parseAncestorsCachedImpl(const QVector<Protocol::Ancestor> &ancestors, T *entity
     }
 }
 
-template<typename T> inline static Protocol::Attributes attributesToProtocolImpl(const T &entity, bool ns)
+template<typename T>
+inline static Protocol::Attributes attributesToProtocolImpl(const T &entity, bool ns)
 {
     Protocol::Attributes attributes;
     const auto attrs = entity.attributes();
@@ -610,37 +610,41 @@ Item ProtocolHelper::parseItemFetchResult(const Protocol::FetchItemsResponse &da
 
     item.setFlags(convertFlags(data.flags(), valuePool));
 
-    if ((!fetchScope || fetchScope->fetchTags()) && !data.tags().isEmpty()) {
+    const auto fetchedTags = data.tags();
+    if ((!fetchScope || fetchScope->fetchTags()) && !fetchedTags.isEmpty()) {
         Tag::List tags;
-        tags.reserve(data.tags().size());
-        Q_FOREACH (const Protocol::FetchTagsResponse &tag, data.tags()) {
+        tags.reserve(fetchedTags.size());
+        for (const Protocol::FetchTagsResponse &tag : fetchedTags) {
             tags.append(parseTagFetchResult(tag));
         }
         item.setTags(tags);
     }
 
-    if ((!fetchScope || fetchScope->fetchRelations()) && !data.relations().isEmpty()) {
+    const auto fetchedRelations = data.relations();
+    if ((!fetchScope || fetchScope->fetchRelations()) && !fetchedRelations.isEmpty()) {
         Relation::List relations;
-        relations.reserve(data.relations().size());
-        Q_FOREACH (const Protocol::FetchRelationsResponse &rel, data.relations()) {
+        relations.reserve(fetchedRelations.size());
+        for (const Protocol::FetchRelationsResponse &rel : fetchedRelations) {
             relations.append(parseRelationFetchResult(rel));
         }
         item.d_ptr->mRelations = relations;
     }
 
-    if ((!fetchScope || fetchScope->fetchVirtualReferences()) && !data.virtualReferences().isEmpty()) {
+    const auto virtualReferences = data.virtualReferences();
+    if ((!fetchScope || fetchScope->fetchVirtualReferences()) && !virtualReferences.isEmpty()) {
         Collection::List virtRefs;
-        virtRefs.reserve(data.virtualReferences().size());
-        Q_FOREACH (qint64 colId, data.virtualReferences()) {
+        virtRefs.reserve(virtualReferences.size());
+        for (qint64 colId : virtualReferences) {
             virtRefs.append(Collection(colId));
         }
         item.setVirtualReferences(virtRefs);
     }
 
-    if (!data.cachedParts().isEmpty()) {
+    const auto cachedParts = data.cachedParts();
+    if (!cachedParts.isEmpty()) {
         QSet<QByteArray> cp;
-        cp.reserve(data.cachedParts().size());
-        Q_FOREACH (const QByteArray &ba, data.cachedParts()) {
+        cp.reserve(cachedParts.size());
+        for (const QByteArray &ba : cachedParts) {
             cp.insert(ba);
         }
         item.setCachedPayloadParts(cp);
@@ -649,7 +653,8 @@ Item ProtocolHelper::parseItemFetchResult(const Protocol::FetchItemsResponse &da
     item.setSize(data.size());
     item.setModificationTime(data.mTime());
     parseAncestorsCached(data.ancestors(), &item, data.parentId(), valuePool);
-    Q_FOREACH (const Protocol::StreamPayloadResponse &part, data.parts()) {
+    const auto parts = data.parts();
+    for (const Protocol::StreamPayloadResponse &part : parts) {
         ProtocolHelper::PartNamespace ns;
         const QByteArray plainKey = decodePartIdentifier(part.payloadName(), ns);
         const auto metaData = part.metaData();

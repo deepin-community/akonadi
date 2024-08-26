@@ -6,10 +6,13 @@
 
 #pragma once
 
-#include "agentinstance.h"
 #include "akonadiwidgets_export.h"
+// AkonadiCore
+#include <akonadi/agentinstance.h>
 
 #include <QObject>
+
+#include <memory>
 
 class QAction;
 class KActionCollection;
@@ -19,6 +22,8 @@ class QWidget;
 
 namespace Akonadi
 {
+class AgentActionManagerPrivate;
+
 /**
  * @short Manages generic actions for agent and agent instance views.
  *
@@ -63,7 +68,7 @@ public:
     /**
      * Destroys the agent action manager.
      */
-    ~AgentActionManager();
+    ~AgentActionManager() override;
 
     /**
      * Sets the agent selection @p model based on which the actions should operate.
@@ -151,8 +156,7 @@ Q_SIGNALS:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<AgentActionManagerPrivate> const d;
 
     Q_PRIVATE_SLOT(d, void updateActions())
 
@@ -165,4 +169,3 @@ private:
 };
 
 }
-

@@ -9,12 +9,18 @@
 #pragma once
 
 #include "akonadiwidgets_export.h"
+// AkonadiCore
+#include <akonadi/tag.h>
 
-#include "tag.h"
 #include <QDialog>
+
+#include <memory>
+
 class QDialogButtonBox;
 namespace Akonadi
 {
+class TagManagementDialogPrivate;
+
 /**
  * A dialog to manage tags.
  *
@@ -30,9 +36,7 @@ public:
     Q_REQUIRED_RESULT QDialogButtonBox *buttons() const;
 
 private:
-    struct Private;
-    QScopedPointer<Private> d;
+    std::unique_ptr<TagManagementDialogPrivate> const d;
 };
 
 }
-

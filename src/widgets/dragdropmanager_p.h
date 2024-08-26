@@ -33,7 +33,7 @@ public:
     /**
      * Starts a drag if possible and sets the appropriate supported actions to allow moves.
      *
-     * Also sets the pixmap for hte drag to something appropriately small, overriding the Qt
+     * Also sets the pixmap for the drag to something appropriately small, overriding the Qt
      * behaviour of creating a painting of all selected rows when dragging.
      */
     void startDrag(Qt::DropActions supportedActions);
@@ -46,9 +46,9 @@ public:
     /**
      * Returns whether the drop action menu is shown on drop operation.
      */
-    bool showDropActionMenu() const;
+    Q_REQUIRED_RESULT bool showDropActionMenu() const;
 
-    bool isManualSortingActive() const;
+    Q_REQUIRED_RESULT bool isManualSortingActive() const;
 
     /**
      * Set true if we automatic sorting
@@ -65,4 +65,3 @@ private:
 };
 
 }
-

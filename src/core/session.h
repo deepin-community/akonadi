@@ -9,6 +9,8 @@
 #include "akonadicore_export.h"
 #include <QObject>
 
+#include <memory>
+
 class KJob;
 class FakeSession;
 class FakeNotificationConnection;
@@ -73,7 +75,7 @@ public:
     /**
      * Destroys the session.
      */
-    ~Session();
+    ~Session() override;
 
     /**
      * Returns the session identifier.
@@ -114,7 +116,7 @@ protected:
 
 private:
     /// @cond PRIVATE
-    SessionPrivate *const d;
+    std::unique_ptr<SessionPrivate> const d;
     friend class ::FakeSession;
     friend class ::FakeNotificationConnection;
     friend class ChangeNotificationDependenciesFactory;
@@ -124,4 +126,3 @@ private:
 };
 
 }
-

@@ -4,7 +4,6 @@ usr/include/KF5/AkonadiAgentBase/
 usr/include/KF5/AkonadiCore/
 usr/include/KF5/AkonadiWidgets/
 usr/include/KF5/AkonadiXml/
-usr/include/KF5/akonadi_version.h
 usr/lib/*/cmake/KF5Akonadi/
 usr/lib/*/libKF5AkonadiAgentBase.so
 usr/lib/*/libKF5AkonadiCore.so

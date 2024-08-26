@@ -10,8 +10,12 @@
 #include "collection.h"
 #include "transactionsequence.h"
 
+#include <memory>
+
 namespace Akonadi
 {
+class CollectionSyncPrivate;
+
 /**
   @internal
 
@@ -112,9 +116,8 @@ protected:
     void doStart() override;
 
 private:
-    class Private;
-    Private *const d;
+    friend class CollectionSyncPrivate;
+    std::unique_ptr<CollectionSyncPrivate> const d;
 };
 
 }
-

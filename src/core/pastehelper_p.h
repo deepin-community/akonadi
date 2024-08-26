@@ -19,7 +19,7 @@ class Session;
 /**
   @internal
 
-  Helper methods for pasting/droping content into a collection.
+  Helper methods for pasting/dropping content into a collection.
 
   @todo Use in item/collection models as well for dnd
 */
@@ -53,4 +53,3 @@ AKONADICORE_EXPORT KJob *pasteUriList(const QMimeData *mimeData, const Collectio
 }
 
 }
-

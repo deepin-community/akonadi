@@ -7,14 +7,19 @@
 #pragma once
 
 #include "akonadiwidgets_export.h"
-#include "collection.h"
+// AkonadiCore
+#include <akonadi/collection.h>
 
 #include <QComboBox>
+
+#include <memory>
 
 class QAbstractItemModel;
 
 namespace Akonadi
 {
+class CollectionComboBoxPrivate;
+
 /**
  * @short A combobox for selecting an Akonadi collection.
  *
@@ -71,7 +76,7 @@ public:
     /**
      * Destroys the collection combobox.
      */
-    ~CollectionComboBox();
+    ~CollectionComboBox() override;
 
     /**
      * Sets the content @p mimetypes the collections shall be filtered by.
@@ -124,8 +129,7 @@ Q_SIGNALS:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<CollectionComboBoxPrivate> const d;
 
     Q_PRIVATE_SLOT(d, void activated(int))
     Q_PRIVATE_SLOT(d, void activated(const QModelIndex &))
@@ -133,4 +137,3 @@ private:
 };
 
 }
-

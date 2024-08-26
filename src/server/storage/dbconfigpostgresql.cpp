@@ -21,7 +21,7 @@
 #include <QStandardPaths>
 
 #include <config-akonadi.h>
-#ifdef HAVE_UNISTD_H
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <chrono>
@@ -77,19 +77,11 @@ private:
             return {};
         }
         bool ok = false;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
         const auto major = QStringView(name).left(dotIdx).toInt(&ok);
-#else
-        const auto major = name.leftRef(dotIdx).toInt(&ok);
-#endif
         if (!ok) {
             return {};
         }
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
         const auto minor = QStringView(name).mid(dotIdx + 1).toInt(&ok);
-#else
-        const auto minor = name.midRef(dotIdx + 1).toInt(&ok);
-#endif
         if (!ok) {
             return {};
         }
@@ -264,7 +256,7 @@ bool DbConfigPostgresql::useInternalServer() const
 
 std::optional<DbConfigPostgresql::Versions> DbConfigPostgresql::checkPgVersion() const
 {
-    // Contains major version of Postgres that creted the cluster
+    // Contains major version of Postgres that created the cluster
     QFile pgVersionFile(QStringLiteral("%1/PG_VERSION").arg(mPgData));
     if (!pgVersionFile.open(QIODevice::ReadOnly)) {
         return std::nullopt;

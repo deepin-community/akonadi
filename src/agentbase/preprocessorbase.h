@@ -10,8 +10,9 @@
 
 #include "agentbase.h"
 #include "akonadiagentbase_export.h"
-#include "collection.h"
-#include "item.h"
+// AkonadiCore
+#include <akonadi/collection.h>
+#include <akonadi/item.h>
 
 namespace Akonadi
 {
@@ -170,4 +171,3 @@ private:
         return Akonadi::PreprocessorBase::init<preProcessorClass>(argc, argv);                                                                                 \
     }
 #endif //! AKONADI_RESOURCE_MAIN
-

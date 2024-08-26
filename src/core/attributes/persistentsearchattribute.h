@@ -14,6 +14,7 @@
 namespace Akonadi
 {
 class Collection;
+class PersistentSearchAttributePrivate;
 
 /**
  * @short An attribute to store query properties of persistent search collections.
@@ -157,10 +158,8 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    const std::unique_ptr<Private> d;
+    const std::unique_ptr<PersistentSearchAttributePrivate> d;
     /// @endcond
 };
 
 } // namespace Akonadi
-

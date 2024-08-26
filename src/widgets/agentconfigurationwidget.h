@@ -10,10 +10,14 @@
 #include <QDialogButtonBox>
 #include <QWidget>
 
+#include <memory>
+
 namespace Akonadi
 {
 class AgentInstance;
 class AgentConfigurationDialog;
+class AgentConfigurationWidgetPrivate;
+
 /**
  * @brief A widget for displaying agent configuration in applications.
  *
@@ -28,9 +32,9 @@ public:
 
     void load();
     void save();
-    QSize restoreDialogSize() const;
+    Q_REQUIRED_RESULT QSize restoreDialogSize() const;
     void saveDialogSize(QSize size);
-    QDialogButtonBox::StandardButtons standardButtons() const;
+    Q_REQUIRED_RESULT QDialogButtonBox::StandardButtons standardButtons() const;
 
 Q_SIGNALS:
     void enableOkButton(bool enabled);
@@ -39,11 +43,9 @@ protected:
     void childEvent(QChildEvent *event) override;
 
 private:
-    class Private;
-    friend class Private;
+    friend class AgentConfigurationWidgetPrivate;
     friend class AgentConfigurationDialog;
-    QScopedPointer<Private> d;
+    std::unique_ptr<AgentConfigurationWidgetPrivate> const d;
 };
 
 }
-

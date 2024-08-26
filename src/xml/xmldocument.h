@@ -8,10 +8,13 @@
 
 #include "akonadi-xml_export.h"
 
-#include "collection.h"
-#include <item.h>
+// AkonadiCore
+#include <akonadi/collection.h>
+#include <akonadi/item.h>
 
 #include <QDomDocument>
+
+#include <memory>
 
 namespace Akonadi
 {
@@ -115,8 +118,7 @@ public:
 
 private:
     Q_DISABLE_COPY(XmlDocument)
-    XmlDocumentPrivate *const d;
+    std::unique_ptr<XmlDocumentPrivate> const d;
 };
 
 }
-

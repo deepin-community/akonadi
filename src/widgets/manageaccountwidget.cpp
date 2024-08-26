@@ -1,5 +1,5 @@
 /*
-    SPDX-FileCopyrightText: 2014-2021 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2014-2022 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -22,6 +22,7 @@
 #include <QAbstractItemView>
 #include <QKeyEvent>
 #include <QPointer>
+#include <kwidgetsaddons_version.h>
 
 using namespace Akonadi;
 
@@ -196,8 +197,20 @@ void ManageAccountWidget::slotRemoveSelectedAccount()
 {
     const Akonadi::AgentInstance instance = d->ui.mAccountList->currentAgentInstance();
 
-    const int rc = KMessageBox::questionYesNo(this, i18n("Do you want to remove account '%1'?", instance.name()), i18n("Remove account?"));
+#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
+    const int rc = KMessageBox::questionTwoActions(this,
+#else
+    const int rc = KMessageBox::questionYesNo(this,
+#endif
+                                                   i18n("Do you want to remove account '%1'?", instance.name()),
+                                                   i18n("Remove account?"),
+                                                   KStandardGuiItem::remove(),
+                                                   KStandardGuiItem::cancel());
+#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
+    if (rc == KMessageBox::ButtonCode::SecondaryAction) {
+#else
     if (rc == KMessageBox::No) {
+#endif
         return;
     }
 

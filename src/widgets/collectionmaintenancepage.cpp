@@ -1,5 +1,5 @@
 /*
-   SPDX-FileCopyrightText: 2009-2021 Laurent Montel <montel@kde.org>
+   SPDX-FileCopyrightText: 2009-2022 Laurent Montel <montel@kde.org>
 
    SPDX-License-Identifier: GPL-2.0-or-later
 */
@@ -18,17 +18,18 @@
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 
-#include <KFormat>
+#include <KIO/Global>
+
 #include <KLocalizedString>
 #include <QCheckBox>
 #include <QPushButton>
 
 using namespace Akonadi;
 
-class CollectionMaintenancePage::Private
+class Akonadi::CollectionMaintenancePagePrivate
 {
 public:
-    Private()
+    CollectionMaintenancePagePrivate()
     {
     }
 
@@ -53,7 +54,7 @@ public:
     {
         ui.itemsCountLbl->setText(QString::number(qMax(0LL, nbMail)));
         ui.unreadItemsCountLbl->setText(QString::number(qMax(0LL, nbUnreadMail)));
-        ui.folderSizeLbl->setText(KFormat().formatByteSize(qMax(0LL, size)));
+        ui.folderSizeLbl->setText(KIO::convertSize(qMax(0LL, size)));
     }
 
     Akonadi::Collection currentCollection;
@@ -64,16 +65,13 @@ public:
 
 CollectionMaintenancePage::CollectionMaintenancePage(QWidget *parent)
     : CollectionPropertiesPage(parent)
-    , d(new Private)
+    , d(new CollectionMaintenancePagePrivate)
 {
     setObjectName(QStringLiteral("Akonadi::CollectionMaintenancePage"));
     setPageTitle(i18n("Maintenance"));
 }
 
-CollectionMaintenancePage::~CollectionMaintenancePage()
-{
-    delete d;
-}
+CollectionMaintenancePage::~CollectionMaintenancePage() = default;
 
 void CollectionMaintenancePage::init(const Collection &col)
 {
@@ -93,7 +91,7 @@ void CollectionMaintenancePage::init(const Collection &col)
         d->ui.folderTypeLbl->setText(instance.type().name());
     } else {
         d->ui.folderTypeLbl->hide();
-        d->ui.filesLayout->labelForField(d->ui.folderTypeLbl)->hide();
+        d->ui.verticalLayout->labelForField(d->ui.folderTypeLbl)->hide();
     }
 
     connect(d->ui.reindexButton, &QPushButton::clicked, this, [this]() {
@@ -105,7 +103,10 @@ void CollectionMaintenancePage::init(const Collection &col)
     const auto resource = Akonadi::AgentManager::self()->instance(col.resource()).type();
     if (!col.cachePolicy().localParts().contains(QLatin1String("RFC822"))
         && resource.customProperties().value(QStringLiteral("HasLocalStorage"), QString()) != QLatin1String("true")) {
-        d->ui.indexingGroup->hide();
+        d->ui.indexingLabel->hide();
+        d->ui.enableIndexingChkBox->hide();
+        d->ui.indexedCountLbl->hide();
+        d->ui.reindexButton->hide();
     }
 }
 
