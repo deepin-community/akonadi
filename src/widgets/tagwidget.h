@@ -10,13 +10,17 @@
 #pragma once
 
 #include "akonadiwidgets_export.h"
+// AkonadiCore
+#include <akonadi/tag.h>
 
 #include <QLineEdit>
 
-#include "tag.h"
+#include <memory>
 
 namespace Akonadi
 {
+class TagWidgetPrivate;
+
 /**
  * A widget that shows a tag selection and provides means to edit that selection.
  *
@@ -28,7 +32,7 @@ class AKONADIWIDGETS_EXPORT TagWidget : public QWidget
     Q_OBJECT
 public:
     explicit TagWidget(QWidget *parent = nullptr);
-    ~TagWidget();
+    ~TagWidget() override;
 
     void setSelection(const Akonadi::Tag::List &tags);
     Q_REQUIRED_RESULT Akonadi::Tag::List selection() const;
@@ -43,9 +47,7 @@ private Q_SLOTS:
     void updateView();
 
 private:
-    class Private;
-    QScopedPointer<Private> d;
+    std::unique_ptr<TagWidgetPrivate> const d;
 };
 
 }
-

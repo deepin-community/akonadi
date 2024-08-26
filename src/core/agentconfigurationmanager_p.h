@@ -10,8 +10,12 @@
 
 #include "akonadicore_export.h"
 
+#include <memory>
+
 namespace Akonadi
 {
+class AgentConfigurationManagerPrivate;
+
 class AKONADICORE_EXPORT AgentConfigurationManager : public QObject
 {
     Q_OBJECT
@@ -22,18 +26,16 @@ public:
     bool registerInstanceConfiguration(const QString &instance);
     void unregisterInstanceConfiguration(const QString &instance);
 
-    bool isInstanceRegistered(const QString &instance) const;
+    Q_REQUIRED_RESULT bool isInstanceRegistered(const QString &instance) const;
 
     QString findConfigPlugin(const QString &type) const;
 
 private:
     AgentConfigurationManager(QObject *parent = nullptr);
 
-    class Private;
-    friend class Private;
-    QScopedPointer<Private> const d;
+    friend class AgentConfigurationManagerPrivate;
+    std::unique_ptr<AgentConfigurationManagerPrivate> const d;
     static AgentConfigurationManager *sInstance;
 };
 
 }
-

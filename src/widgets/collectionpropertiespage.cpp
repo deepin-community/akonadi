@@ -13,7 +13,7 @@ using namespace Akonadi;
 /**
  * @internal
  */
-class Q_DECL_HIDDEN CollectionPropertiesPage::Private
+class Akonadi::CollectionPropertiesPagePrivate
 {
 public:
     QString title;
@@ -23,14 +23,11 @@ public:
 
 CollectionPropertiesPage::CollectionPropertiesPage(QWidget *parent)
     : QWidget(parent)
-    , d(new Private)
+    , d(new CollectionPropertiesPagePrivate)
 {
 }
 
-CollectionPropertiesPage::~CollectionPropertiesPage()
-{
-    delete d;
-}
+CollectionPropertiesPage::~CollectionPropertiesPage() = default;
 
 bool CollectionPropertiesPage::canHandle(const Collection &collection) const
 {

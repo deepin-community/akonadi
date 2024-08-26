@@ -597,7 +597,11 @@ bool QSQLiteDriver::open(const QString &db, const QString &, const QString &, co
     for (const QString &option : opts) {
         if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT="))) {
             bool ok;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            const int nt = QStringView(option).mid(21).toInt(&ok);
+#else
             const int nt = option.midRef(21).toInt(&ok);
+#endif
             if (ok) {
                 timeout = nt;
             }
@@ -640,12 +644,13 @@ void QSQLiteDriver::close()
     Q_D(QSQLiteDriver);
 
     if (isOpen()) {
-        Q_FOREACH (QSQLiteResult *result, d->results) {
+        for (QSQLiteResult *result : std::as_const(d->results)) {
             result->d_func()->finalize();
         }
 
-        if (sqlite3_close(d->access) != SQLITE_OK)
+        if (sqlite3_close(d->access) != SQLITE_OK) {
             setLastError(qMakeError(d->access, tr("Error closing database"), QSqlError::ConnectionError));
+        }
         d->access = nullptr;
         setOpen(false);
         setOpenError(false);

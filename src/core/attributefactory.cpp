@@ -6,6 +6,7 @@
 
 #include "attributefactory.h"
 
+#include "collectionidentificationattribute.h"
 #include "collectionquotaattribute.h"
 #include "collectionrightsattribute_p.h"
 #include "entityannotationsattribute.h"
@@ -88,6 +89,7 @@ public:
             AttributeFactory::registerAttribute<EntityAnnotationsAttribute>();
             AttributeFactory::registerAttribute<TagAttribute>();
             AttributeFactory::registerAttribute<FavoriteCollectionAttribute>();
+            AttributeFactory::registerAttribute<CollectionIdentificationAttribute>();
         }
     }
     bool initialized = false;
@@ -102,7 +104,7 @@ using Akonadi::Internal::s_attributeInstance;
 /**
  * @internal
  */
-class Q_DECL_HIDDEN AttributeFactory::Private
+class AttributeFactoryPrivate
 {
 public:
     std::unordered_map<QByteArray, std::unique_ptr<Attribute>> attributes;
@@ -115,7 +117,7 @@ AttributeFactory *AttributeFactory::self()
 }
 
 AttributeFactory::AttributeFactory()
-    : d(std::make_unique<Private>())
+    : d(new AttributeFactoryPrivate())
 {
 }
 

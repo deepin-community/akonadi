@@ -14,6 +14,8 @@
 #include <QAbstractItemModel>
 #include <QStringList>
 
+#include <memory>
+
 namespace Akonadi
 {
 class CollectionStatistics;
@@ -72,7 +74,7 @@ class EntityTreeModelPrivate;
  *
  *   Monitor *monitor = new Monitor( this );
  *   monitor->setCollectionMonitored( Collection::root() );
- *   monitor->setMimeTypeMonitored( KContacts::addresseeMimeType() );
+ *   monitor->setMimeTypeMonitored( KContacts::Addressee::mimeType() );
  *   monitor->setSession( session );
  *
  *   EntityTreeModel *model = new EntityTreeModel( monitor, this );
@@ -85,10 +87,10 @@ class EntityTreeModelPrivate;
  * The EntityTreeModel will show items of a different type by changing the line
  *
  * @code
- * monitor->setMimeTypeMonitored( KContacts::addresseeMimeType() );
+ * monitor->setMimeTypeMonitored( KContacts::Addressee::mimeType() );
  * @endcode
  *
- * to a different mimetype. KContacts::addresseeMimeType() is an alias for "text/directory". If changed to KMime::Message::mimeType()
+ * to a different mimetype. KContacts::Addressee::mimeType() is an alias for "text/directory". If changed to KMime::Message::mimeType()
  * (an alias for "message/rfc822") the model would instead contain emails. The model can be configured to contain items of any mimetype
  * known to %Akonadi.
  *
@@ -255,7 +257,7 @@ class EntityTreeModelPrivate;
  *
  * Additionally, the actual data shown in the rows of the model should be type specific.
  *
- * In summary, it must be possible to have different numbers of columns, different data in hte rows of those columns, and different
+ * In summary, it must be possible to have different numbers of columns, different data in the rows of those columns, and different
  * titles for each column depending on the contents of the view.
  *
  * The way this is accomplished is by using the EntityMimeTypeFilterModel for splitting the model into a "CollectionTree" and an "Item List"
@@ -662,7 +664,7 @@ protected:
 protected:
     /// @cond PRIVATE
     Q_DECLARE_PRIVATE(EntityTreeModel)
-    EntityTreeModelPrivate *d_ptr;
+    std::unique_ptr<EntityTreeModelPrivate> const d_ptr;
     EntityTreeModel(Monitor *monitor, EntityTreeModelPrivate *d, QObject *parent = nullptr);
     /// @endcond
 
@@ -714,4 +716,3 @@ private:
 };
 
 } // namespace
-

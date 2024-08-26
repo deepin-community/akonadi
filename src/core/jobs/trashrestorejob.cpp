@@ -9,16 +9,12 @@
 #include "entitydeletedattribute.h"
 #include "job_p.h"
 
-#include "trashsettings.h"
-
 #include <KLocalizedString>
 
-#include "collectiondeletejob.h"
 #include "collectionfetchjob.h"
 #include "collectionfetchscope.h"
 #include "collectionmodifyjob.h"
 #include "collectionmovejob.h"
-#include "itemdeletejob.h"
 #include "itemfetchjob.h"
 #include "itemfetchscope.h"
 #include "itemmodifyjob.h"
@@ -30,7 +26,7 @@
 
 using namespace Akonadi;
 
-class TrashRestoreJob::TrashRestoreJobPrivate : public JobPrivate
+class Akonadi::TrashRestoreJobPrivate : public JobPrivate
 {
 public:
     explicit TrashRestoreJobPrivate(TrashRestoreJob *parent)
@@ -59,7 +55,7 @@ public:
     QHash<Collection, Item::List> restoreCollections; // groups items to target restore collections
 };
 
-void TrashRestoreJob::TrashRestoreJobPrivate::selectResult(KJob *job)
+void TrashRestoreJobPrivate::selectResult(KJob *job)
 {
     Q_Q(TrashRestoreJob);
     if (job->error()) {
@@ -73,7 +69,7 @@ void TrashRestoreJob::TrashRestoreJobPrivate::selectResult(KJob *job)
     }
 }
 
-void TrashRestoreJob::TrashRestoreJobPrivate::targetCollectionFetched(KJob *job)
+void TrashRestoreJobPrivate::targetCollectionFetched(KJob *job)
 {
     Q_Q(TrashRestoreJob);
 
@@ -147,7 +143,7 @@ void TrashRestoreJob::TrashRestoreJobPrivate::targetCollectionFetched(KJob *job)
     }
 }
 
-void TrashRestoreJob::TrashRestoreJobPrivate::itemsReceived(const Akonadi::Item::List &items)
+void TrashRestoreJobPrivate::itemsReceived(const Akonadi::Item::List &items)
 {
     Q_Q(TrashRestoreJob);
     if (items.isEmpty()) {
@@ -197,7 +193,7 @@ void TrashRestoreJob::TrashRestoreJobPrivate::itemsReceived(const Akonadi::Item:
     }
 }
 
-void TrashRestoreJob::TrashRestoreJobPrivate::collectionsReceived(const Akonadi::Collection::List &collections)
+void TrashRestoreJobPrivate::collectionsReceived(const Akonadi::Collection::List &collections)
 {
     Q_Q(TrashRestoreJob);
     if (collections.isEmpty()) {
@@ -244,10 +240,14 @@ void TrashRestoreJob::TrashRestoreJobPrivate::collectionsReceived(const Akonadi:
     });
 }
 
-void TrashRestoreJob::TrashRestoreJobPrivate::removeAttribute(const Akonadi::Collection::List &list)
+void TrashRestoreJobPrivate::removeAttribute(const Akonadi::Collection::List &list)
 {
     Q_Q(TrashRestoreJob);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QVectorIterator<Collection> i(list);
+#else
+    QListIterator<Collection> i(list);
+#endif
     while (i.hasNext()) {
         Collection col = i.next();
         col.removeAttribute<EntityDeletedAttribute>();
@@ -268,11 +268,15 @@ void TrashRestoreJob::TrashRestoreJobPrivate::removeAttribute(const Akonadi::Col
     }
 }
 
-void TrashRestoreJob::TrashRestoreJobPrivate::removeAttribute(const Akonadi::Item::List &list)
+void TrashRestoreJobPrivate::removeAttribute(const Akonadi::Item::List &list)
 {
     Q_Q(TrashRestoreJob);
     Item::List items = list;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMutableVectorIterator<Item> i(items);
+#else
+    QMutableListIterator<Item> i(items);
+#endif
     while (i.hasNext()) {
         Item &item = i.next();
         item.removeAttribute<EntityDeletedAttribute>();

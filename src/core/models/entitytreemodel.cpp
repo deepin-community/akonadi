@@ -18,13 +18,11 @@
 #include <QUrl>
 #include <QUrlQuery>
 
-#include "attributefactory.h"
 #include "collectionmodifyjob.h"
 #include "entitydisplayattribute.h"
 #include "itemmodifyjob.h"
 #include "monitor.h"
 #include "session.h"
-#include "transactionsequence.h"
 
 #include "collectionutils.h"
 
@@ -58,8 +56,6 @@ EntityTreeModel::~EntityTreeModel()
     for (const QList<Node *> &list : std::as_const(d->m_childEntities)) {
         qDeleteAll(list);
     }
-
-    delete d_ptr;
 }
 
 CollectionFetchScope::ListFilter EntityTreeModel::listFilter() const
@@ -847,7 +843,7 @@ bool EntityTreeModel::hasChildren(const QModelIndex &parent) const
     // There is probably no way to tell if a collection
     // has child items in akonadi without first attempting an itemFetchJob...
     // Figure out a way to fix this. (Statistics)
-    return ((rowCount(parent) > 0) || (canFetchMore(parent) && d->m_itemPopulation == LazyPopulation));
+    return ((rowCount(parent) > 0) || (d->canFetchMore(parent) && d->m_itemPopulation == LazyPopulation));
 }
 
 bool EntityTreeModel::isCollectionTreeFetched() const

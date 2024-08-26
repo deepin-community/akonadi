@@ -1,5 +1,5 @@
 /*
-  SPDX-FileCopyrightText: 2015-2021 Laurent Montel <montel@kde.org>
+  SPDX-FileCopyrightText: 2015-2022 Laurent Montel <montel@kde.org>
 
   SPDX-License-Identifier: LGPL-2.0-or-later
   */
@@ -7,11 +7,17 @@
 #pragma once
 
 #include "akonadiwidgets_export.h"
-#include "tag.h"
+// AkonadiCore
+#include <akonadi/tag.h>
+
 #include <QWidget>
+
+#include <memory>
 
 namespace Akonadi
 {
+class TagSelectWidgetPrivate;
+
 /**
  * A widget that offers facilities to add/remove tags and provides a way to select tags.
  *
@@ -23,7 +29,7 @@ class AKONADIWIDGETS_EXPORT TagSelectWidget : public QWidget
     Q_OBJECT
 public:
     explicit TagSelectWidget(QWidget *parent = nullptr);
-    ~TagSelectWidget();
+    ~TagSelectWidget() override;
 
     void setSelection(const Akonadi::Tag::List &tags);
     Q_REQUIRED_RESULT Akonadi::Tag::List selection() const;
@@ -40,9 +46,7 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    QScopedPointer<Private> const d;
+    std::unique_ptr<TagSelectWidgetPrivate> const d;
     /// @endcond
 };
 }
-

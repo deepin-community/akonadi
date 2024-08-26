@@ -10,9 +10,13 @@
 
 #include "akonadiwidgets_export.h"
 
+#include <memory>
+
 namespace Akonadi
 {
 class AgentInstance;
+class AgentConfigurationDialogPrivate;
+
 class AKONADIWIDGETS_EXPORT AgentConfigurationDialog : public QDialog
 {
     Q_OBJECT
@@ -23,9 +27,7 @@ public:
     void accept() override;
 
 private:
-    class Private;
-    const QScopedPointer<Private> d;
+    std::unique_ptr<AgentConfigurationDialogPrivate> const d;
 };
 
 }
-

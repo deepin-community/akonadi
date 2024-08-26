@@ -38,7 +38,8 @@ private Q_SLOTS:
         auto list = new CollectionFetchJob(Collection(1), CollectionFetchJob::Recursive, this);
         AKVERIFYEXEC(list);
         Collection col;
-        foreach (const Collection &c, list->collections()) {
+        const Collection::List fetchedCollections = list->collections();
+        for (const Collection &c : fetchedCollections) {
             if (c.name() == QLatin1String("linkTestFolder")) {
                 col = c;
             }
@@ -86,8 +87,9 @@ private Q_SLOTS:
         auto fetch = new ItemFetchJob(col);
         AKVERIFYEXEC(fetch);
         QCOMPARE(fetch->items().count(), 3);
-        foreach (const Item &item, fetch->items()) {
-            QVERIFY(items.contains(item));
+        const Item::List fetchedItems = fetch->items();
+        for (const Item &fetchedItem : fetchedItems) {
+            QVERIFY(items.contains(fetchedItem));
         }
 
         auto unlink = new UnlinkJob(col, items, this);

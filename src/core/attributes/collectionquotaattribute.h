@@ -13,6 +13,8 @@
 
 namespace Akonadi
 {
+class CollectionQuotaAttributePrivate;
+
 /**
  * @short Attribute that provides quota information for a collection.
  *
@@ -88,10 +90,8 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    const std::unique_ptr<Private> d;
+    const std::unique_ptr<CollectionQuotaAttributePrivate> d;
     /// @endcond
 };
 
 } // namespace Akonadi
-

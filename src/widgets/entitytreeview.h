@@ -1,7 +1,7 @@
 /*
     SPDX-FileCopyrightText: 2006-2007 Volker Krause <vkrause@kde.org>
     SPDX-FileCopyrightText: 2008 Stephen Kelly <steveire@gmail.com>
-    SPDX-FileCopyrightText: 2012-2021 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2012-2022 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -12,6 +12,8 @@
 
 #include <QTreeView>
 
+#include <memory>
+
 class KXMLGUIClient;
 class QDragMoveEvent;
 
@@ -19,6 +21,7 @@ namespace Akonadi
 {
 class Collection;
 class Item;
+class EntityTreeViewPrivate;
 
 /**
  * @short A view to show an item/collection tree provided by an EntityTreeModel.
@@ -215,10 +218,8 @@ protected:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<EntityTreeViewPrivate> const d;
     /// @endcond
 };
 
 }
-

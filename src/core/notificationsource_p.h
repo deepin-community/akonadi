@@ -24,7 +24,7 @@ class AKONADI_TESTS_EXPORT NotificationSource : public QObject
 
 public:
     explicit NotificationSource(QObject *source);
-    ~NotificationSource();
+    ~NotificationSource() override;
 
     QString identifier() const;
 
@@ -43,4 +43,3 @@ public:
 };
 
 }
-

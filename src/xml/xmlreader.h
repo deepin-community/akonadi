@@ -9,8 +9,9 @@
 
 #include "akonadi-xml_export.h"
 
-#include "collection.h"
-#include "item.h"
+// AkonadiCore
+#include <akonadi/collection.h>
+#include <akonadi/item.h>
 
 #include <QDomElement>
 
@@ -68,4 +69,3 @@ Q_REQUIRED_RESULT AKONADI_XML_EXPORT Item elementToItem(const QDomElement &elem,
 }
 
 }
-

@@ -7,8 +7,12 @@
 #pragma once
 
 #include "akonadi-xml_export.h"
-#include "collection.h"
-#include "job.h"
+// AkonadiCore
+#include <akonadi/collection.h>
+#include <akonadi/job.h>
+
+#include <memory>
+
 namespace Akonadi
 {
 class Collection;
@@ -29,10 +33,11 @@ protected:
     /* reimpl. */ void doStart() override;
 
 private:
-    friend class XmlWriteJobPrivate;
-    XmlWriteJobPrivate *const d;
     void done();
+
+private:
+    friend class XmlWriteJobPrivate;
+    std::unique_ptr<XmlWriteJobPrivate> const d;
 };
 
 }
-

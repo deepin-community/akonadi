@@ -121,7 +121,7 @@ void KnutResource::retrieveCollections()
     const Collection::List collections = mDocument.collections();
     collectionsRetrieved(collections);
     const Tag::List tags = mDocument.tags();
-    Q_FOREACH (const Tag &tag, tags) {
+    for (const Tag &tag : tags) {
         auto createjob = new TagCreateJob(tag);
         createjob->setMergeIfExisting(true);
     }
@@ -336,7 +336,8 @@ QSet<qint64> KnutResource::parseQuery(const QString &queryString)
 {
     QSet<qint64> resultSet;
     Akonadi::SearchQuery query = Akonadi::SearchQuery::fromJSON(queryString.toLatin1());
-    foreach (const Akonadi::SearchTerm &term, query.term().subTerms()) {
+    const QList<SearchTerm> subTerms = query.term().subTerms();
+    for (const Akonadi::SearchTerm &term : subTerms) {
         if (term.key() == QLatin1String("resource")) {
             resultSet << term.value().toInt();
         }

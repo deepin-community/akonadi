@@ -5,7 +5,6 @@
 */
 
 #include "agentconfigurationbase.h"
-#include "agentmanager.h"
 #include "akonadicore_debug.h"
 
 #include <KAboutData>
@@ -13,10 +12,10 @@
 
 namespace Akonadi
 {
-class Q_DECL_HIDDEN AgentConfigurationBase::Private
+class AgentConfigurationBasePrivate
 {
 public:
-    Private(const KSharedConfigPtr &config, QWidget *parentWidget, const QVariantList &args)
+    AgentConfigurationBasePrivate(const KSharedConfigPtr &config, QWidget *parentWidget, const QVariantList &args)
         : config(config)
         , parentWidget(parentWidget)
     {
@@ -31,7 +30,7 @@ public:
     KSharedConfigPtr config;
     QString identifier;
     QScopedPointer<KAboutData> aboutData;
-    QWidget *parentWidget = nullptr;
+    QWidget *const parentWidget;
 };
 } // namespace Akonadi
 
@@ -39,7 +38,7 @@ using namespace Akonadi;
 
 AgentConfigurationBase::AgentConfigurationBase(const KSharedConfigPtr &config, QWidget *parentWidget, const QVariantList &args)
     : QObject(reinterpret_cast<QObject *>(parentWidget))
-    , d(new Private(config, parentWidget, args))
+    , d(new AgentConfigurationBasePrivate(config, parentWidget, args))
 {
 }
 

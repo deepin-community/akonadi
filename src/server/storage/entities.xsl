@@ -11,7 +11,7 @@
 <xsl:include href="entities-header.xsl"/>
 <xsl:include href="entities-source.xsl"/>
 
-<!-- select wether to generate header or implementation code. -->
+<!-- select whether to generate header or implementation code. -->
 <xsl:param name="code">header</xsl:param>
 
 <xsl:template match="/">
@@ -32,10 +32,14 @@
 #include &lt;QtCore/QSharedDataPointer&gt;
 #include &lt;QtCore/QString&gt;
 #include &lt;QtCore/QVariant&gt;
-
+#include &lt;QtCore/QStringList&gt;
+#if QT_VERSION &lt; QT_VERSION_CHECK(6, 0, 0)
 template &lt;typename T&gt; class QVector;
+#else
+template &lt;typename T&gt; class QList;
+#endif
+
 class QSqlQuery;
-class QStringList;
 
 namespace Akonadi {
 namespace Server {

@@ -13,6 +13,8 @@
 
 namespace Akonadi
 {
+class CollectionStatisticsPrivate;
+
 /**
  * @short Provides statistics information of a Collection.
  *
@@ -130,8 +132,7 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    QSharedDataPointer<Private> d;
+    QSharedDataPointer<CollectionStatisticsPrivate> d;
     /// @endcond
 };
 
@@ -143,4 +144,3 @@ private:
 AKONADICORE_EXPORT QDebug operator<<(QDebug d, const Akonadi::CollectionStatistics &);
 
 Q_DECLARE_METATYPE(Akonadi::CollectionStatistics)
-

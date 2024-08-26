@@ -28,7 +28,7 @@ public:
         m_fakeSession->setAsDefaultSession();
     }
 
-    ~MonitorNotificationTest()
+    ~MonitorNotificationTest() override
     {
         delete m_fakeSession;
     }
@@ -43,9 +43,12 @@ private Q_SLOTS:
     void testMonitor_data();
 
 private:
-    template<typename MonitorImpl> void testSingleMessage_impl(MonitorImpl *monitor, FakeCollectionCache *collectionCache, FakeItemCache *itemCache);
-    template<typename MonitorImpl> void testFillPipeline_impl(MonitorImpl *monitor, FakeCollectionCache *collectionCache, FakeItemCache *itemCache);
-    template<typename MonitorImpl> void testMonitor_impl(MonitorImpl *monitor, FakeCollectionCache *collectionCache, FakeItemCache *itemCache);
+    template<typename MonitorImpl>
+    void testSingleMessage_impl(MonitorImpl *monitor, FakeCollectionCache *collectionCache, FakeItemCache *itemCache);
+    template<typename MonitorImpl>
+    void testFillPipeline_impl(MonitorImpl *monitor, FakeCollectionCache *collectionCache, FakeItemCache *itemCache);
+    template<typename MonitorImpl>
+    void testMonitor_impl(MonitorImpl *monitor, FakeCollectionCache *collectionCache, FakeItemCache *itemCache);
 
 private:
     FakeSession *m_fakeSession = nullptr;
@@ -179,7 +182,7 @@ void MonitorNotificationTest::testFillPipeline_impl(MonitorImpl *monitor, FakeCo
     QVERIFY(monitor->pipeline().isEmpty());
     QVERIFY(monitor->pendingNotifications().isEmpty());
 
-    Q_FOREACH (const Protocol::ChangeNotificationPtr &ntf, list) {
+    for (const Protocol::ChangeNotificationPtr &ntf : std::as_const(list)) {
         monitor->notificationConnection()->emitNotify(ntf);
     }
 
@@ -266,7 +269,7 @@ void MonitorNotificationTest::testMonitor_impl(MonitorImpl *monitor, FakeCollect
     QTRY_VERIFY(monitor->pipeline().isEmpty());
     QVERIFY(monitor->pendingNotifications().isEmpty());
 
-    Q_FOREACH (const Protocol::ChangeNotificationPtr &ntf, list) {
+    for (const Protocol::ChangeNotificationPtr &ntf : std::as_const(list)) {
         monitor->notificationConnection()->emitNotify(ntf);
     }
 

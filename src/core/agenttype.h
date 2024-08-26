@@ -19,6 +19,8 @@ using QVariantMap = QMap<QString, QVariant>;
 
 namespace Akonadi
 {
+class AgentTypePrivate;
+
 /**
  * @short A representation of an agent type.
  *
@@ -125,8 +127,7 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    QSharedDataPointer<Private> d;
+    QSharedDataPointer<AgentTypePrivate> d;
     /// @endcond
 };
 
@@ -135,4 +136,3 @@ private:
 Q_DECLARE_TYPEINFO(Akonadi::AgentType, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Akonadi::AgentType)
-

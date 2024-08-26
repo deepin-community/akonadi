@@ -11,9 +11,10 @@
 
 #include "agentbase.h"
 #include "akonadiagentbase_export.h"
-#include "collection.h"
-#include "item.h"
-#include "itemsync.h"
+// AkonadiCore
+#include <akonadi/collection.h>
+#include <akonadi/item.h>
+#include <akonadi/itemsync.h>
 
 class KJob;
 class Akonadi__ResourceAdaptor;
@@ -162,7 +163,8 @@ public:
      * @param argc number of arguments
      * @param argv string arguments
      */
-    template<typename T> static int init(int argc, char **argv)
+    template<typename T>
+    static int init(int argc, char **argv)
     {
         // Disable session management
         qunsetenv("SESSION_MANAGER");
@@ -341,6 +343,12 @@ protected Q_SLOTS:
      * Retrieve given @p items from the backend.
      * Add the requested payload parts and call itemsRetrieved() when done.
      * It is guaranteed that all @p items in the list belong to the same Collection.
+     *
+     * If the items are retrieved synchronously in this method, in case of an error
+     * emit error(const QString &) and  return @c false, which will cancel the current task.
+     * If the items are retrieved asynchronously, in case of an non-immediate error you need
+     * to call cancelTask() or cancelTask(const QString&) in the respective handler methods
+     * explicitly.
      *
      * @param items The items whose payload should be retrieved. Use those objects
      * when delivering the result instead of creating new items to ensure conflict
@@ -578,19 +586,6 @@ protected:
      * @since 4.14.11
      */
     void setItemMergingMode(ItemSync::MergeMode mode);
-
-    /**
-     * Set the fetch scope applied for item synchronization.
-     * By default, the one set on the changeRecorder() is used. However, it can make sense
-     * to specify a specialized fetch scope for synchronization to improve performance.
-     * The rule of thumb is to remove anything from this fetch scope that does not provide
-     * additional information regarding whether and item has changed or not. This is primarily
-     * relevant for backends not supporting incremental retrieval.
-     * @param fetchScope The fetch scope to use by the internal Akonadi::ItemSync instance.
-     * @see Akonadi::ItemSync
-     * @since 4.6
-     */
-    void setItemSynchronizationFetchScope(const ItemFetchScope &fetchScope);
 
     /**
      * Call this method to supply incrementally retrieved items from the remote server.
@@ -877,4 +872,3 @@ private:
         return Akonadi::ResourceBase::init<resourceClass>(argc, argv);                                                                                         \
     }
 #endif
-

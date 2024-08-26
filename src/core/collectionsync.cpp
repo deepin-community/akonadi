@@ -107,10 +107,10 @@ QDebug operator<<(QDebug s, const RemoteId &rid)
 /**
  * @internal
  */
-class CollectionSync::Private
+class Akonadi::CollectionSyncPrivate
 {
 public:
-    explicit Private(CollectionSync *parent)
+    explicit CollectionSyncPrivate(CollectionSync *parent)
         : q(parent)
         , pendingJobs(0)
         , progress(0)
@@ -125,7 +125,7 @@ public:
     {
     }
 
-    ~Private()
+    ~CollectionSyncPrivate()
     {
     }
 
@@ -257,7 +257,7 @@ public:
                                     auto remoteIt = std::find_if(
                                         remoteChildren.begin(),
                                         remoteChildren.end(),
-                                        std::bind(&CollectionSync::Private::matchLocalAndRemoteCollection, this, parent.first, std::placeholders::_1));
+                                        std::bind(&CollectionSyncPrivate::matchLocalAndRemoteCollection, this, parent.first, std::placeholders::_1));
                                     if (remoteIt != remoteChildren.end()) {
                                         remoteParent = *remoteIt;
                                         remoteEnd = remoteChildren.erase(remoteIt);
@@ -504,7 +504,7 @@ public:
             Q_ASSERT(remoteCollectionsToCreate.isEmpty());
             if (!remoteCollections.isEmpty()) {
                 currentTransaction->rollback();
-                q->setError(Unknown);
+                q->setError(CollectionSync::Unknown);
                 q->setErrorText(i18n("Found unresolved orphan collections"));
                 qCWarning(AKONADICORE_LOG) << "found unresolved orphan collection";
                 emitResult();
@@ -550,7 +550,8 @@ public:
             if (ignoreAttributeChanges(remote, CONTENTMIMETYPES)) {
                 upd.setContentMimeTypes(local.contentMimeTypes());
             }
-            Q_FOREACH (Attribute *remoteAttr, upd.attributes()) {
+            const auto remoteAttributes = upd.attributes();
+            for (Attribute *remoteAttr : remoteAttributes) {
                 if (ignoreAttributeChanges(remote, remoteAttr->type()) && local.hasAttribute(remoteAttr->type())) {
                     // We don't want to overwrite the attribute changes with the defaults provided by the resource.
                     const Attribute *localAttr = local.attribute(remoteAttr->type());
@@ -614,7 +615,7 @@ public:
             ++pendingJobs;
             Q_ASSERT(currentTransaction);
             auto job = new CollectionDeleteJob(col, currentTransaction);
-            connect(job, &KJob::result, q, [this](KJob *job) {
+            QObject::connect(job, &KJob::result, q, [this](KJob *job) {
                 deleteLocalCollectionsResult(job);
             });
 
@@ -648,7 +649,7 @@ public:
         }
 
         if (!remoteCollections.isEmpty()) {
-            q->setError(Unknown);
+            q->setError(CollectionSync::Unknown);
             q->setErrorText(i18n("Found unresolved orphan collections"));
         }
         emitResult();
@@ -664,7 +665,7 @@ public:
                 // try again. This way we make sure we don't emit result() signal
                 // while there is still a Transaction job running
                 KJob *subjob = q->subjobs().at(0);
-                connect(
+                QObject::connect(
                     subjob,
                     &KJob::result,
                     q,
@@ -780,16 +781,13 @@ public:
 
 CollectionSync::CollectionSync(const QString &resourceId, QObject *parent)
     : Job(parent)
-    , d(new Private(this))
+    , d(new CollectionSyncPrivate(this))
 {
     d->resourceId = resourceId;
     setTotalAmount(KJob::Bytes, 0);
 }
 
-CollectionSync::~CollectionSync()
-{
-    delete d;
-}
+CollectionSync::~CollectionSync() = default;
 
 void CollectionSync::setRemoteCollections(const Collection::List &remoteCollections)
 {

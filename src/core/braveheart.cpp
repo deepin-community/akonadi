@@ -6,14 +6,17 @@
 
 #include <config-akonadi.h>
 
-#ifdef HAVE_MALLOC_TRIM
+#if HAVE_MALLOC_TRIM
 
 #include <QCoreApplication>
 #include <QThread>
 #include <QTimer>
 #include <QVariant>
 
+#include <chrono>
 #include <malloc.h>
+
+using namespace std::chrono_literals;
 
 namespace Akonadi
 {
@@ -35,7 +38,7 @@ private:
             malloc_trim(50 * 1024 * 1024);
         });
         // Fight for freedom every 15 minutes
-        freedom->start(15 * 60 * 1000);
+        freedom->start(15min);
         qApp->setProperty("__Akonadi__Braveheart", true);
     }
 

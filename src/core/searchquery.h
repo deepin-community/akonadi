@@ -12,6 +12,8 @@
 
 namespace Akonadi
 {
+class SearchTermPrivate;
+
 /**
  * Search term represents the actual condition within query.
  *
@@ -101,9 +103,10 @@ public:
     Q_REQUIRED_RESULT bool isNegated() const;
 
 private:
-    class Private;
-    QSharedDataPointer<Private> d;
+    QSharedDataPointer<SearchTermPrivate> d;
 };
+
+class SearchQueryPrivate;
 
 /**
  * @brief A query that can be passed to ItemSearchJob or others.
@@ -164,8 +167,7 @@ public:
     static SearchQuery fromJSON(const QByteArray &json);
 
 private:
-    class Private;
-    QSharedDataPointer<Private> d;
+    QSharedDataPointer<SearchQueryPrivate> d;
 };
 
 /**
@@ -199,7 +201,7 @@ public:
         HeaderXMailingList,
         HeaderXSpamFlag,
         HeaderDate, // Expects QDateTime
-        HeaderOnlyDate, // Expectes QDate
+        HeaderOnlyDate, // Expects QDate
         MessageStatus, // Expects message flag from Akonadi::MessageFlags. Boolean filter.
         ByteSize, // Expects int
         Attachment, // Textsearch on attachment
@@ -287,4 +289,3 @@ public:
 };
 
 }
-

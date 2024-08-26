@@ -1,4 +1,17 @@
+if (BUILD_QCH)
+    ecm_install_qch_export(
+        TARGETS KF5AkonadiWidgets_QCH
+        FILE KF5AkonadiWidgetsQchTargets.cmake
+        DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
+        COMPONENT Devel
+    )
+    set(PACKAGE_INCLUDE_QCHTARGETS "include(\"\${CMAKE_CURRENT_LIST_DIR}/KF5AkonadiWidgetsQchTargets.cmake\")")
+endif()
+
 configure_file(akonadiwidgetstests_export.h.in "${CMAKE_CURRENT_BINARY_DIR}/akonadiwidgetstests_export.h")
+
+# base install include dir
+set(AkonadiWidgets_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiWidgets")
 
 add_library(KF5AkonadiWidgets)
 add_library(KF5::AkonadiWidgets ALIAS KF5AkonadiWidgets)
@@ -21,7 +34,6 @@ target_sources(KF5AkonadiWidgets PRIVATE
     collectionpropertiespage.cpp
     collectionrequester.cpp
     collectionstatisticsdelegate.cpp
-    collectionview.cpp
     conflictresolvedialog.cpp
     controlgui.cpp
     dragdropmanager.cpp
@@ -29,7 +41,6 @@ target_sources(KF5AkonadiWidgets PRIVATE
     entitytreeview.cpp
     erroroverlay.cpp
     etmviewstatesaver.cpp
-    itemview.cpp
     manageaccountwidget.cpp
     progressspinnerdelegate.cpp
     recentcollectionaction.cpp
@@ -43,7 +54,50 @@ target_sources(KF5AkonadiWidgets PRIVATE
     tagselectiondialog.cpp
     tagwidget.cpp
     tagselectwidget.cpp
-)
+
+    actionstatemanager_p.h
+    agentactionmanager.h
+    agentconfigurationdialog.h
+    agentconfigurationwidget.h
+    agentinstancewidget.h
+    agenttypedialog.h
+    agenttypewidget.h
+    cachepolicypage.h
+    collectioncombobox.h
+    collectiondialog.h
+    collectiongeneralpropertiespage_p.h
+    collectionmaintenancepage.h
+    collectionpropertiesdialog.h
+    collectionpropertiespage.h
+    collectionrequester.h
+    collectionstatisticsdelegate.h
+    conflictresolvedialog_p.h
+    controlgui.h
+    dragdropmanager_p.h
+    entitylistview.h
+    entitytreeview.h
+    erroroverlay_p.h
+    etmviewstatesaver.h
+    manageaccountwidget.h
+    progressspinnerdelegate_p.h
+    recentcollectionaction_p.h
+    renamefavoritedialog_p.h
+    standardactionmanager.h
+    selftestdialog.h
+    subscriptiondialog.h
+    tageditwidget.h
+    tagmanagementdialog.h
+    tagselectioncombobox.h
+    tagselectiondialog.h
+    tagwidget.h
+    tagselectwidget.h
+
+    clearcachejob.cpp
+    clearcachejob.h
+
+    dbaccess.cpp
+    dbaccess.h
+    )
 
 ecm_qt_declare_logging_category(KF5AkonadiWidgets HEADER akonadiwidgets_debug.h IDENTIFIER AKONADIWIDGETS_LOG CATEGORY_NAME org.kde.pim.akonadiwidgets
         DESCRIPTION "akonadi (Akonadi Widget Library)"
@@ -68,7 +122,7 @@ set(akonadiwidgets_UI
     tagwidget.ui
 )
 
-ecm_generate_headers(AkonadiWidgets_HEADERS
+ecm_generate_headers(AkonadiWidgets_CC_HEADERS
     HEADER_NAMES
     AgentActionManager
     AgentConfigurationDialog
@@ -76,6 +130,7 @@ ecm_generate_headers(AkonadiWidgets_HEADERS
     AgentInstanceWidget
     AgentTypeDialog
     AgentTypeWidget
+    ClearCacheJob
     CollectionComboBox
     CollectionDialog
     CollectionPropertiesDialog
@@ -83,12 +138,11 @@ ecm_generate_headers(AkonadiWidgets_HEADERS
     CollectionMaintenancePage
     CollectionRequester
     CollectionStatisticsDelegate
-    CollectionView
     ControlGui
+    DbAccess
     EntityListView
     EntityTreeView
     ETMViewStateSaver
-    ItemView
     ManageAccountWidget
     StandardActionManager
     SubscriptionDialog
@@ -99,6 +153,7 @@ ecm_generate_headers(AkonadiWidgets_HEADERS
     TagWidget
     TagSelectWidget
     REQUIRED_HEADERS AkonadiWidgets_HEADERS
+    PREFIX Akonadi
 )
 
 ki18n_wrap_ui(KF5AkonadiWidgets ${akonadiwidgets_UI})
@@ -109,7 +164,7 @@ endif()
 generate_export_header(KF5AkonadiWidgets BASE_NAME akonadiwidgets)
 
 
-target_include_directories(KF5AkonadiWidgets INTERFACE "$<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR_KF5}/AkonadiWidgets>")
+target_include_directories(KF5AkonadiWidgets INTERFACE "$<INSTALL_INTERFACE:${AkonadiWidgets_INSTALL_INCLUDEDIR}>")
 
 target_link_libraries(KF5AkonadiWidgets
 PUBLIC
@@ -118,6 +173,7 @@ PUBLIC
     Qt::Widgets
     KF5::ConfigWidgets
 PRIVATE
+    KF5::KIOCore
     KF5::I18n
     KF5::IconThemes
     KF5::XmlGui
@@ -140,13 +196,19 @@ ecm_generate_pri_file(BASE_NAME AkonadiWidgets
 
 install(TARGETS
     KF5AkonadiWidgets
-    EXPORT KF5AkonadiTargets ${KF5_INSTALL_TARGETS_DEFAULT_ARGS}
+    EXPORT KF5AkonadiTargets ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/akonadiwidgets_export.h
     ${AkonadiWidgets_HEADERS}
-    DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF5}/AkonadiWidgets COMPONENT Devel
+    DESTINATION ${AkonadiWidgets_INSTALL_INCLUDEDIR}/akonadi
+    COMPONENT Devel
+)
+install(FILES
+    ${AkonadiWidgets_CC_HEADERS}
+    DESTINATION ${AkonadiWidgets_INSTALL_INCLUDEDIR}/Akonadi
+    COMPONENT Devel
 )
 
 install(FILES
@@ -160,25 +222,25 @@ install(FILES
 if(BUILD_DESIGNERPLUGIN)
     include(ECMAddQtDesignerPlugin)
     ecm_qtdesignerplugin_widget(Akonadi::AgentInstanceWidget
-        INCLUDE_FILE "agentinstancewidget.h"
+	    INCLUDE_FILE "Akonadi/AgentInstanceWidget"
         TOOLTIP "Akonadi Agent Instance Settings (Akonadi)"
         WHATSTHIS "A widget to configure akonadi instance."
         GROUP "Input (KDE-PIM)"
     )
     ecm_qtdesignerplugin_widget(Akonadi::EntityTreeView
-        INCLUDE_FILE "entitytreeview.h"
+	    INCLUDE_FILE "Akonadi/EntityTreeView"
         TOOLTIP "A view to show an item/collection tree provided by an EntityTreeModel (Akonadi)"
         WHATSTHIS "A view to show an item/collection tree provided by an EntityTreeModel."
         GROUP "Input (KDE-PIM)"
     )
     ecm_qtdesignerplugin_widget(Akonadi::TagSelectWidget
-        INCLUDE_FILE "tagselectwidget.h"
+	    INCLUDE_FILE "Akonadi/TagSelectWidget"
         TOOLTIP "A Widget to select tag (Akonadi)"
         WHATSTHIS "A Widget to select tag."
         GROUP "Input (KDE-PIM)"
     )
     ecm_qtdesignerplugin_widget(Akonadi::ManageAccountWidget
-        INCLUDE_FILE "manageaccountwidget.h"
+	    INCLUDE_FILE "Akonadi/ManageAccountWidget"
         TOOLTIP "A Widget to Manage Akonadi Account (KDE-PIM)"
         WHATSTHIS "A Widget to Manage Akonadi Account."
         GROUP "Input (KDE-PIM)"
@@ -196,6 +258,31 @@ if(BUILD_DESIGNERPLUGIN)
         KF5::AkonadiCore
         KF5::AkonadiWidgets
         INSTALL_DESTINATION "${KDE_INSTALL_QTPLUGINDIR}/designer"
+        COMPONENT Devel
+    )
+endif()
+
+if (BUILD_QCH)
+    ecm_add_qch(
+        KF5AkonadiWidgets_QCH
+        NAME KF5AkonadiWidgets
+        BASE_NAME KF5AkonadiWidgets
+        VERSION ${PIM_VERSION}
+        ORG_DOMAIN org.kde
+        SOURCES # using only public headers, to cover only public API
+            ${AkonadiWidgets_HEADERS}
+        #MD_MAINPAGE "${CMAKE_SOURCE_DIR}/README.md"
+        #IMAGE_DIRS "${CMAKE_SOURCE_DIR}/docs/pics"
+        LINK_QCHS
+            Qt5Core_QCH
+            Qt5Gui_QCH
+            Qt5Widgets_QCH
+        INCLUDE_DIRS
+            ${CMAKE_CURRENT_BINARY_DIR}
+        BLANK_MACROS
+            AKONADIWIDGETS_EXPORT
+        TAGFILE_INSTALL_DESTINATION ${KDE_INSTALL_QTQCHDIR}
+        QCH_INSTALL_DESTINATION ${KDE_INSTALL_QTQCHDIR}
         COMPONENT Devel
     )
 endif()

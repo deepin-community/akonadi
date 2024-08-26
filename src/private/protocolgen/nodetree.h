@@ -72,7 +72,11 @@ public:
     QString parentClassName() const;
     QVector<PropertyNode const *> properties() const;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     static ClassType elementNameToType(const QStringRef &name);
+#else
+    static ClassType elementNameToType(QStringView name);
+#endif
 
 private:
     QString mName;
@@ -89,17 +93,12 @@ public:
 
         QString mVariableName() const
         {
-            return QStringLiteral("m") + name[0].toUpper() +
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 2)
-                QStringView(name).mid(1);
-#else
-                name.midRef(1);
-#endif
+            return QStringLiteral("m") + name[0].toUpper() + QStringView(name).mid(1);
         }
     };
 
     CtorNode(const QVector<Argument> &args, ClassNode *parent);
-    ~CtorNode();
+    ~CtorNode() override;
 
     QVector<Argument> arguments() const;
     void setArgumentType(const QString &name, const QString &type);
@@ -121,9 +120,11 @@ public:
 
     QString name() const;
     EnumType enumType() const;
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     static EnumType elementNameToType(const QStringRef &name);
-
+#else
+    static EnumType elementNameToType(QStringView name);
+#endif
 private:
     QString mName;
     EnumType mEnumType;
@@ -154,7 +155,7 @@ public:
     };
 
     PropertyNode(const QString &name, const QString &type, ClassNode *parent);
-    ~PropertyNode();
+    ~PropertyNode() override;
 
     QString type() const;
     QString name() const;
@@ -188,4 +189,3 @@ private:
     bool mReadOnly;
     bool mAsReference;
 };
-

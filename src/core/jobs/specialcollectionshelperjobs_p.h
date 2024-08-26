@@ -13,9 +13,13 @@
 
 #include <QVariant>
 
+#include <memory>
+
 namespace Akonadi
 {
 // ===================== ResourceScanJob ============================
+
+class ResourceScanJobPrivate;
 
 /**
   @internal
@@ -70,9 +74,8 @@ protected:
     void doStart() override;
 
 private:
-    class Private;
-    friend class Private;
-    Private *const d;
+    friend class ResourceScanJobPrivate;
+    std::unique_ptr<ResourceScanJobPrivate> const d;
 };
 
 // ===================== DefaultResourceJob ============================
@@ -146,10 +149,11 @@ protected:
 
 private:
     friend class DefaultResourceJobPrivate;
-    DefaultResourceJobPrivate *const d;
+    std::unique_ptr<DefaultResourceJobPrivate> const d;
 };
 
 // ===================== GetLockJob ============================
+class GetLockJobPrivate;
 
 /**
   @internal
@@ -188,9 +192,8 @@ public:
     void start() override;
 
 private:
-    class Private;
-    friend class Private;
-    Private *const d;
+    friend class GetLockJobPrivate;
+    std::unique_ptr<GetLockJobPrivate> const d;
 
     Q_PRIVATE_SLOT(d, void doStart())
 };
@@ -218,4 +221,3 @@ void setCollectionAttributes(Akonadi::Collection &col,
 bool AKONADI_TESTS_EXPORT releaseLock();
 
 } // namespace Akonadi
-

@@ -22,10 +22,10 @@
 
 namespace Akonadi
 {
-class Q_DECL_HIDDEN AgentConfigurationDialog::Private
+class AgentConfigurationDialogPrivate
 {
 public:
-    explicit Private(AgentConfigurationDialog *qq)
+    explicit AgentConfigurationDialogPrivate(AgentConfigurationDialog *qq)
         : q(qq)
     {
     }
@@ -35,7 +35,7 @@ public:
     QScopedPointer<AgentConfigurationWidget> widget;
 };
 
-void AgentConfigurationDialog::Private::restoreDialogSize()
+void AgentConfigurationDialogPrivate::restoreDialogSize()
 {
     if (widget) {
         const QSize size = widget->restoreDialogSize();
@@ -51,9 +51,9 @@ using namespace Akonadi;
 
 AgentConfigurationDialog::AgentConfigurationDialog(const AgentInstance &instance, QWidget *parent)
     : QDialog(parent)
-    , d(new Private(this))
+    , d(new AgentConfigurationDialogPrivate(this))
 {
-    setWindowTitle(i18nc("%1 = agent name", "%1 Configuration", instance.name()));
+    setWindowTitle(i18nc("@title:window, %1 = agent name", "%1 Configuration", instance.name()));
     setWindowIcon(instance.type().icon());
 
     auto l = new QVBoxLayout(this);
@@ -81,7 +81,11 @@ AgentConfigurationDialog::AgentConfigurationDialog(const AgentInstance &instance
             // HACK: the actions are populated from QGuiApplication so they would refer to the
             // current application not to the agent, so we have to adjust the strings in some
             // of the actions.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             helpMenu->action(KHelpMenu::menuAboutApp)->setIcon(QIcon::fromTheme(aboutData->programIconName()));
+#else
+#pragma "NEED TO PORT TO QT6"
+#endif
             helpMenu->action(KHelpMenu::menuHelpContents)->setText(i18n("%1 Handbook", aboutData->displayName()));
             helpMenu->action(KHelpMenu::menuAboutApp)->setText(i18n("About %1", aboutData->displayName()));
             btnBox->addButton(QDialogButtonBox::Help)->setMenu(menu);

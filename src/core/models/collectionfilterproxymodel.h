@@ -9,9 +9,12 @@
 #include "akonadicore_export.h"
 #include <QSortFilterProxyModel>
 
+#include <memory>
+
 namespace Akonadi
 {
 class CollectionModel;
+class CollectionFilterProxyModelPrivate;
 
 /**
  * @short A proxy model that filters collections by mime type.
@@ -99,10 +102,9 @@ protected:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    friend class CollectionFilterProxyModelPrivate;
+    std::unique_ptr<CollectionFilterProxyModelPrivate> const d;
     /// @endcond
 };
 
 }
-

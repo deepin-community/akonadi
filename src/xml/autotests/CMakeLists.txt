@@ -1,5 +1,5 @@
 
-find_package(Qt5 ${QT_REQUIRED_VERSION} CONFIG REQUIRED COMPONENTS Test)
+find_package(Qt${QT_MAJOR_VERSION} ${QT_REQUIRED_VERSION} CONFIG REQUIRED COMPONENTS Test)
 include(ECMMarkAsTest)
 
 macro(add_libakonadixml_test _source)

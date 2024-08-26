@@ -14,7 +14,6 @@
 #include "itemdeletejob.h"
 #include "itemfetchjob.h"
 #include "itemfetchscope.h"
-#include "itemmodifyjob.h"
 #include "job_p.h"
 #include "transactionsequence.h"
 
@@ -47,9 +46,6 @@ public:
         , mBatchSize(10)
         , mMergeMode(Akonadi::ItemSync::RIDMerge)
     {
-        // we want to fetch all data by default
-        mFetchScope.fetchFullPayload();
-        mFetchScope.fetchAllAttributes();
     }
 
     void createOrMerge(const Item &item);
@@ -76,9 +72,6 @@ public:
     ItemSync::TransactionMode mTransactionMode;
     TransactionSequence *mCurrentTransaction = nullptr;
     int mTransactionJobs;
-
-    // fetch scope for initial item listing
-    ItemFetchScope mFetchScope;
 
     Akonadi::Item::List mRemoteItemQueue;
     Akonadi::Item::List mRemovedRemoteItemQueue;
@@ -260,18 +253,6 @@ void ItemSync::setIncrementalSyncItems(const Item::List &changedItems, const Ite
         d->mDeliveryDone = true;
     }
     d->execute();
-}
-
-void ItemSync::setFetchScope(ItemFetchScope &fetchScope)
-{
-    Q_D(ItemSync);
-    d->mFetchScope = fetchScope;
-}
-
-ItemFetchScope &ItemSync::fetchScope()
-{
-    Q_D(ItemSync);
-    return d->mFetchScope;
 }
 
 void ItemSync::doStart()

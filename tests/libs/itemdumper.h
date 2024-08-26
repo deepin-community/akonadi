@@ -10,6 +10,7 @@
 #include "collection.h"
 
 #include <QElapsedTimer>
+#include <QObject>
 
 class KJob;
 
@@ -26,4 +27,3 @@ private:
     QElapsedTimer mTime;
     int mJobCount;
 };
-

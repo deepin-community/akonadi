@@ -11,9 +11,12 @@
 
 #include <QDialog>
 
+#include <memory>
+
 namespace Akonadi
 {
 class Collection;
+class CollectionPropertiesDialogPrivate;
 
 /**
  * @short A generic and extensible dialog for collection properties.
@@ -81,7 +84,7 @@ public:
      * @note Never call manually, the dialog is deleted automatically once all changes
      *       are written back to the Akonadi storage.
      */
-    ~CollectionPropertiesDialog();
+    ~CollectionPropertiesDialog() override;
 
     /**
      * Register custom pages for the collection properties dialog.
@@ -110,7 +113,7 @@ public:
      *
      * @since 4.7
      */
-    static QString defaultPageObjectName(DefaultPage page);
+    Q_REQUIRED_RESULT static QString defaultPageObjectName(DefaultPage page);
 
     /**
      * Sets the page to be shown in the tab widget.
@@ -126,10 +129,8 @@ Q_SIGNALS:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<CollectionPropertiesDialogPrivate> const d;
     /// @endcond
 };
 
 }
-

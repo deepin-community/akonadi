@@ -31,9 +31,9 @@ This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
  }
 --- a/apparmor/postgresql_akonadi
 +++ b/apparmor/postgresql_akonadi
-@@ -38,4 +38,7 @@ profile postgresql_akonadi {
-   /{usr/,usr/lib/postgresql/*/,opt/pgsql*/}bin/psql mrix,
-   /{usr/,usr/lib/postgresql/*/,opt/pgsql*/}bin/pg_restore mrix,
+@@ -45,4 +45,7 @@ profile postgresql_akonadi flags=(attach_disconnected) {
+   @{postgresqlpath}/bin/psql mrix,
+   @{postgresqlpath}/bin/pg_restore mrix,
    /{usr/,}bin/cp mrix,
 +
 +  # Site-specific additions and overrides.  See local/README for details.

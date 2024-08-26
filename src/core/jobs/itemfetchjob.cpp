@@ -104,6 +104,7 @@ public:
     ProtocolHelperValuePool *mValuePool = nullptr;
     ItemFetchJob::DeliveryOptions mDeliveryOptions = ItemFetchJob::Default;
     int mCount = 0;
+    Protocol::FetchLimit mItemsLimit;
 };
 
 ItemFetchJob::ItemFetchJob(const Collection &collection, QObject *parent)
@@ -145,7 +146,7 @@ ItemFetchJob::ItemFetchJob(const QList<Item::Id> &items, QObject *parent)
         d->mRequestedItems.append(Item(id));
     }
 }
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 ItemFetchJob::ItemFetchJob(const QVector<Item::Id> &items, QObject *parent)
     : Job(new ItemFetchJobPrivate(this), parent)
 {
@@ -157,7 +158,7 @@ ItemFetchJob::ItemFetchJob(const QVector<Item::Id> &items, QObject *parent)
         d->mRequestedItems.append(Item(id));
     }
 }
-
+#endif
 ItemFetchJob::ItemFetchJob(const Tag &tag, QObject *parent)
     : Job(new ItemFetchJobPrivate(this), parent)
 {
@@ -178,7 +179,8 @@ void ItemFetchJob::doStart()
         d->sendCommand(Protocol::FetchItemsCommandPtr::create(d->mRequestedItems.isEmpty() ? Scope() : ProtocolHelper::entitySetToScope(d->mRequestedItems),
                                                               ProtocolHelper::commandContextToProtocol(d->mCollection, d->mCurrentTag, d->mRequestedItems),
                                                               ProtocolHelper::itemFetchScopeToProtocol(d->mFetchScope),
-                                                              ProtocolHelper::tagFetchScopeToProtocol(d->mFetchScope.tagFetchScope())));
+                                                              ProtocolHelper::tagFetchScopeToProtocol(d->mFetchScope.tagFetchScope()),
+                                                              d->mItemsLimit));
     } catch (const Akonadi::Exception &e) {
         setError(Job::Unknown);
         setErrorText(QString::fromUtf8(e.what()));
@@ -278,5 +280,13 @@ int ItemFetchJob::count() const
     Q_D(const ItemFetchJob);
 
     return d->mCount;
+}
+
+void ItemFetchJob::setLimit(int limit, int start, Qt::SortOrder order)
+{
+    Q_D(ItemFetchJob);
+    d->mItemsLimit.setLimit(limit);
+    d->mItemsLimit.setLimitOffset(start);
+    d->mItemsLimit.setSortOrder(order);
 }
 #include "moc_itemfetchjob.cpp"

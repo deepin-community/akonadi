@@ -1,3 +1,6 @@
+# base install include dir
+set(AkonadiAgentBase_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiAgentBase")
+
 add_library(KF5AkonadiAgentBase)
 add_library(KF5::AkonadiAgentBase ALIAS KF5AkonadiAgentBase)
 
@@ -7,7 +10,7 @@ ecm_qt_declare_logging_category(KF5AkonadiAgentBase HEADER akonadiagentbase_debu
         EXPORT AKONADI
     )
 
-ecm_generate_headers(AkonadiAgentBase_HEADERS
+ecm_generate_headers(AkonadiAgentBase_CC_HEADERS
     HEADER_NAMES
     AccountsIntegration
     AgentBase
@@ -17,6 +20,7 @@ ecm_generate_headers(AkonadiAgentBase_HEADERS
     ResourceSettings
     TransportResourceBase
     REQUIRED_HEADERS AkonadiAgentBase_HEADERS
+    PREFIX Akonadi
 )
 
 
@@ -50,6 +54,16 @@ target_sources(KF5AkonadiAgentBase PRIVATE
     resourcescheduler.cpp
     resourcesettings.cpp
     transportresourcebase.cpp
+    accountsintegration.h
+    agentbase.h
+    agentsearchinterface.h
+    preprocessorbase.h
+    preprocessorbase_p.h
+    recursivemover_p.h
+    resourcebase.h
+    resourcescheduler_p.h
+    resourcesettings.h
+    transportresourcebase.h
     ${akonadiagentbase_SRCS}
 )
 
@@ -62,7 +76,7 @@ endif()
 generate_export_header(KF5AkonadiAgentBase BASE_NAME akonadiagentbase)
 
 
-target_include_directories(KF5AkonadiAgentBase INTERFACE "$<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR_KF5}/AkonadiAgentBase>")
+target_include_directories(KF5AkonadiAgentBase INTERFACE "$<INSTALL_INTERFACE:${AkonadiAgentBase_INSTALL_INCLUDEDIR}>")
 
 target_link_libraries(KF5AkonadiAgentBase
 PUBLIC
@@ -98,14 +112,21 @@ ecm_generate_pri_file(BASE_NAME AkonadiAgentBase
 install(TARGETS
     KF5AkonadiAgentBase
     EXPORT KF5AkonadiTargets
-    ${KF5_INSTALL_TARGETS_DEFAULT_ARGS}
+    ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/akonadiagentbase_export.h
     ${CMAKE_CURRENT_BINARY_DIR}/resourcebasesettings.h
     ${AkonadiAgentBase_HEADERS}
-    DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF5}/AkonadiAgentBase COMPONENT Devel
+    DESTINATION ${AkonadiAgentBase_INSTALL_INCLUDEDIR}/akonadi
+    COMPONENT Devel
+)
+
+install(FILES
+    ${AkonadiAgentBase_CC_HEADERS}
+    DESTINATION ${AkonadiAgentBase_INSTALL_INCLUDEDIR}/Akonadi
+    COMPONENT Devel
 )
 
 install(FILES

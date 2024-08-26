@@ -43,7 +43,7 @@
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
-
+using namespace std::chrono_literals;
 namespace
 {
 class AkonadiDataStore : public DataStore
@@ -204,7 +204,7 @@ bool AkonadiServer::quit()
         qCCritical(AKONADISERVER_LOG) << "Failed to remove runtime connection config file";
     }
 
-    QTimer::singleShot(0, this, &AkonadiServer::doQuit);
+    QTimer::singleShot(0s, this, &AkonadiServer::doQuit);
 
     return true;
 }
@@ -334,13 +334,13 @@ void AkonadiServer::stopDatabaseProcess()
 bool AkonadiServer::createServers(QSettings &settings, QSettings &connectionSettings)
 {
     mCmdServer = std::make_unique<AkLocalServer>(this);
-    connect(mCmdServer.get(), QOverload<quintptr>::of(&AkLocalServer::newConnection), this, &AkonadiServer::newCmdConnection);
+    connect(mCmdServer.get(), qOverload<quintptr>(&AkLocalServer::newConnection), this, &AkonadiServer::newCmdConnection);
 
     mNotificationManager = std::make_unique<NotificationManager>();
     mNtfServer = std::make_unique<AkLocalServer>(this);
     // Note: this is a queued connection, as NotificationManager lives in its
     // own thread
-    connect(mNtfServer.get(), QOverload<quintptr>::of(&AkLocalServer::newConnection), mNotificationManager.get(), &NotificationManager::registerConnection);
+    connect(mNtfServer.get(), qOverload<quintptr>(&AkLocalServer::newConnection), mNotificationManager.get(), &NotificationManager::registerConnection);
 
     // TODO: share socket setup with client
 #ifdef Q_OS_WIN

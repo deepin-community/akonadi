@@ -52,7 +52,7 @@
 
 using namespace Akonadi;
 using namespace AkRanges;
-
+using namespace std::chrono_literals;
 class Akonadi::ResourceBasePrivate : public AgentBasePrivate
 {
     Q_OBJECT
@@ -63,7 +63,6 @@ public:
         : AgentBasePrivate(parent)
         , scheduler(nullptr)
         , mItemSyncer(nullptr)
-        , mItemSyncFetchScope(nullptr)
         , mItemTransactionMode(ItemSync::SingleTransaction)
         , mItemMergeMode(ItemSync::RIDMerge)
         , mCollectionSyncer(nullptr)
@@ -85,10 +84,7 @@ public:
         mKeepLocalCollectionChanges << "ENTITYDISPLAY";
     }
 
-    ~ResourceBasePrivate() override
-    {
-        delete mItemSyncFetchScope;
-    }
+    ~ResourceBasePrivate() override = default;
 
     Q_DECLARE_PUBLIC(ResourceBase)
 
@@ -114,7 +110,7 @@ public:
     {
         if (m_recursiveMover) {
             m_recursiveMover->changeProcessed();
-            QTimer::singleShot(0, m_recursiveMover.data(), &RecursiveMover::replayNext);
+            QTimer::singleShot(0s, m_recursiveMover.data(), &RecursiveMover::replayNext);
             return;
         }
 
@@ -182,9 +178,6 @@ public:
             mItemSyncer->setTransactionMode(mItemTransactionMode);
             mItemSyncer->setBatchSize(mItemSyncBatchSize);
             mItemSyncer->setMergeMode(mItemMergeMode);
-            if (mItemSyncFetchScope) {
-                mItemSyncer->setFetchScope(*mItemSyncFetchScope);
-            }
             mItemSyncer->setDisableAutomaticDeliveryDone(mDisableAutomaticItemDeliveryDone);
             mItemSyncer->setProperty("collection", QVariant::fromValue(q->currentCollection()));
             connect(mItemSyncer, &KJob::percentChanged, this,
@@ -431,7 +424,6 @@ public:
 
     ResourceScheduler *scheduler = nullptr;
     ItemSync *mItemSyncer = nullptr;
-    ItemFetchScope *mItemSyncFetchScope = nullptr;
     ItemSync::TransactionMode mItemTransactionMode;
     ItemSync::MergeMode mItemMergeMode;
     CollectionSync *mCollectionSyncer = nullptr;
@@ -746,7 +738,9 @@ void ResourceBase::requestItemDelivery(const QVector<qint64> &uids, const QByteA
                            return Item{uid};
                        })
         | Actions::toQVector;
-    d->scheduler->scheduleItemsFetch(items, QSet<QByteArray>::fromList(parts), message());
+
+    const QSet<QByteArray> partSet = QSet<QByteArray>(parts.begin(), parts.end());
+    d->scheduler->scheduleItemsFetch(items, partSet, message());
 }
 
 void ResourceBase::collectionsRetrieved(const Collection::List &collections)
@@ -851,11 +845,19 @@ namespace
 bool sortCollectionsForSync(const Collection &l, const Collection &r)
 {
     const auto lType = l.hasAttribute<SpecialCollectionAttribute>() ? l.attribute<SpecialCollectionAttribute>()->collectionType() : QByteArray();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const bool lInbox = (lType == "inbox") || (l.remoteId().midRef(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
+#else
+    const bool lInbox = (lType == "inbox") || (QStringView(l.remoteId()).mid(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
+#endif
     const bool lFav = l.hasAttribute<FavoriteCollectionAttribute>();
 
     const auto rType = r.hasAttribute<SpecialCollectionAttribute>() ? r.attribute<SpecialCollectionAttribute>()->collectionType() : QByteArray();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const bool rInbox = (rType == "inbox") || (r.remoteId().midRef(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
+#else
+    const bool rInbox = (rType == "inbox") || (QStringView(r.remoteId()).mid(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
+#endif
     const bool rFav = r.hasAttribute<FavoriteCollectionAttribute>();
 
     // inbox is always first
@@ -1488,15 +1490,6 @@ void ResourceBase::setItemTransactionMode(ItemSync::TransactionMode mode)
 {
     Q_D(ResourceBase);
     d->mItemTransactionMode = mode;
-}
-
-void ResourceBase::setItemSynchronizationFetchScope(const ItemFetchScope &fetchScope)
-{
-    Q_D(ResourceBase);
-    if (!d->mItemSyncFetchScope) {
-        d->mItemSyncFetchScope = new ItemFetchScope;
-    }
-    *(d->mItemSyncFetchScope) = fetchScope;
 }
 
 void ResourceBase::setItemMergingMode(ItemSync::MergeMode mode)

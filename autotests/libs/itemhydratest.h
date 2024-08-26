@@ -13,7 +13,7 @@ class ItemHydra : public QObject
     Q_OBJECT
 public:
     ItemHydra();
-    virtual ~ItemHydra()
+    ~ItemHydra() override
     {
     }
 private Q_SLOTS:
@@ -31,4 +31,3 @@ private Q_SLOTS:
     void testSharedPointerConversions();
     void testForeignPayload();
 };
-

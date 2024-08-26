@@ -13,10 +13,14 @@
 #include <QDialogButtonBox>
 #include <QObject>
 
+#include <memory>
+
 class KAboutData;
 
 namespace Akonadi
 {
+class AgentConfigurationBasePrivate;
+
 /**
  * @brief Base class for configuration UI for Akonadi agents
  *
@@ -62,7 +66,7 @@ namespace Akonadi
  * value must match the name of the @p X-Akonadi-Identifier value from the agent's
  * desktop file.
  *
- * The plugin binary should be installed into akonadi/config subdirectory in one
+ * The plugin binary should be installed into pim<version>/akonadi/config subdirectory in one
  * of the paths search by QCoreApplication::libraryPaths().
  */
 
@@ -135,7 +139,7 @@ protected:
     /**
      * Returns identifier of the Akonadi agent instance currently being configured.
      */
-    QString identifier() const;
+    Q_REQUIRED_RESULT QString identifier() const;
 
     /**
      * When KAboutData is provided the dialog will also contain KHelpMenu with
@@ -147,10 +151,8 @@ Q_SIGNALS:
     void enableOkButton(bool enabled);
 
 private:
-    class Private;
-    friend class Private;
-    QScopedPointer<Private> d;
+    friend class AgentConfigurationBasePrivate;
+    std::unique_ptr<AgentConfigurationBasePrivate> const d;
 };
 
 } // namespace
-

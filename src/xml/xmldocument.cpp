@@ -23,7 +23,8 @@
 using namespace Akonadi;
 
 // helper class for dealing with libxml resource management
-template<typename T, void FreeFunc(T)> class XmlPtr
+template<typename T, void FreeFunc(T)>
+class XmlPtr
 {
 public:
     explicit XmlPtr(const T &t)
@@ -109,10 +110,7 @@ XmlDocument::XmlDocument(const QString &fileName)
     loadFile(fileName);
 }
 
-XmlDocument::~XmlDocument()
-{
-    delete d;
-}
+XmlDocument::~XmlDocument() = default;
 
 bool Akonadi::XmlDocument::loadFile(const QString &fileName)
 {
@@ -145,7 +143,8 @@ bool Akonadi::XmlDocument::loadFile(const QString &fileName)
         return false;
     }
 
-    const QString &schemaFileName = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kf5/akonadi/akonadi-xml.xsd"));
+    const QString &schemaFileName =
+        QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kf" QT_STRINGIFY(QT_VERSION_MAJOR) "/akonadi/akonadi-xml.xsd"));
     XmlPtr<xmlDocPtr, xmlFreeDoc> schemaDoc(xmlReadFile(schemaFileName.toLocal8Bit().constData(), nullptr, XML_PARSE_NONET));
     if (!schemaDoc) {
         d->lastError = i18n("Schema definition could not be loaded and parsed.");

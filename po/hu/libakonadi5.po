@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: KDE 4.3\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2021-07-16 01:42+0000\n"
-"PO-Revision-Date: 2021-07-04 12:19+0200\n"
+"POT-Creation-Date: 2022-10-16 00:47+0000\n"
+"PO-Revision-Date: 2021-08-25 09:45+0200\n"
 "Last-Translator: Kristóf Kiszel <kiszel.kristof@gmail.com>\n"
 "Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
 "Language: hu\n"
@@ -27,7 +27,7 @@ msgstr "Kiszel Kristóf,Szántó Tamás,Úr Balázs"
 #, kde-format
 msgctxt "EMAIL OF TRANSLATORS"
 msgid "Your emails"
-msgstr "ulysses@kubuntu.org,tszanto@interware.hu,urbalazs@gmail.com"
+msgstr "kiszel.kristof@gmail.com,tszanto@interware.hu,urbalazs@gmail.com"
 
 #: agentbase/accountsintegration.cpp:86
 #, kde-format
@@ -39,23 +39,23 @@ msgstr "Nincs beállítva fiók."
 msgid "Accounts integration is not supported"
 msgstr "A fiókintegráció nem támogatott"
 
-#: agentbase/agentbase.cpp:359 agentbase/preprocessorbase_p.cpp:26
+#: agentbase/agentbase.cpp:365 agentbase/preprocessorbase_p.cpp:26
 #, kde-format
 msgid "Unable to register object at dbus: %1"
 msgstr "Nem sikerült regisztrálni az objektumot a dbus-on: %1"
 
-#: agentbase/agentbase.cpp:448
+#: agentbase/agentbase.cpp:454
 #, kde-format
 msgctxt "Name and type of Akonadi resource"
 msgid "%1 of type %2"
 msgstr "%2 típusú %1"
 
-#: agentbase/agentbase.cpp:897
+#: agentbase/agentbase.cpp:904
 #, kde-format
 msgid "Agent identifier"
 msgstr "Azonosító"
 
-#: agentbase/agentbase.cpp:903
+#: agentbase/agentbase.cpp:910
 #, kde-format
 msgid "Akonadi Agent"
 msgstr "Akonadi szolgáltatás"
@@ -90,70 +90,70 @@ msgctxt "@info:status"
 msgid "Not configured"
 msgstr "Nincs beállítva"
 
-#: agentbase/resourcebase.cpp:525
+#: agentbase/resourcebase.cpp:517
 #, kde-format
 msgctxt "@label command line option"
 msgid "Resource identifier"
 msgstr "Erőforrás-azonosító"
 
-#: agentbase/resourcebase.cpp:531
+#: agentbase/resourcebase.cpp:523
 #, kde-format
 msgid "Akonadi Resource"
 msgstr "Akonadi-erőforrás"
 
-#: agentbase/resourcebase.cpp:579
+#: agentbase/resourcebase.cpp:571
 #, kde-format
 msgctxt "@info"
 msgid "Invalid item retrieved"
 msgstr "Érvénytelen elem lett fogadva"
 
-#: agentbase/resourcebase.cpp:602
+#: agentbase/resourcebase.cpp:594
 #, kde-format
 msgctxt "@info"
 msgid "Error while creating item: %1"
 msgstr "Hiba az elem létrehozása közben: %1"
 
-#: agentbase/resourcebase.cpp:626
+#: agentbase/resourcebase.cpp:618
 #, kde-format
 msgctxt "@info"
 msgid "Error while updating collection: %1"
 msgstr "Hiba a gyűjtemény frissítése közben: %1"
 
-#: agentbase/resourcebase.cpp:713
+#: agentbase/resourcebase.cpp:705
 #, kde-format
 msgctxt "@info"
 msgid "Updating local collection failed: %1."
 msgstr "A helyi gyűjtemény frissítése nem sikerült: %1."
 
-#: agentbase/resourcebase.cpp:718
+#: agentbase/resourcebase.cpp:710
 #, kde-format
 msgctxt "@info"
 msgid "Updating local items failed: %1."
 msgstr "A helyi elemek frissítése nem sikerült: %1."
 
-#: agentbase/resourcebase.cpp:737
+#: agentbase/resourcebase.cpp:729
 #, kde-format
 msgctxt "@info"
 msgid "Cannot fetch item in offline mode."
 msgstr "Nem lehet elemet letölteni kapcsolat nélküli módban."
 
-#: agentbase/resourcebase.cpp:916
+#: agentbase/resourcebase.cpp:918
 #, kde-format
 msgctxt "@info:status"
 msgid "Syncing folder '%1'"
 msgstr "„%1” mappa szinkronizálása"
 
-#: agentbase/resourcebase.cpp:936 agentbase/resourcebase.cpp:943
+#: agentbase/resourcebase.cpp:938 agentbase/resourcebase.cpp:945
 #, kde-format
 msgid "Failed to retrieve collection for sync."
 msgstr "Nem sikerült letölteni az erőforrás gyűjteményt szinkronizáláshoz."
 
-#: agentbase/resourcebase.cpp:983
+#: agentbase/resourcebase.cpp:985
 #, kde-format
 msgid "Failed to retrieve collection for attribute sync."
 msgstr "Nem sikerült letölteni a gyűjteményt attribútumszinkronizáláshoz."
 
-#: agentbase/resourcebase.cpp:1037
+#: agentbase/resourcebase.cpp:1039
 #, kde-format
 msgid "The requested item no longer exists"
 msgstr "A kért elem már nem létezik"
@@ -164,12 +164,12 @@ msgctxt "@info"
 msgid "Job canceled."
 msgstr "Feladat megszakítva."
 
-#: core/collectionpathresolver.cpp:99 core/collectionpathresolver.cpp:118
+#: core/collectionpathresolver.cpp:98 core/collectionpathresolver.cpp:117
 #, kde-format
 msgid "No such collection."
 msgstr "Nem létezik ilyen gyűjtemény."
 
-#: core/collectionsync.cpp:508 core/collectionsync.cpp:652
+#: core/collectionsync.cpp:508 core/collectionsync.cpp:653
 #, kde-format
 msgid "Found unresolved orphan collections"
 msgstr "Feloldatlan árva gyűjtemények találhatók"
@@ -179,54 +179,54 @@ msgstr "Feloldatlan árva gyűjtemények találhatók"
 msgid "Did not find other item for conflict handling"
 msgstr "Nem található egyéb elem az ütközéskezeléshez."
 
-#: core/jobs/agentinstancecreatejob.cpp:71
+#: core/jobs/agentinstancecreatejob.cpp:70
 #, kde-format
 msgid "Unable to access D-Bus interface of created agent."
 msgstr "Nem sikerült hozzáférni a létrehozott ügynök D-Bus felületéhez."
 
-#: core/jobs/agentinstancecreatejob.cpp:93
+#: core/jobs/agentinstancecreatejob.cpp:92
 #, kde-format
 msgid "Agent instance creation timed out."
 msgstr "Az ügynökpéldány létrehozása túllépte az időkorlátot."
 
-#: core/jobs/agentinstancecreatejob.cpp:154
+#: core/jobs/agentinstancecreatejob.cpp:150
 #, kde-format
 msgid "Unable to obtain agent type '%1'."
 msgstr "Nem sikerült megszerezni a(z) „%1” ügynöktípust."
 
-#: core/jobs/agentinstancecreatejob.cpp:162
+#: core/jobs/agentinstancecreatejob.cpp:158
 #, kde-format
 msgid "Unable to create agent instance."
 msgstr "Nem sikerült új ügynökpéldányt létrehozni."
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:76
+#: core/jobs/collectionattributessynchronizationjob.cpp:73
 #, kde-format
 msgid "Invalid collection instance."
 msgstr "Érvénytelen gyűjteménypéldány."
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:83
-#: core/jobs/resourcesynchronizationjob.cpp:91
+#: core/jobs/collectionattributessynchronizationjob.cpp:80
+#: core/jobs/resourcesynchronizationjob.cpp:88
 #, kde-format
 msgid "Invalid resource instance."
 msgstr "Érvénytelen erőforráspéldány."
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:105
-#: core/jobs/resourcesynchronizationjob.cpp:116
+#: core/jobs/collectionattributessynchronizationjob.cpp:102
+#: core/jobs/resourcesynchronizationjob.cpp:113
 #, kde-format
 msgid "Unable to obtain D-Bus interface for resource '%1'"
 msgstr "Nem sikerült megszerezni a(z) „%1” erőforrás D-Bus interfészét"
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:128
+#: core/jobs/collectionattributessynchronizationjob.cpp:125
 #, kde-format
 msgid "Collection attributes synchronization timed out."
 msgstr "A gyűjtemény jellemzőinek szinkronizálása túllépte az időkorlátot."
 
-#: core/jobs/collectioncopyjob.cpp:55
+#: core/jobs/collectioncopyjob.cpp:54
 #, kde-format
 msgid "Invalid collection to copy"
 msgstr "Érvénytelen gyűjtemény, nem másolható"
 
-#: core/jobs/collectioncopyjob.cpp:61
+#: core/jobs/collectioncopyjob.cpp:60
 #, kde-format
 msgid "Invalid destination collection"
 msgstr "Érvénytelen célgyűjtemény"
@@ -257,7 +257,7 @@ msgid "No objects specified for moving"
 msgstr "Nincsenek objektumok megadva az áthelyezéshez"
 
 #: core/jobs/collectionmovejob.cpp:59 core/jobs/itemmovejob.cpp:97
-#: core/jobs/linkjobimpl_p.h:38
+#: core/jobs/linkjobimpl_p.h:39
 #, kde-format
 msgid "No valid destination specified"
 msgstr "Nincs megadva érvényes cél"
@@ -267,17 +267,17 @@ msgstr "Nincs megadva érvényes cél"
 msgid "Invalid collection."
 msgstr "Érvénytelen gyűjtemény."
 
-#: core/jobs/itemcreatejob.cpp:107
+#: core/jobs/itemcreatejob.cpp:105
 #, kde-format
 msgid "Invalid parent collection"
 msgstr "Érvénytelen szülőgyűjtemény"
 
-#: core/jobs/job.cpp:337
+#: core/jobs/job.cpp:335
 #, kde-format
 msgid "Cannot connect to the Akonadi service."
 msgstr "Nem sikerült csatlakozni az Akonadi szolgáltatáshoz."
 
-#: core/jobs/job.cpp:340
+#: core/jobs/job.cpp:338
 #, kde-format
 msgid ""
 "The protocol version of the Akonadi server is incompatible. Make sure you "
@@ -286,17 +286,17 @@ msgstr ""
 "Az Akonadi szolgáltatás verziója nem megfelelő. Biztosítani kell, hogy a "
 "telepített szolgáltatás verziója megfelelő legyen."
 
-#: core/jobs/job.cpp:343
+#: core/jobs/job.cpp:341
 #, kde-format
 msgid "User canceled operation."
 msgstr "A felhasználó megszakította a műveletet."
 
-#: core/jobs/job.cpp:348
+#: core/jobs/job.cpp:346
 #, kde-format
 msgid "Unknown error."
 msgstr "Ismeretlen hiba."
 
-#: core/jobs/job.cpp:387
+#: core/jobs/job.cpp:385
 #, kde-format
 msgid "Unexpected response"
 msgstr "Nem várt válasz"
@@ -306,38 +306,38 @@ msgstr "Nem várt válasz"
 msgid "Failed to create relation."
 msgstr "Nem sikerült kapcsolatot létrehozni."
 
-#: core/jobs/resourcesynchronizationjob.cpp:142
+#: core/jobs/resourcesynchronizationjob.cpp:139
 #, kde-format
 msgid "Resource synchronization timed out."
 msgstr "Az erőforrás szinkronizálása túllépte az időkorlátot."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:146
+#: core/jobs/specialcollectionshelperjobs.cpp:145
 #, kde-format
 msgid "Could not fetch root collection of resource %1."
 msgstr "Nem sikerült lekérni a(z) „%1” erőforrás gyökérgyűjteményét."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:193
+#: core/jobs/specialcollectionshelperjobs.cpp:189
 #, kde-format
 msgid "No resource ID given."
 msgstr "Nincs megadva erőforrás-azonosító."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:330
+#: core/jobs/specialcollectionshelperjobs.cpp:326
 #, kde-format
 msgid "Invalid resource identifier '%1'"
 msgstr "Érvénytelen erőforrás-azonosító: „%1”"
 
-#: core/jobs/specialcollectionshelperjobs.cpp:346
-#: core/jobs/specialcollectionshelperjobs.cpp:354
+#: core/jobs/specialcollectionshelperjobs.cpp:342
+#: core/jobs/specialcollectionshelperjobs.cpp:350
 #, kde-format
 msgid "Failed to configure default resource via D-Bus."
 msgstr "Nem sikerült beállítani az alapértelmezett erőforrást a D-Bus által."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:419
+#: core/jobs/specialcollectionshelperjobs.cpp:415
 #, kde-format
 msgid "Failed to fetch the resource collection."
 msgstr "Nem sikerült letölteni az erőforrás gyűjteményt."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:606
+#: core/jobs/specialcollectionshelperjobs.cpp:599
 #, kde-format
 msgid "Timeout trying to get lock."
 msgstr "Időtúllépés a zár megszerzésének kísérlete közben."
@@ -347,53 +347,53 @@ msgstr "Időtúllépés a zár megszerzésének kísérlete közben."
 msgid "Failed to create tag."
 msgstr "Nem sikerült címkét létrehozni."
 
-#: core/jobs/trashjob.cpp:155
+#: core/jobs/trashjob.cpp:163
 #, kde-format
 msgid "Move to trash collection failed, aborting trash operation"
 msgstr ""
 "Nem sikerült a gyűjtemény áthelyezése a kukába, a kuka művelet megszakítása"
 
-#: core/jobs/trashjob.cpp:218 core/jobs/trashrestorejob.cpp:155
+#: core/jobs/trashjob.cpp:226 core/jobs/trashrestorejob.cpp:151
 #, kde-format
 msgid "Invalid items passed"
 msgstr "Érvénytelen elem lett átadva"
 
-#: core/jobs/trashjob.cpp:259 core/jobs/trashrestorejob.cpp:205
+#: core/jobs/trashjob.cpp:270 core/jobs/trashrestorejob.cpp:201
 #, kde-format
 msgid "Invalid collection passed"
 msgstr "Érvénytelen gyűjtemény lett átadva"
 
-#: core/jobs/trashjob.cpp:376 core/jobs/trashrestorejob.cpp:347
+#: core/jobs/trashjob.cpp:387 core/jobs/trashrestorejob.cpp:351
 #, kde-format
 msgid "No valid collection or empty itemlist"
 msgstr "Nincs érvényes gyűjtemény vagy üres az elemlista"
 
-#: core/jobs/trashrestorejob.cpp:90
+#: core/jobs/trashrestorejob.cpp:86
 #, kde-format
 msgid "Could not find restore collection and restore resource is not available"
 msgstr ""
 "Nem található a visszaállítás gyűjtemény és a visszaállítás erőforrás nem "
 "érhető el"
 
-#: core/models/agentinstancemodel.cpp:186
+#: core/models/agentinstancemodel.cpp:183
 #, kde-format
 msgctxt "@title:column, name of a thing"
 msgid "Name"
 msgstr "Név"
 
-#: core/models/entitytreemodel.cpp:197
+#: core/models/entitytreemodel.cpp:193
 #, kde-format
 msgctxt "@info:status"
 msgid "Loading..."
 msgstr "Betöltés…"
 
-#: core/models/entitytreemodel.cpp:489
+#: core/models/entitytreemodel.cpp:485
 #, kde-format
 msgctxt "@window:title"
 msgid "Error"
 msgstr "Hiba"
 
-#: core/models/entitytreemodel.cpp:490
+#: core/models/entitytreemodel.cpp:486
 #, kde-format
 msgid ""
 "The target collection '%1' contains already\n"
@@ -402,7 +402,7 @@ msgstr ""
 "A(z) „%1” célgyűjtemény már tartalmaz\n"
 "„%2” nevű gyűjteményt."
 
-#: core/models/entitytreemodel.cpp:659
+#: core/models/entitytreemodel.cpp:655
 #, kde-format
 msgctxt "@title:column Name of a thing"
 msgid "Name"
@@ -438,13 +438,13 @@ msgctxt "@info"
 msgid "Could not link entity: <message>%1</message>"
 msgstr "Nem sikerült összekapcsolni a bejegyzést: <message>%1</message>"
 
-#: core/models/entitytreemodel_p.cpp:1341
+#: core/models/entitytreemodel_p.cpp:1341 widgets/selftestdialog.cpp:650
 #, kde-format
 msgctxt "@title:window"
 msgid "Error"
 msgstr "Hiba"
 
-#: core/models/favoritecollectionsmodel.cpp:408
+#: core/models/favoritecollectionsmodel.cpp:405
 #, kde-format
 msgid "Favorite Folders"
 msgstr "Kedvenc mappák"
@@ -464,35 +464,35 @@ msgstr "Olvasatlan üzenetek"
 msgid "Quota"
 msgstr "Kvóta"
 
-#: core/models/statisticsproxymodel.cpp:105
+#: core/models/statisticsproxymodel.cpp:104
 #, kde-format
 msgid "Storage Size"
 msgstr "Tárolóméret"
 
-#: core/models/statisticsproxymodel.cpp:111
+#: core/models/statisticsproxymodel.cpp:110
 #, kde-format
 msgid "Subfolder Storage Size"
 msgstr "Almappa tárolóméret"
 
-#: core/models/statisticsproxymodel.cpp:228
+#: core/models/statisticsproxymodel.cpp:224
 #, kde-format
 msgctxt "number of unread entities in the collection"
 msgid "Unread"
 msgstr "Olvasatlan"
 
-#: core/models/statisticsproxymodel.cpp:229
+#: core/models/statisticsproxymodel.cpp:225
 #, kde-format
 msgctxt "number of entities in the collection"
 msgid "Total"
 msgstr "Összesen"
 
-#: core/models/statisticsproxymodel.cpp:230
+#: core/models/statisticsproxymodel.cpp:226
 #, kde-format
 msgctxt "collection size"
 msgid "Size"
 msgstr "Méret"
 
-#: core/models/tagmodel.cpp:67
+#: core/models/tagmodel.cpp:64
 #, kde-format
 msgid "Tag"
 msgstr "Címke"
@@ -507,17 +507,17 @@ msgstr "Nem sikerült lekérni az elemet az indexhez"
 msgid "Index is no longer available"
 msgstr "Az index többé nem érhető el"
 
-#: core/partfetcher.cpp:117
+#: core/partfetcher.cpp:114
 #, kde-format
 msgid "Payload part '%1' is not available for this index"
 msgstr "A(z) „%1” hasznos teher rész nem érhető el ehhez az indexhez"
 
-#: core/partfetcher.cpp:126
+#: core/partfetcher.cpp:123
 #, kde-format
 msgid "No session available for this index"
 msgstr "Nincs elérhető munkamenet ehhez az indexhez"
 
-#: core/partfetcher.cpp:135
+#: core/partfetcher.cpp:132
 #, kde-format
 msgid "No item available for this index"
 msgstr "Nincs elérhető elem ehhez az indexhez"
@@ -532,7 +532,7 @@ msgstr "Névtelen bővítmény"
 msgid "No description available"
 msgstr "Nincs elérhető leírás"
 
-#: core/servermanager.cpp:268
+#: core/servermanager.cpp:271
 #, kde-format
 msgid ""
 "The Akonadi server protocol version differs from the protocol version used "
@@ -545,14 +545,14 @@ msgstr ""
 "Ha nemrég frissítette a rendszert, jelentkezzen ki és be, hogy az "
 "alkalmazások biztosan a megfelelő protokollverziót használják."
 
-#: core/servermanager.cpp:285
+#: core/servermanager.cpp:288
 #, kde-format
 msgid ""
 "There are no Akonadi Agents available. Please verify your KDE PIM "
 "installation."
 msgstr "Nem érhető el Akonadi ügynök. Ellenőrizze a KDE PIM telepítését."
 
-#: core/session.cpp:186
+#: core/session.cpp:185
 #, kde-format
 msgid ""
 "Protocol version mismatch. Server version is older (%1) than ours (%2). If "
@@ -561,7 +561,7 @@ msgstr ""
 "A protokollverziók eltérnek. A kiszolgálóé (%1) régebbi, mint az Öné (%2). "
 "Ha nemrég frissítette a rendszert, indítsa újra az Akonadi kiszolgálót."
 
-#: core/session.cpp:195
+#: core/session.cpp:194
 #, kde-format
 msgid ""
 "Protocol version mismatch. Server version is newer (%1) than ours (%2). If "
@@ -585,87 +585,88 @@ msgstr "Ellenőrzi és jelenti az Akonadi kiszolgáló állapotát"
 msgid "(c) 2008 Volker Krause <vkrause@kde.org>"
 msgstr "© Volker Krause, 2008. <vkrause@kde.org>"
 
-#: widgets/agentactionmanager.cpp:34
-#, kde-format
+#: widgets/agentactionmanager.cpp:36
 msgid "&New Agent Instance..."
 msgstr "Ú&j ügynökpéldány…"
 
-#: widgets/agentactionmanager.cpp:35
-#, kde-format
+#: widgets/agentactionmanager.cpp:37
 msgid "&Delete Agent Instance"
 msgstr "Ügynökpéldány &törlése"
 
-#: widgets/agentactionmanager.cpp:36
-#, kde-format
+#: widgets/agentactionmanager.cpp:38
 msgid "&Configure Agent Instance"
 msgstr "Ügynökpéldány &beállítása"
 
-#: widgets/agentactionmanager.cpp:52
+#: widgets/agentactionmanager.cpp:54
 #, kde-format
 msgctxt "@title:window"
 msgid "New Agent Instance"
 msgstr "Új ügynökpéldány"
 
-#: widgets/agentactionmanager.cpp:54
+#: widgets/agentactionmanager.cpp:56
 #, kde-format
 msgid "Could not create agent instance: %1"
 msgstr "Nem sikerült új ügynökpéldányt létrehozni: %1"
 
-#: widgets/agentactionmanager.cpp:56
-#, kde-format
-msgid "Agent instance creation failed"
+#: widgets/agentactionmanager.cpp:58
+#, fuzzy, kde-format
+#| msgid "Agent instance creation failed"
+msgctxt "@title:window"
+msgid "Agent Instance Creation Failed"
 msgstr "Az ügynökpéldány létrehozása nem sikerült"
 
-#: widgets/agentactionmanager.cpp:58
+#: widgets/agentactionmanager.cpp:60
 #, kde-format
 msgctxt "@title:window"
 msgid "Delete Agent Instance?"
 msgstr "Ügynökpéldány törlése?"
 
-#: widgets/agentactionmanager.cpp:62
+#: widgets/agentactionmanager.cpp:64
 #, kde-format
 msgid "Do you really want to delete the selected agent instance?"
 msgstr "Biztosan törölni szeretné a kijelölt ügynökpéldányt?"
 
 #: widgets/agentconfigurationdialog.cpp:56
-#, kde-format
-msgctxt "%1 = agent name"
+#, fuzzy, kde-format
+#| msgctxt "%1 = agent name"
+#| msgid "%1 Configuration"
+msgctxt "@title:window, %1 = agent name"
 msgid "%1 Configuration"
 msgstr "A(z) %1 beállításai"
 
-#: widgets/agentconfigurationdialog.cpp:85
+#: widgets/agentconfigurationdialog.cpp:89
 #, kde-format
 msgid "%1 Handbook"
 msgstr "A(z) %1 kézikönyve"
 
-#: widgets/agentconfigurationdialog.cpp:86
+#: widgets/agentconfigurationdialog.cpp:90
 #, kde-format
 msgid "About %1"
 msgstr "A(z) %1 névjegye"
 
-#: widgets/agentconfigurationwidget.cpp:97
+#: widgets/agentconfigurationwidget.cpp:95
 #, kde-format
 msgid "The configuration dialog has been opened in another window"
 msgstr "A beállítóablak egy másik ablakban lett megnyitva"
 
-#: widgets/agentconfigurationwidget.cpp:104
+#: widgets/agentconfigurationwidget.cpp:102
 #, kde-format
 msgid "Configuration for %1 is already opened elsewhere."
 msgstr "A(z) %1 beállításai máshol vannak megnyitva."
 
-#: widgets/agentconfigurationwidget.cpp:106
+#: widgets/agentconfigurationwidget.cpp:104
 #, kde-format
 msgid "Failed to register %1 configuration dialog."
 msgstr "A(z) %1 beállítóablak regisztrációja nem sikerült."
 
-#: widgets/cachepolicypage.cpp:41 widgets/cachepolicypage.cpp:46
+#: widgets/cachepolicypage.cpp:42 widgets/cachepolicypage.cpp:47
 #, kde-format
 msgid "minute"
 msgid_plural "minutes"
 msgstr[0] "perc"
 msgstr[1] "perc"
 
-#: widgets/cachepolicypage.cpp:63
+#: widgets/cachepolicypage.cpp:69
 #, kde-format
 msgid "Retrieval"
 msgstr "Letöltés"
@@ -683,13 +684,13 @@ msgid "Synchronize when selecting this folder"
 msgstr "Szinkronizálás a mappa kiválasztásakor"
 
 #. i18n: ectx: property (text), widget (QLabel, label_2)
-#: widgets/cachepolicypage.ui:42
+#: widgets/cachepolicypage.ui:40
 #, kde-format
-msgid "Automatically synchronize after:"
-msgstr "Automatikus szinkronizáció ez után:"
+msgid "Synchronize after:"
+msgstr "Szinkronizálási időköz:"
 
 #. i18n: ectx: property (specialValueText), widget (QSpinBox, checkInterval)
-#: widgets/cachepolicypage.ui:49
+#: widgets/cachepolicypage.ui:47
 #, kde-format
 msgctxt "never check the cache"
 msgid "Never"
@@ -697,48 +698,66 @@ msgstr "Soha"
 
 #. i18n: ectx: property (suffix), widget (QSpinBox, checkInterval)
 #. i18n: ectx: property (suffix), widget (QSpinBox, localCacheTimeout)
-#: widgets/cachepolicypage.ui:52 widgets/cachepolicypage.ui:162
+#: widgets/cachepolicypage.ui:50 widgets/cachepolicypage.ui:133
 #, kde-format
 msgid "minutes"
 msgstr "perc"
 
-#. i18n: ectx: property (title), widget (QGroupBox, groupBox_2)
+#. i18n: ectx: property (text), widget (QLabel, localPartsLabel)
+#: widgets/cachepolicypage.ui:66
+#, kde-format
+msgid "Locally cached parts:"
+msgstr "Helyileg gyorsítótárazott részek:"
+
 #. i18n: ectx: property (title), widget (KEditListWidget, localParts)
-#: widgets/cachepolicypage.ui:89 widgets/cachepolicypage.ui:101
+#: widgets/cachepolicypage.ui:87
 #, kde-format
 msgid "Locally Cached Parts"
 msgstr "Helyileg gyorsítótárazott részek"
 
-#. i18n: ectx: property (title), widget (QGroupBox, retrievalOptionsGroupBox)
-#: widgets/cachepolicypage.ui:127
+#. i18n: ectx: property (text), widget (QLabel, retrievalOptionsLabel)
+#: widgets/cachepolicypage.ui:94
 #, kde-format
-msgid "Retrieval Options"
-msgstr "Letöltési beállítások"
+msgid "Retrieval Options:"
+msgstr "Letöltési beállítások:"
 
 #. i18n: ectx: property (text), widget (QRadioButton, retrieveFullMessages)
-#: widgets/cachepolicypage.ui:133
+#: widgets/cachepolicypage.ui:101
 #, kde-format
 msgid "Always retrieve full &messages"
 msgstr "Mindig töltse le a teljes üze&netet"
 
 #. i18n: ectx: property (text), widget (QRadioButton, retrieveOnlyHeaders)
-#: widgets/cachepolicypage.ui:143
+#: widgets/cachepolicypage.ui:111
 #, kde-format
 msgid "&Retrieve message bodies on demand"
 msgstr "Üzenettö&rzsek lekérése igény szerint"
 
 #. i18n: ectx: property (text), widget (QLabel, label)
-#: widgets/cachepolicypage.ui:152
+#: widgets/cachepolicypage.ui:118
 #, kde-format
 msgid "Keep message bodies locally for:"
 msgstr "Üzenettörzsek megtartása helyileg ehhez:"
 
 #. i18n: ectx: property (specialValueText), widget (QSpinBox, localCacheTimeout)
-#: widgets/cachepolicypage.ui:159
+#: widgets/cachepolicypage.ui:130
 #, kde-format
 msgctxt "no cache timeout"
 msgid "Forever"
 msgstr "Örökre"
+
+#: widgets/clearcachejob.cpp:54
+#, kde-format
+msgid ""
+"The collection '%1' contains %2 items without Remote ID. Those items were "
+"likely never uploaded to the destination server, so clearing this collection "
+"means that those <b>data will be lost</b>. Are you sure you want to proceed?"
+msgstr ""
+
+#: widgets/clearcachejob.cpp:83
+#, kde-format
+msgid "Collection cache cleared. You should restart Akonadi now."
+msgstr ""
 
 #: widgets/collectiondialog.cpp:56
 #, kde-format
@@ -761,7 +780,7 @@ msgstr "Ú&j almappa…"
 msgid "Create a new subfolder under the currently selected folder"
 msgstr "Új almappa létrehozása a jelenleg kiválasztott mappa alá"
 
-#: widgets/collectiondialog.cpp:264 widgets/standardactionmanager.cpp:360
+#: widgets/collectiondialog.cpp:264 widgets/standardactionmanager.cpp:349
 #, kde-format
 msgctxt "@title:window"
 msgid "New Folder"
@@ -773,14 +792,16 @@ msgctxt "@label:textbox, name of a thing"
 msgid "Name"
 msgstr "Név"
 
-#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:362
+#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:351
 #, kde-format
 msgid "Could not create folder: %1"
 msgstr "Nem sikerült létrehozni ezt a mappát: %1"
 
-#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:363
-#, kde-format
-msgid "Folder creation failed"
+#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:352
+#, fuzzy, kde-format
+#| msgid "Folder creation failed"
+msgctxt "@title:window"
+msgid "Folder Creation Failed"
 msgstr "A mappa létrehozása nem sikerült"
 
 #: widgets/collectiongeneralpropertiespage.cpp:27
@@ -836,7 +857,6 @@ msgstr "0 objektum"
 
 #. i18n: ectx: property (text), widget (QLabel, label_3)
 #: widgets/collectiongeneralpropertiespage.ui:82
-#: widgets/collectionmaintenancepage.ui:50
 #, kde-format
 msgid "Size:"
 msgstr "Méret:"
@@ -847,41 +867,35 @@ msgstr "Méret:"
 msgid "0 Byte"
 msgstr "0 bájt"
 
-#: widgets/collectionmaintenancepage.cpp:45
+#: widgets/collectionmaintenancepage.cpp:46
 #, kde-format
 msgid "Remember that indexing can take some minutes."
 msgstr "Az indexelés néhány percbe is beletelhet."
 
-#: widgets/collectionmaintenancepage.cpp:70
+#: widgets/collectionmaintenancepage.cpp:71
 #, kde-format
 msgid "Maintenance"
 msgstr "Karbantartás"
 
-#: widgets/collectionmaintenancepage.cpp:129
+#: widgets/collectionmaintenancepage.cpp:130
 #, kde-format
 msgid "Error while retrieving indexed items count"
 msgstr "Hiba az indexelt elemek számának lekérésekor"
 
-#: widgets/collectionmaintenancepage.cpp:132
+#: widgets/collectionmaintenancepage.cpp:133
 #, kde-format
 msgid "Indexed %1 item in this folder"
 msgid_plural "Indexed %1 items in this folder"
 msgstr[0] "%1 elem indexelve ebben a mappában"
 msgstr[1] "%1 elem indexelve ebben a mappában"
 
-#: widgets/collectionmaintenancepage.cpp:136
+#: widgets/collectionmaintenancepage.cpp:137
 #, kde-format
 msgid "Calculating indexed items..."
 msgstr "Indexelt elemek számolása…"
 
-#. i18n: ectx: property (title), widget (QGroupBox, filesGroup)
-#: widgets/collectionmaintenancepage.ui:23
-#, kde-format
-msgid "Files"
-msgstr "Fájlok"
-
 #. i18n: ectx: property (text), widget (QLabel, label)
-#: widgets/collectionmaintenancepage.ui:29
+#: widgets/collectionmaintenancepage.ui:17
 #, kde-format
 msgid "Folder type:"
 msgstr "Mappatípus:"
@@ -890,52 +904,52 @@ msgstr "Mappatípus:"
 #. i18n: ectx: property (text), widget (QLabel, folderSizeLbl)
 #. i18n: ectx: property (text), widget (QLabel, itemsCountLbl)
 #. i18n: ectx: property (text), widget (QLabel, unreadItemsCountLbl)
-#: widgets/collectionmaintenancepage.ui:36
-#: widgets/collectionmaintenancepage.ui:43
-#: widgets/collectionmaintenancepage.ui:79
-#: widgets/collectionmaintenancepage.ui:93
+#: widgets/collectionmaintenancepage.ui:24
+#: widgets/collectionmaintenancepage.ui:31
+#: widgets/collectionmaintenancepage.ui:52
+#: widgets/collectionmaintenancepage.ui:66
 #, kde-format
 msgid "unknown"
 msgstr "ismeretlen"
 
-#. i18n: ectx: property (title), widget (QGroupBox, itemsGroup)
-#: widgets/collectionmaintenancepage.ui:66
+#. i18n: ectx: property (text), widget (QLabel, label_3)
+#: widgets/collectionmaintenancepage.ui:38
 #, kde-format
-msgid "Items"
-msgstr "Elemek"
+msgid "File size:"
+msgstr "Fájlméret:"
 
 #. i18n: ectx: property (text), widget (QLabel, label_5)
-#: widgets/collectionmaintenancepage.ui:72
+#: widgets/collectionmaintenancepage.ui:45
 #, kde-format
 msgid "Total items:"
 msgstr "Összes elem:"
 
 #. i18n: ectx: property (text), widget (QLabel, label_7)
-#: widgets/collectionmaintenancepage.ui:86
+#: widgets/collectionmaintenancepage.ui:59
 #, kde-format
 msgid "Unread items:"
 msgstr "Olvasatlan elem:"
 
-#. i18n: ectx: property (title), widget (QGroupBox, indexingGroup)
-#: widgets/collectionmaintenancepage.ui:109
+#. i18n: ectx: property (text), widget (QLabel, indexingLabel)
+#: widgets/collectionmaintenancepage.ui:73
 #, kde-format
-msgid "Indexing"
-msgstr "Indexelés"
+msgid "Indexing:"
+msgstr "Indexelés:"
 
 #. i18n: ectx: property (text), widget (QCheckBox, enableIndexingChkBox)
-#: widgets/collectionmaintenancepage.ui:115
+#: widgets/collectionmaintenancepage.ui:80
 #, kde-format
 msgid "Enable fulltext indexing"
 msgstr "Teljes szöveges indexelés bekapcsolása"
 
 #. i18n: ectx: property (text), widget (QLabel, indexedCountLbl)
-#: widgets/collectionmaintenancepage.ui:122
+#: widgets/collectionmaintenancepage.ui:87
 #, kde-format
-msgid "Retrieving indexed items count ..."
+msgid "Retrieving indexed items count..."
 msgstr "Indexelt elemek számának lekérése…"
 
 #. i18n: ectx: property (text), widget (QPushButton, reindexButton)
-#: widgets/collectionmaintenancepage.ui:129
+#: widgets/collectionmaintenancepage.ui:94
 #, kde-format
 msgid "Reindex folder"
 msgstr "Mappa újraindexelése"
@@ -951,25 +965,12 @@ msgid "Open collection dialog"
 msgstr "Gyűjteményablak megnyitása"
 
 #: widgets/collectionrequester.cpp:143
-#, kde-format
+#, fuzzy, kde-format
+#| msgctxt "@title:window"
+#| msgid "Select a collection"
 msgctxt "@title:window"
-msgid "Select a collection"
+msgid "Select a Collection"
 msgstr "Gyűjtemény kiválasztása"
-
-#: widgets/collectionview.cpp:220
-#, kde-format
-msgid "&Move here"
-msgstr "Mo&zgatás ide"
-
-#: widgets/collectionview.cpp:221
-#, kde-format
-msgid "&Copy here"
-msgstr "Má&solás ide"
-
-#: widgets/collectionview.cpp:223
-#, kde-format
-msgid "Cancel"
-msgstr "Mégsem"
 
 #: widgets/conflictresolvedialog.cpp:129
 #, kde-format
@@ -1031,12 +1032,12 @@ msgstr ""
 msgid "Data"
 msgstr "Adat"
 
-#: widgets/controlgui.cpp:230
+#: widgets/controlgui.cpp:223
 #, kde-format
 msgid "Starting Akonadi server..."
 msgstr "Az Akonadi szolgáltatás elindul..."
 
-#: widgets/controlgui.cpp:236
+#: widgets/controlgui.cpp:229
 #, kde-format
 msgid "Stopping Akonadi server..."
 msgstr "Az Akonadi szolgáltatás leáll..."
@@ -1056,12 +1057,12 @@ msgstr "&Másolás ide"
 msgid "&Link Here"
 msgstr "&Hivatkozás ide"
 
-#: widgets/dragdropmanager.cpp:228
+#: widgets/dragdropmanager.cpp:229
 #, kde-format
 msgid "C&ancel"
 msgstr "&Mégse"
 
-#: widgets/erroroverlay.cpp:227
+#: widgets/erroroverlay.cpp:225
 #, kde-format
 msgctxt "%1 is a reason why"
 msgid ""
@@ -1073,24 +1074,24 @@ msgstr ""
 "\n"
 "%1"
 
-#: widgets/erroroverlay.cpp:231 widgets/erroroverlay.cpp:232
+#: widgets/erroroverlay.cpp:229 widgets/erroroverlay.cpp:230
 #, kde-format
 msgid "Personal information management service is starting..."
 msgstr "A személyes-információ kezelő szolgáltatás indul…"
 
-#: widgets/erroroverlay.cpp:236 widgets/erroroverlay.cpp:237
+#: widgets/erroroverlay.cpp:234 widgets/erroroverlay.cpp:235
 #, kde-format
 msgid "Personal information management service is shutting down..."
 msgstr "A személyes-információ kezelő szolgáltatás leáll…"
 
-#: widgets/erroroverlay.cpp:241
+#: widgets/erroroverlay.cpp:239
 #, kde-format
 msgid ""
 "Personal information management service is performing a database upgrade."
 msgstr ""
 "A személyes-információ kezelő szolgáltatás adatbázis frissítést hajt végre."
 
-#: widgets/erroroverlay.cpp:243
+#: widgets/erroroverlay.cpp:241
 #, kde-format
 msgid ""
 "Personal information management service is performing a database upgrade.\n"
@@ -1146,12 +1147,12 @@ msgstr "Az Akonadi személyes-információ kezelő szolgáltatás nem üzemképe
 msgid "Details..."
 msgstr "Részletek…"
 
-#: widgets/manageaccountwidget.cpp:199
+#: widgets/manageaccountwidget.cpp:205
 #, kde-format
 msgid "Do you want to remove account '%1'?"
 msgstr "Biztosan törölni szeretné ezt a fiókot: „%1”?"
 
-#: widgets/manageaccountwidget.cpp:199
+#: widgets/manageaccountwidget.cpp:206
 #, kde-format
 msgid "Remove account?"
 msgstr "Fiók eltávolítása?"
@@ -1162,26 +1163,32 @@ msgstr "Fiók eltávolítása?"
 msgid "Incoming accounts (add at least one):"
 msgstr "Beérkező fiókok (adjon hozzá legalább egyet):"
 
+#. i18n: ectx: property (placeholderText), widget (QLineEdit, mFilterAccount)
+#: widgets/manageaccountwidget.ui:26
+#, kde-format
+msgid "Filter…"
+msgstr "Szűrő…"
+
 #. i18n: ectx: property (text), widget (QPushButton, mAddAccountButton)
-#: widgets/manageaccountwidget.ui:36
+#: widgets/manageaccountwidget.ui:40
 #, kde-format
 msgid "A&dd..."
 msgstr "Hozzáa&dás…"
 
 #. i18n: ectx: property (text), widget (QPushButton, mModifyAccountButton)
-#: widgets/manageaccountwidget.ui:46
+#: widgets/manageaccountwidget.ui:50
 #, kde-format
 msgid "&Modify..."
 msgstr "&Módosítás…"
 
 #. i18n: ectx: property (text), widget (QPushButton, mRemoveAccountButton)
-#: widgets/manageaccountwidget.ui:56
+#: widgets/manageaccountwidget.ui:60
 #, kde-format
 msgid "R&emove"
 msgstr "&Eltávolítás"
 
 #. i18n: ectx: property (text), widget (QPushButton, mRestartAccountButton)
-#: widgets/manageaccountwidget.ui:73
+#: widgets/manageaccountwidget.ui:77
 #, kde-format
 msgid "Restart"
 msgstr "Újraindítás"
@@ -1818,11 +1825,6 @@ msgstr "A tesztjelentés elmentése"
 
 #: widgets/selftestdialog.cpp:650
 #, kde-format
-msgid "Error"
-msgstr "Hiba"
-
-#: widgets/selftestdialog.cpp:650
-#, kde-format
 msgid "Could not open file '%1'"
 msgstr "Nem sikerült megnyitni ezt a fájlt: \"%1\""
 
@@ -1854,261 +1856,214 @@ msgstr ""
 "<p>További hibaelhárítási tanácsok találhatók itt: <a href=\"https://"
 "userbase.kde.org/Akonadi\">userbase.kde.org/Akonadi</a>.</p>"
 
-#: widgets/standardactionmanager.cpp:76
-#, kde-format
+#: widgets/standardactionmanager.cpp:79
 msgid "&New Folder..."
 msgstr "Ú&j mappa…"
 
-#: widgets/standardactionmanager.cpp:76
-#, kde-format
+#: widgets/standardactionmanager.cpp:79
 msgid "New"
 msgstr "Új"
 
-#: widgets/standardactionmanager.cpp:78
-#, kde-format
+#: widgets/standardactionmanager.cpp:81
 msgid "&Delete Folder"
 msgstr "Mappa &törlése"
 
-#: widgets/standardactionmanager.cpp:78
-#, kde-format
+#: widgets/standardactionmanager.cpp:81
 msgid "Delete"
 msgstr "Törlés"
 
-#: widgets/standardactionmanager.cpp:80
-#, kde-format
+#: widgets/standardactionmanager.cpp:83
 msgid "&Synchronize Folder"
 msgstr "Mappa &szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:81 widgets/standardactionmanager.cpp:162
-#: widgets/standardactionmanager.cpp:255
-#, kde-format
+#: widgets/standardactionmanager.cpp:84 widgets/standardactionmanager.cpp:158
+#: widgets/standardactionmanager.cpp:244
 msgid "Synchronize"
 msgstr "Szinkronizálás"
 
-#: widgets/standardactionmanager.cpp:88
-#, kde-format
+#: widgets/standardactionmanager.cpp:91
 msgid "Folder &Properties"
 msgstr "Mappa &tulajdonságai"
 
-#: widgets/standardactionmanager.cpp:89 widgets/standardactionmanager.cpp:154
-#, kde-format
+#: widgets/standardactionmanager.cpp:92 widgets/standardactionmanager.cpp:150
 msgid "Properties"
 msgstr "Tulajdonságok"
 
-#: widgets/standardactionmanager.cpp:96
-#, kde-format
+#: widgets/standardactionmanager.cpp:99
 msgid "&Paste"
 msgstr "&Beillesztés"
 
-#: widgets/standardactionmanager.cpp:96
-#, kde-format
+#: widgets/standardactionmanager.cpp:99
 msgid "Paste"
 msgstr "Beillesztés"
 
-#: widgets/standardactionmanager.cpp:99
-#, kde-format
+#: widgets/standardactionmanager.cpp:102
 msgid "Manage Local &Subscriptions..."
 msgstr "&Helyi előfizetések kezelése…"
 
-#: widgets/standardactionmanager.cpp:100
-#, kde-format
+#: widgets/standardactionmanager.cpp:103
 msgid "Manage Local Subscriptions"
 msgstr "Helyi előfizetések kezelése…"
 
-#: widgets/standardactionmanager.cpp:107
-#, kde-format
+#: widgets/standardactionmanager.cpp:110
 msgid "Add to Favorite Folders"
 msgstr "Hozzáadás a kedvenc mappához"
 
-#: widgets/standardactionmanager.cpp:108
-#, kde-format
+#: widgets/standardactionmanager.cpp:111
 msgid "Add to Favorite"
 msgstr "Hozzáadás a kedvencekhez"
 
-#: widgets/standardactionmanager.cpp:115
-#, kde-format
+#: widgets/standardactionmanager.cpp:118
 msgid "Remove from Favorite Folders"
 msgstr "Eltávolítás a kedvenc mappából"
 
-#: widgets/standardactionmanager.cpp:116
-#, kde-format
+#: widgets/standardactionmanager.cpp:119
 msgid "Remove from Favorite"
 msgstr "Eltávolítás a kedvencekből"
 
-#: widgets/standardactionmanager.cpp:123
-#, kde-format
+#: widgets/standardactionmanager.cpp:125
 msgid "Rename Favorite..."
 msgstr "Kedvenc átnevezése…"
 
-#: widgets/standardactionmanager.cpp:124
-#, kde-format
+#: widgets/standardactionmanager.cpp:125
 msgid "Rename"
 msgstr "Átnevezés"
 
-#: widgets/standardactionmanager.cpp:131 widgets/standardactionmanager.cpp:170
-#, kde-format
+#: widgets/standardactionmanager.cpp:127 widgets/standardactionmanager.cpp:165
 msgid "Copy Folder To..."
 msgstr "Mappa másolása ide…"
 
-#: widgets/standardactionmanager.cpp:132 widgets/standardactionmanager.cpp:138
-#: widgets/standardactionmanager.cpp:171 widgets/standardactionmanager.cpp:185
-#, kde-format
+#: widgets/standardactionmanager.cpp:128 widgets/standardactionmanager.cpp:134
+#: widgets/standardactionmanager.cpp:165 widgets/standardactionmanager.cpp:174
 msgid "Copy To"
 msgstr "Másolás ide"
 
-#: widgets/standardactionmanager.cpp:138 widgets/standardactionmanager.cpp:185
-#, kde-format
+#: widgets/standardactionmanager.cpp:134 widgets/standardactionmanager.cpp:174
 msgid "Copy Item To..."
 msgstr "Elem másolása ide…"
 
-#: widgets/standardactionmanager.cpp:139 widgets/standardactionmanager.cpp:186
-#, kde-format
+#: widgets/standardactionmanager.cpp:135 widgets/standardactionmanager.cpp:175
 msgid "Move Item To..."
 msgstr "Elem mozgatása ide…"
 
-#: widgets/standardactionmanager.cpp:139 widgets/standardactionmanager.cpp:142
-#: widgets/standardactionmanager.cpp:179 widgets/standardactionmanager.cpp:186
-#, kde-format
+#: widgets/standardactionmanager.cpp:135 widgets/standardactionmanager.cpp:138
+#: widgets/standardactionmanager.cpp:168 widgets/standardactionmanager.cpp:175
 msgid "Move To"
 msgstr "Mozgatás ide"
 
-#: widgets/standardactionmanager.cpp:141 widgets/standardactionmanager.cpp:178
-#, kde-format
+#: widgets/standardactionmanager.cpp:137 widgets/standardactionmanager.cpp:167
 msgid "Move Folder To..."
 msgstr "Mappa áthelyezése ide…"
 
-#: widgets/standardactionmanager.cpp:148
-#, kde-format
+#: widgets/standardactionmanager.cpp:144
 msgid "&Cut Item"
 msgstr "Elem &kivágása"
 
-#: widgets/standardactionmanager.cpp:148 widgets/standardactionmanager.cpp:149
-#, kde-format
+#: widgets/standardactionmanager.cpp:144 widgets/standardactionmanager.cpp:145
 msgid "Cut"
 msgstr "Kivágás"
 
-#: widgets/standardactionmanager.cpp:149
-#, kde-format
+#: widgets/standardactionmanager.cpp:145
 msgid "&Cut Folder"
 msgstr "Mappa &kivágása"
 
-#: widgets/standardactionmanager.cpp:150
-#, kde-format
+#: widgets/standardactionmanager.cpp:146
 msgid "Create Resource"
 msgstr "Erőforrás létrehozása"
 
-#: widgets/standardactionmanager.cpp:151
-#, kde-format
+#: widgets/standardactionmanager.cpp:147
 msgid "Delete Resource"
 msgstr "Erőforrás törlése"
 
-#: widgets/standardactionmanager.cpp:153
-#, kde-format
+#: widgets/standardactionmanager.cpp:149
 msgid "&Resource Properties"
 msgstr "E&rőforrás-tulajdonságok"
 
-#: widgets/standardactionmanager.cpp:161
-#, kde-format
+#: widgets/standardactionmanager.cpp:157
 msgid "Synchronize Resource"
 msgstr "Erőforrás szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:168
-#, kde-format
+#: widgets/standardactionmanager.cpp:164
 msgid "Work Offline"
 msgstr "Kapcsolat nélküli munka"
 
-#: widgets/standardactionmanager.cpp:188
-#, kde-format
+#: widgets/standardactionmanager.cpp:177
 msgid "&Synchronize Folder Recursively"
 msgstr "Mappa &szinkronizálása rekurzívan"
 
-#: widgets/standardactionmanager.cpp:189
-#, kde-format
+#: widgets/standardactionmanager.cpp:178
 msgid "Synchronize Recursively"
 msgstr "Szinkronizálás rekurzívan"
 
-#: widgets/standardactionmanager.cpp:196
-#, kde-format
+#: widgets/standardactionmanager.cpp:185
 msgid "&Move Folder To Trash"
 msgstr "&Mappa áthelyezése a kukába"
 
-#: widgets/standardactionmanager.cpp:197
-#, kde-format
+#: widgets/standardactionmanager.cpp:186
 msgid "Move Folder To Trash"
 msgstr "Mappa áthelyezése a kukába"
 
-#: widgets/standardactionmanager.cpp:204
-#, kde-format
+#: widgets/standardactionmanager.cpp:193
 msgid "&Move Item To Trash"
 msgstr "&Elem áthelyezése a kukába"
 
-#: widgets/standardactionmanager.cpp:205
-#, kde-format
+#: widgets/standardactionmanager.cpp:194
 msgid "Move Item To Trash"
 msgstr "Elem áthelyezése a kukába"
 
-#: widgets/standardactionmanager.cpp:212 widgets/standardactionmanager.cpp:228
-#, kde-format
+#: widgets/standardactionmanager.cpp:201 widgets/standardactionmanager.cpp:217
 msgid "&Restore Folder From Trash"
 msgstr "&Mappa visszaállítása a kukából"
 
-#: widgets/standardactionmanager.cpp:213 widgets/standardactionmanager.cpp:229
-#, kde-format
+#: widgets/standardactionmanager.cpp:202 widgets/standardactionmanager.cpp:218
 msgid "Restore Folder From Trash"
 msgstr "Mappa visszaállítása a kukából"
 
-#: widgets/standardactionmanager.cpp:220 widgets/standardactionmanager.cpp:237
-#: widgets/standardactionmanager.cpp:244
-#, kde-format
+#: widgets/standardactionmanager.cpp:209 widgets/standardactionmanager.cpp:226
+#: widgets/standardactionmanager.cpp:233
 msgid "&Restore Item From Trash"
 msgstr "&Elem visszaállítása a kukából"
 
-#: widgets/standardactionmanager.cpp:221 widgets/standardactionmanager.cpp:238
-#: widgets/standardactionmanager.cpp:244
-#, kde-format
+#: widgets/standardactionmanager.cpp:210 widgets/standardactionmanager.cpp:227
+#: widgets/standardactionmanager.cpp:233
 msgid "Restore Item From Trash"
 msgstr "Elem visszaállítása a kukából"
 
-#: widgets/standardactionmanager.cpp:235
-#, kde-format
+#: widgets/standardactionmanager.cpp:224
 msgid "&Restore Collection From Trash"
 msgstr "&Gyűjtemény visszaállítása a kukából"
 
-#: widgets/standardactionmanager.cpp:235
-#, kde-format
+#: widgets/standardactionmanager.cpp:224
 msgid "Restore Collection From Trash"
 msgstr "Gyűjtemény visszaállítása a kukából"
 
-#: widgets/standardactionmanager.cpp:246
-#, kde-format
+#: widgets/standardactionmanager.cpp:235
 msgid "&Synchronize Favorite Folders"
 msgstr "&Kedvenc mappák szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:247
-#, kde-format
+#: widgets/standardactionmanager.cpp:236
 msgid "Synchronize Favorite Folders"
 msgstr "Kedvenc mappák szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:254
-#, kde-format
+#: widgets/standardactionmanager.cpp:243
 msgid "Synchronize Folder Tree"
 msgstr "Mappafa szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:340
+#: widgets/standardactionmanager.cpp:329
 #, kde-format
 msgid "&Copy Folder"
 msgid_plural "&Copy %1 Folders"
 msgstr[0] "Mappa má&solása"
 msgstr[1] "%1 mappa má&solása"
 
-#: widgets/standardactionmanager.cpp:341
+#: widgets/standardactionmanager.cpp:330
 #, kde-format
 msgid "&Copy Item"
 msgid_plural "&Copy %1 Items"
 msgstr[0] "Elem más&olása"
 msgstr[1] "%1 elem más&olása"
 
-#: widgets/standardactionmanager.cpp:342
+#: widgets/standardactionmanager.cpp:331
 #, kde-format
 msgctxt "@action"
 msgid "&Cut Item"
@@ -2116,7 +2071,7 @@ msgid_plural "&Cut %1 Items"
 msgstr[0] "Elem &kivágása"
 msgstr[1] "%1 elem &kivágása"
 
-#: widgets/standardactionmanager.cpp:343
+#: widgets/standardactionmanager.cpp:332
 #, kde-format
 msgctxt "@action"
 msgid "&Cut Folder"
@@ -2124,14 +2079,14 @@ msgid_plural "&Cut %1 Folders"
 msgstr[0] "Mappa &kivágása"
 msgstr[1] "%1 mappa &kivágása"
 
-#: widgets/standardactionmanager.cpp:344
+#: widgets/standardactionmanager.cpp:333
 #, kde-format
 msgid "&Delete Item"
 msgid_plural "&Delete %1 Items"
 msgstr[0] "Elem &törlése"
 msgstr[1] "%1 elem &törlése"
 
-#: widgets/standardactionmanager.cpp:345
+#: widgets/standardactionmanager.cpp:334
 #, kde-format
 msgctxt "@action"
 msgid "&Delete Folder"
@@ -2139,7 +2094,7 @@ msgid_plural "&Delete %1 Folders"
 msgstr[0] "Mappa &törlése"
 msgstr[1] "%1 mappa &törlése"
 
-#: widgets/standardactionmanager.cpp:346
+#: widgets/standardactionmanager.cpp:335
 #, kde-format
 msgctxt "@action"
 msgid "&Synchronize Folder"
@@ -2147,70 +2102,70 @@ msgid_plural "&Synchronize %1 Folders"
 msgstr[0] "Mappa &szinkronizálása"
 msgstr[1] "%1 mappa &szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:347
+#: widgets/standardactionmanager.cpp:336
 #, kde-format
 msgid "&Delete Resource"
 msgid_plural "&Delete %1 Resources"
 msgstr[0] "&Erőforrás törlése"
 msgstr[1] "%1 &erőforrás törlése"
 
-#: widgets/standardactionmanager.cpp:348
+#: widgets/standardactionmanager.cpp:337
 #, kde-format
 msgid "&Synchronize Resource"
 msgid_plural "&Synchronize %1 Resources"
 msgstr[0] "Erőforrás &szinkronizálása"
 msgstr[1] "%1 erőforrás &szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:350
+#: widgets/standardactionmanager.cpp:339
 #, kde-format
 msgid "Copy Folder"
 msgid_plural "Copy %1 Folders"
 msgstr[0] "Mappa másolása"
 msgstr[1] "%1 mappa másolása"
 
-#: widgets/standardactionmanager.cpp:351
+#: widgets/standardactionmanager.cpp:340
 #, kde-format
 msgid "Copy Item"
 msgid_plural "Copy %1 Items"
 msgstr[0] "Elem másolása"
 msgstr[1] "%1 elem másolása"
 
-#: widgets/standardactionmanager.cpp:352
+#: widgets/standardactionmanager.cpp:341
 #, kde-format
 msgid "Cut Item"
 msgid_plural "Cut %1 Items"
 msgstr[0] "Elem kivágása"
 msgstr[1] "%1 elem kivágása"
 
-#: widgets/standardactionmanager.cpp:353
+#: widgets/standardactionmanager.cpp:342
 #, kde-format
 msgid "Cut Folder"
 msgid_plural "Cut %1 Folders"
 msgstr[0] "Mappa kivágása"
 msgstr[1] "%1 mappa kivágása"
 
-#: widgets/standardactionmanager.cpp:354
+#: widgets/standardactionmanager.cpp:343
 #, kde-format
 msgid "Delete Item"
 msgid_plural "Delete %1 Items"
 msgstr[0] "Elem törlése"
 msgstr[1] "%1 elem törlése"
 
-#: widgets/standardactionmanager.cpp:355
+#: widgets/standardactionmanager.cpp:344
 #, kde-format
 msgid "Delete Folder"
 msgid_plural "Delete %1 Folders"
 msgstr[0] "Mappa törlése"
 msgstr[1] "%1 mappa törlése"
 
-#: widgets/standardactionmanager.cpp:356
+#: widgets/standardactionmanager.cpp:345
 #, kde-format
 msgid "Synchronize Folder"
 msgid_plural "Synchronize %1 Folders"
 msgstr[0] "Mappa szinkronizálása"
 msgstr[1] "%1 mappa szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:357
+#: widgets/standardactionmanager.cpp:346
 #, kde-format
 msgctxt "@action"
 msgid "Delete Resource"
@@ -2218,7 +2173,7 @@ msgid_plural "Delete %1 Resources"
 msgstr[0] "Erőforrás törlése"
 msgstr[1] "%1 erőforrás törlése"
 
-#: widgets/standardactionmanager.cpp:358
+#: widgets/standardactionmanager.cpp:347
 #, kde-format
 msgctxt "@action"
 msgid "Synchronize Resource"
@@ -2226,13 +2181,13 @@ msgid_plural "Synchronize %1 Resources"
 msgstr[0] "Erőforrás szinkronizálása"
 msgstr[1] "%1 erőforrás szinkronizálása"
 
-#: widgets/standardactionmanager.cpp:361
+#: widgets/standardactionmanager.cpp:350
 #, kde-format
 msgctxt "@label:textbox name of Akonadi folder"
 msgid "Name"
 msgstr "Név"
 
-#: widgets/standardactionmanager.cpp:368
+#: widgets/standardactionmanager.cpp:357
 #, kde-format
 msgid "Do you really want to delete this folder and all its sub-folders?"
 msgid_plural ""
@@ -2241,91 +2196,101 @@ msgstr[0] "Biztos, hogy törölni akarja ezt a mappát és az almappáját?"
 msgstr[1] ""
 "Biztos, hogy törölni akarja a(z) %1 mappát és az összes almappáikat?"
 
-#: widgets/standardactionmanager.cpp:371
-#, kde-format
+#: widgets/standardactionmanager.cpp:360
+#, fuzzy, kde-format
+#| msgid "Delete Folder"
+#| msgid_plural "Delete %1 Folders"
 msgctxt "@title:window"
-msgid "Delete folder?"
-msgid_plural "Delete folders?"
-msgstr[0] "Mappa törlése?"
-msgstr[1] "Mappák törlése?"
+msgid "Delete Folder?"
+msgid_plural "Delete Folders?"
+msgstr[0] "Mappa törlése"
+msgstr[1] "%1 mappa törlése"
 
-#: widgets/standardactionmanager.cpp:372
+#: widgets/standardactionmanager.cpp:361
 #, kde-format
 msgid "Could not delete folder: %1"
 msgstr "Nem sikerült törölni ezt a mappát: %1"
 
-#: widgets/standardactionmanager.cpp:373
-#, kde-format
-msgid "Folder deletion failed"
+#: widgets/standardactionmanager.cpp:362
+#, fuzzy, kde-format
+#| msgid "Folder deletion failed"
+msgctxt "@title:window"
+msgid "Folder Deletion Failed"
 msgstr "Nem sikerült törölni a mappát"
 
-#: widgets/standardactionmanager.cpp:375
+#: widgets/standardactionmanager.cpp:364
 #, kde-format
 msgctxt "@title:window"
 msgid "Properties of Folder %1"
 msgstr "A(z) %1 mappa tulajdonságai"
 
-#: widgets/standardactionmanager.cpp:379
+#: widgets/standardactionmanager.cpp:368
 #, kde-format
 msgid "Do you really want to delete the selected item?"
 msgid_plural "Do you really want to delete %1 items?"
 msgstr[0] "Biztosan törölni szeretné a kijelölt elemet?"
 msgstr[1] "Biztosan törölni szeretne %1 elemet?"
 
-#: widgets/standardactionmanager.cpp:380
-#, kde-format
+#: widgets/standardactionmanager.cpp:369
+#, fuzzy, kde-format
+#| msgid "Delete Item"
+#| msgid_plural "Delete %1 Items"
 msgctxt "@title:window"
-msgid "Delete item?"
-msgid_plural "Delete items?"
-msgstr[0] "Elem törlése?"
-msgstr[1] "Elemek törlése?"
+msgid "Delete Item?"
+msgid_plural "Delete Items?"
+msgstr[0] "Elem törlése"
+msgstr[1] "%1 elem törlése"
 
-#: widgets/standardactionmanager.cpp:381
+#: widgets/standardactionmanager.cpp:370
 #, kde-format
 msgid "Could not delete item: %1"
 msgstr "Nem törölhető az elem: %1"
 
-#: widgets/standardactionmanager.cpp:382
-#, kde-format
-msgid "Item deletion failed"
+#: widgets/standardactionmanager.cpp:371
+#, fuzzy, kde-format
+#| msgid "Item deletion failed"
+msgctxt "@title:window"
+msgid "Item Deletion Failed"
 msgstr "Az elem törlése nem sikerült"
 
-#: widgets/standardactionmanager.cpp:384
+#: widgets/standardactionmanager.cpp:373
 #, kde-format
 msgctxt "@title:window"
 msgid "Rename Favorite"
 msgstr "Kedvenc átnevezése"
 
-#: widgets/standardactionmanager.cpp:385
+#: widgets/standardactionmanager.cpp:374
 #, kde-format
 msgctxt "@label:textbox name of the folder"
 msgid "Name:"
 msgstr "Név:"
 
-#: widgets/standardactionmanager.cpp:387
+#: widgets/standardactionmanager.cpp:376
 #, kde-format
 msgctxt "@title:window"
 msgid "New Resource"
 msgstr "Új erőforrás"
 
-#: widgets/standardactionmanager.cpp:388
+#: widgets/standardactionmanager.cpp:377
 #, kde-format
 msgid "Could not create resource: %1"
 msgstr "Nem hozható létre az erőforrás: %1"
 
-#: widgets/standardactionmanager.cpp:389
-#, kde-format
-msgid "Resource creation failed"
+#: widgets/standardactionmanager.cpp:378
+#, fuzzy, kde-format
+#| msgid "Resource creation failed"
+msgctxt "@title:window"
+msgid "Resource Creation Failed"
 msgstr "Az erőforrás létrehozása nem sikerült"
 
-#: widgets/standardactionmanager.cpp:393
+#: widgets/standardactionmanager.cpp:382
 #, kde-format
 msgid "Do you really want to delete this resource?"
 msgid_plural "Do you really want to delete %1 resources?"
 msgstr[0] "Biztosan törölni szeretné ezt az erőforrást?"
 msgstr[1] "Biztosan törölni szeretne %1 erőforrást?"
 
-#: widgets/standardactionmanager.cpp:396
+#: widgets/standardactionmanager.cpp:385
 #, kde-format
 msgctxt "@title:window"
 msgid "Delete Resource?"
@@ -2333,32 +2298,36 @@ msgid_plural "Delete Resources?"
 msgstr[0] "Erőforrás törlése?"
 msgstr[1] "Erőforrások törlése?"
 
-#: widgets/standardactionmanager.cpp:398
+#: widgets/standardactionmanager.cpp:387
 #, kde-format
 msgid "Could not paste data: %1"
 msgstr "Nem sikerült adatokat beilleszteni: %1"
 
-#: widgets/standardactionmanager.cpp:399
-#, kde-format
-msgid "Paste failed"
+#: widgets/standardactionmanager.cpp:388
+#, fuzzy, kde-format
+#| msgid "Paste failed"
+msgctxt "@title:window"
+msgid "Paste Failed"
 msgstr "Sikertelen beillesztés"
 
-#: widgets/standardactionmanager.cpp:752
+#: widgets/standardactionmanager.cpp:740
 #, kde-format
 msgid "We can not add \"/\" in folder name."
 msgstr "Nem lehet „/” karakter a mappa nevében."
 
-#: widgets/standardactionmanager.cpp:752 widgets/standardactionmanager.cpp:756
-#, kde-format
-msgid "Create new folder error"
+#: widgets/standardactionmanager.cpp:740 widgets/standardactionmanager.cpp:744
+#, fuzzy, kde-format
+#| msgid "Create new folder error"
+msgctxt "@title:window"
+msgid "Create New Folder Error"
 msgstr "Hiba az új mappa létrehozása során"
 
-#: widgets/standardactionmanager.cpp:756
+#: widgets/standardactionmanager.cpp:744
 #, kde-format
 msgid "We can not add \".\" at begin or end of folder name."
 msgstr "Nem lehet „.” karakter a mappa nevének elején vagy végén."
 
-#: widgets/standardactionmanager.cpp:995
+#: widgets/standardactionmanager.cpp:997
 #, kde-format
 msgid ""
 "Before syncing folder \"%1\" it is necessary to have the resource online. Do "
@@ -2367,23 +2336,23 @@ msgstr ""
 "A(z) „%1” mappa szinkronizálása előtt szükséges, hogy az erőforrás elérhető "
 "legyen. Szeretné elérhetővé tenni?"
 
-#: widgets/standardactionmanager.cpp:996
+#: widgets/standardactionmanager.cpp:998
 #, kde-format
 msgid "Account \"%1\" is offline"
 msgstr "A(z) „%1” fiók offline"
 
-#: widgets/standardactionmanager.cpp:997
+#: widgets/standardactionmanager.cpp:999
 #, kde-format
 msgctxt "@action:button"
 msgid "Go Online"
 msgstr "Legyen elérhető"
 
-#: widgets/standardactionmanager.cpp:1592
+#: widgets/standardactionmanager.cpp:1622
 #, kde-format
 msgid "Move to This Folder"
 msgstr "Áthelyezés ebbe a mappába"
 
-#: widgets/standardactionmanager.cpp:1592
+#: widgets/standardactionmanager.cpp:1622
 #, kde-format
 msgid "Copy to This Folder"
 msgstr "Másolás ebbe a mappába"
@@ -2394,8 +2363,10 @@ msgid "Failed to update subscription: %1"
 msgstr "Nem sikerült frissíteni a feliratkozást: %1"
 
 #: widgets/subscriptiondialog.cpp:93
-#, kde-format
-msgctxt "@title"
+#, fuzzy, kde-format
+#| msgctxt "@title"
+#| msgid "Subscription Error"
+msgctxt "@title:window"
 msgid "Subscription Error"
 msgstr "Feliratkozási hiba"
 
@@ -2429,29 +2400,33 @@ msgstr "&Feliratkozás"
 msgid "&Unsubscribe"
 msgstr "&Leiratkozás"
 
-#: widgets/tageditwidget.cpp:116
+#: widgets/tageditwidget.cpp:117
 #, kde-format
 msgid "Failed to create a new tag"
 msgstr "Nem sikerült létrehozni új címkét"
 
-#: widgets/tageditwidget.cpp:116
-#, kde-format
-msgid "An error occurred while creating a new tag"
+#: widgets/tageditwidget.cpp:117
+#, fuzzy, kde-format
+#| msgid "An error occurred while creating a new tag"
+msgctxt "@title:window"
+msgid "An Error Occurred while Creating a New Tag"
 msgstr "Hiba történt az új címke létrehozása közben"
 
-#: widgets/tageditwidget.cpp:164
+#: widgets/tageditwidget.cpp:165
 #, kde-kuit-format
 msgctxt "@info"
 msgid "Do you really want to remove the tag <resource>%1</resource>?"
 msgstr "Valóban el akarja távolítani a címkét: <resource>%1</resource>?"
 
-#: widgets/tageditwidget.cpp:165
-#, kde-format
-msgctxt "@title"
-msgid "Delete tag"
+#: widgets/tageditwidget.cpp:166
+#, fuzzy, kde-format
+#| msgctxt "@title"
+#| msgid "Delete tag"
+msgctxt "@title:window"
+msgid "Delete Tag"
 msgstr "Címke törlése"
 
-#: widgets/tageditwidget.cpp:189
+#: widgets/tageditwidget.cpp:195
 #, kde-format
 msgctxt "@info"
 msgid "Delete tag"
@@ -2475,7 +2450,7 @@ msgstr "Új címke létrehozása"
 msgid "Manage Tags"
 msgstr "Címkék kezelése"
 
-#: widgets/tagselectioncombobox.cpp:124
+#: widgets/tagselectioncombobox.cpp:126
 #, kde-format
 msgctxt "@label Placeholder text in tag selection combobox"
 msgid "Select tags..."
@@ -2519,65 +2494,98 @@ msgstr "Átalakít egy Akonadi gyűjtemény részfát XML fájllá."
 msgid "(c) 2009 Volker Krause <vkrause@kde.org>"
 msgstr "© Volker Krause, 2009. <vkrause@kde.org>"
 
-#: xml/xmldocument.cpp:84
+#: xml/xmldocument.cpp:85
 #, kde-format
 msgid "No data loaded."
 msgstr "Nincs betöltött adat."
 
-#: xml/xmldocument.cpp:123
+#: xml/xmldocument.cpp:121
 #, kde-format
 msgid "No filename specified"
 msgstr "Nincs megadva fájlnév"
 
-#: xml/xmldocument.cpp:131
+#: xml/xmldocument.cpp:129
 #, kde-format
 msgid "Unable to open data file '%1'."
 msgstr "Nem lehet megnyitni a(z) „%1” adatfájlt."
 
-#: xml/xmldocument.cpp:136
+#: xml/xmldocument.cpp:134
 #, kde-format
 msgid "File %1 does not exist."
 msgstr "Nem létezik ez a fájl: %1."
 
-#: xml/xmldocument.cpp:144
+#: xml/xmldocument.cpp:142
 #, kde-format
 msgid "Unable to parse data file '%1'."
 msgstr "Nem lehet feldolgozni a(z) „%1” adatfájlt."
 
-#: xml/xmldocument.cpp:151
+#: xml/xmldocument.cpp:150
 #, kde-format
 msgid "Schema definition could not be loaded and parsed."
 msgstr "A sémadefiníciót nem sikerült betölteni és feldolgozni."
 
-#: xml/xmldocument.cpp:156
+#: xml/xmldocument.cpp:155
 #, kde-format
 msgid "Unable to create schema parser context."
 msgstr "Nem lehet létrehozni a sémafeldolgozó kontextust."
 
-#: xml/xmldocument.cpp:161
+#: xml/xmldocument.cpp:160
 #, kde-format
 msgid "Unable to create schema."
 msgstr "Nem lehet létrehozni a sémát."
 
-#: xml/xmldocument.cpp:166
+#: xml/xmldocument.cpp:165
 #, kde-format
 msgid "Unable to create schema validation context."
 msgstr "Nem lehet létrehozni a sémavalidációs kontextust."
 
-#: xml/xmldocument.cpp:171
+#: xml/xmldocument.cpp:170
 #, kde-format
 msgid "Invalid file format."
 msgstr "Érvénytelen fájlformátum."
 
-#: xml/xmldocument.cpp:179
+#: xml/xmldocument.cpp:178
 #, kde-format
 msgid "Unable to parse data file: %1"
 msgstr "Nem lehet feldolgozni a(z) adatfájlt: %1"
 
-#: xml/xmldocument.cpp:304
+#: xml/xmldocument.cpp:303
 #, kde-format
 msgid "Unable to find collection %1"
 msgstr "Nem található gyűjtemény: %1"
+
+#~ msgid "Error"
+#~ msgstr "Hiba"
+
+#~ msgctxt "@title:window"
+#~ msgid "Delete folder?"
+#~ msgid_plural "Delete folders?"
+#~ msgstr[0] "Mappa törlése?"
+#~ msgstr[1] "Mappák törlése?"
+
+#~ msgctxt "@title:window"
+#~ msgid "Delete item?"
+#~ msgid_plural "Delete items?"
+#~ msgstr[0] "Elem törlése?"
+#~ msgstr[1] "Elemek törlése?"
+
+#~ msgid "Store emails locally:"
+#~ msgstr "E-mailek tárolása helyben:"
+
+#~ msgid "&Move here"
+#~ msgstr "Mo&zgatás ide"
+
+#~ msgid "&Copy here"
+#~ msgstr "Má&solás ide"
+
+#~ msgid "Cancel"
+#~ msgstr "Mégsem"
+
+#~ msgid "Automatically synchronize after:"
+#~ msgstr "Automatikus szinkronizáció ez után:"
+
+#~ msgid "Items"
+#~ msgstr "Elemek"
 
 #~ msgid "Id"
 #~ msgstr "Azonosító"

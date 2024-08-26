@@ -71,7 +71,7 @@ public:
     explicit QueryBuilder(const QString &table, QueryType type = Select);
 
     /**
-      Creates a new query builder with subquery in FROM cluase for SELECT queries.
+      Creates a new query builder with subquery in FROM clause for SELECT queries.
       @param tableQuery must be a valid select query
       @param tableQueryAlias alias name for table query
     */
@@ -257,6 +257,13 @@ public:
       Returns the name of the main table or subquery.
     */
     QString getTable() const;
+
+    /**
+     * Returns concatenated table name with column name.
+     * @param column Column name.
+     * @note Pass only @p column that are not prefixed by table name.
+    */
+    QString getTableWithColumn(const QString &column) const;
 
 private:
     void buildQuery(QString *query);

@@ -4,20 +4,20 @@
 # version 3 or later versions approved by the membership of KDE e.V.
 #
 # Ivan Petrouchtchak <fr.ivan@ukrainian-orthodox.org>, 2007, 2008.
-# Yuri Chornoivan <yurchor@ukr.net>, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021.
+# Yuri Chornoivan <yurchor@ukr.net>, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: libakonadi5\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2021-07-16 01:42+0000\n"
-"PO-Revision-Date: 2021-03-01 09:22+0200\n"
+"POT-Creation-Date: 2022-10-16 00:47+0000\n"
+"PO-Revision-Date: 2022-10-10 18:37+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Lokalize 20.11.70\n"
+"X-Generator: Lokalize 20.12.0\n"
 "Plural-Forms: nplurals=4; plural=n==1 ? 3 : n%10==1 && n%100!=11 ? 0 : n"
 "%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
@@ -41,23 +41,23 @@ msgstr "Зараз не налаштовано жодного обліковог
 msgid "Accounts integration is not supported"
 msgstr "Підтримки інтеграції облікових записів не передбачено"
 
-#: agentbase/agentbase.cpp:359 agentbase/preprocessorbase_p.cpp:26
+#: agentbase/agentbase.cpp:365 agentbase/preprocessorbase_p.cpp:26
 #, kde-format
 msgid "Unable to register object at dbus: %1"
 msgstr "Не вдалося зареєструвати об’єкт у D-Bus: %1"
 
-#: agentbase/agentbase.cpp:448
+#: agentbase/agentbase.cpp:454
 #, kde-format
 msgctxt "Name and type of Akonadi resource"
 msgid "%1 of type %2"
 msgstr "%1 типу %2"
 
-#: agentbase/agentbase.cpp:897
+#: agentbase/agentbase.cpp:904
 #, kde-format
 msgid "Agent identifier"
 msgstr "Ідентифікатор агента"
 
-#: agentbase/agentbase.cpp:903
+#: agentbase/agentbase.cpp:910
 #, kde-format
 msgid "Akonadi Agent"
 msgstr "Агент Akonadi"
@@ -92,70 +92,70 @@ msgctxt "@info:status"
 msgid "Not configured"
 msgstr "Не налаштовано"
 
-#: agentbase/resourcebase.cpp:525
+#: agentbase/resourcebase.cpp:517
 #, kde-format
 msgctxt "@label command line option"
 msgid "Resource identifier"
 msgstr "Ідентифікатор ресурсу"
 
-#: agentbase/resourcebase.cpp:531
+#: agentbase/resourcebase.cpp:523
 #, kde-format
 msgid "Akonadi Resource"
 msgstr "Ресурс Akonadi"
 
-#: agentbase/resourcebase.cpp:579
+#: agentbase/resourcebase.cpp:571
 #, kde-format
 msgctxt "@info"
 msgid "Invalid item retrieved"
 msgstr "Отримано некоректний запис"
 
-#: agentbase/resourcebase.cpp:602
+#: agentbase/resourcebase.cpp:594
 #, kde-format
 msgctxt "@info"
 msgid "Error while creating item: %1"
 msgstr "Помилка під час створення запису: %1"
 
-#: agentbase/resourcebase.cpp:626
+#: agentbase/resourcebase.cpp:618
 #, kde-format
 msgctxt "@info"
 msgid "Error while updating collection: %1"
 msgstr "Помилка під час спроби оновлення збірки: %1"
 
-#: agentbase/resourcebase.cpp:713
+#: agentbase/resourcebase.cpp:705
 #, kde-format
 msgctxt "@info"
 msgid "Updating local collection failed: %1."
 msgstr "Спроба оновлення локальної збірки зазнала невдачі: %1."
 
-#: agentbase/resourcebase.cpp:718
+#: agentbase/resourcebase.cpp:710
 #, kde-format
 msgctxt "@info"
 msgid "Updating local items failed: %1."
 msgstr "Спроба оновлення локальних записів зазнала невдачі: %1."
 
-#: agentbase/resourcebase.cpp:737
+#: agentbase/resourcebase.cpp:729
 #, kde-format
 msgctxt "@info"
 msgid "Cannot fetch item in offline mode."
 msgstr "Неможливо отримати елемент в автономному режимі."
 
-#: agentbase/resourcebase.cpp:916
+#: agentbase/resourcebase.cpp:918
 #, kde-format
 msgctxt "@info:status"
 msgid "Syncing folder '%1'"
 msgstr "Синхронізація теки «%1»"
 
-#: agentbase/resourcebase.cpp:936 agentbase/resourcebase.cpp:943
+#: agentbase/resourcebase.cpp:938 agentbase/resourcebase.cpp:945
 #, kde-format
 msgid "Failed to retrieve collection for sync."
 msgstr "Не вдалося отримати збірку для синхронізації."
 
-#: agentbase/resourcebase.cpp:983
+#: agentbase/resourcebase.cpp:985
 #, kde-format
 msgid "Failed to retrieve collection for attribute sync."
 msgstr "Не вдалося отримати збірку для синхронізації атрибутів."
 
-#: agentbase/resourcebase.cpp:1037
+#: agentbase/resourcebase.cpp:1039
 #, kde-format
 msgid "The requested item no longer exists"
 msgstr "Потрібного елемента вже не існує"
@@ -166,12 +166,12 @@ msgctxt "@info"
 msgid "Job canceled."
 msgstr "Виконання завдання скасовано."
 
-#: core/collectionpathresolver.cpp:99 core/collectionpathresolver.cpp:118
+#: core/collectionpathresolver.cpp:98 core/collectionpathresolver.cpp:117
 #, kde-format
 msgid "No such collection."
 msgstr "Немає такої збірки."
 
-#: core/collectionsync.cpp:508 core/collectionsync.cpp:652
+#: core/collectionsync.cpp:508 core/collectionsync.cpp:653
 #, kde-format
 msgid "Found unresolved orphan collections"
 msgstr "Знайдено непов’язані збірки"
@@ -181,54 +181,54 @@ msgstr "Знайдено непов’язані збірки"
 msgid "Did not find other item for conflict handling"
 msgstr "Не вдалося знайти інший запис для усування конфлікту"
 
-#: core/jobs/agentinstancecreatejob.cpp:71
+#: core/jobs/agentinstancecreatejob.cpp:70
 #, kde-format
 msgid "Unable to access D-Bus interface of created agent."
 msgstr "Не вдалося отримати доступ до інтерфейсу D-Bus створеного агента."
 
-#: core/jobs/agentinstancecreatejob.cpp:93
+#: core/jobs/agentinstancecreatejob.cpp:92
 #, kde-format
 msgid "Agent instance creation timed out."
 msgstr "Створення агента прострочено."
 
-#: core/jobs/agentinstancecreatejob.cpp:154
+#: core/jobs/agentinstancecreatejob.cpp:150
 #, kde-format
 msgid "Unable to obtain agent type '%1'."
 msgstr "Не вдалося отримати дані щодо типу агента «%1»."
 
-#: core/jobs/agentinstancecreatejob.cpp:162
+#: core/jobs/agentinstancecreatejob.cpp:158
 #, kde-format
 msgid "Unable to create agent instance."
 msgstr "Не вдалося створити екземпляр агента."
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:76
+#: core/jobs/collectionattributessynchronizationjob.cpp:73
 #, kde-format
 msgid "Invalid collection instance."
 msgstr "Некоректний екземпляр збірки."
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:83
-#: core/jobs/resourcesynchronizationjob.cpp:91
+#: core/jobs/collectionattributessynchronizationjob.cpp:80
+#: core/jobs/resourcesynchronizationjob.cpp:88
 #, kde-format
 msgid "Invalid resource instance."
 msgstr "Некоректний екземпляр ресурсу."
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:105
-#: core/jobs/resourcesynchronizationjob.cpp:116
+#: core/jobs/collectionattributessynchronizationjob.cpp:102
+#: core/jobs/resourcesynchronizationjob.cpp:113
 #, kde-format
 msgid "Unable to obtain D-Bus interface for resource '%1'"
 msgstr "Не вдалося отримати інтерфейс D-Bus для ресурсу «%1»"
 
-#: core/jobs/collectionattributessynchronizationjob.cpp:128
+#: core/jobs/collectionattributessynchronizationjob.cpp:125
 #, kde-format
 msgid "Collection attributes synchronization timed out."
 msgstr "Час очікування синхронізації атрибутів збірки перевищено."
 
-#: core/jobs/collectioncopyjob.cpp:55
+#: core/jobs/collectioncopyjob.cpp:54
 #, kde-format
 msgid "Invalid collection to copy"
 msgstr "Некоректна збірка для копіювання"
 
-#: core/jobs/collectioncopyjob.cpp:61
+#: core/jobs/collectioncopyjob.cpp:60
 #, kde-format
 msgid "Invalid destination collection"
 msgstr "Некоректна збірка призначення"
@@ -259,7 +259,7 @@ msgid "No objects specified for moving"
 msgstr "Не вказано об’єктів для пересування"
 
 #: core/jobs/collectionmovejob.cpp:59 core/jobs/itemmovejob.cpp:97
-#: core/jobs/linkjobimpl_p.h:38
+#: core/jobs/linkjobimpl_p.h:39
 #, kde-format
 msgid "No valid destination specified"
 msgstr "Не вказано коректного призначення"
@@ -269,17 +269,17 @@ msgstr "Не вказано коректного призначення"
 msgid "Invalid collection."
 msgstr "Некоректна збірка."
 
-#: core/jobs/itemcreatejob.cpp:107
+#: core/jobs/itemcreatejob.cpp:105
 #, kde-format
 msgid "Invalid parent collection"
 msgstr "Некоректна батьківська збірка"
 
-#: core/jobs/job.cpp:337
+#: core/jobs/job.cpp:335
 #, kde-format
 msgid "Cannot connect to the Akonadi service."
 msgstr "Не вдалося зв’язатися зі службою Akonadi."
 
-#: core/jobs/job.cpp:340
+#: core/jobs/job.cpp:338
 #, kde-format
 msgid ""
 "The protocol version of the Akonadi server is incompatible. Make sure you "
@@ -288,17 +288,17 @@ msgstr ""
 "Версія протоколу сервера Akonadi не сумісна з вашою. Переконайтеся, що ви "
 "встановили сумісну версію."
 
-#: core/jobs/job.cpp:343
+#: core/jobs/job.cpp:341
 #, kde-format
 msgid "User canceled operation."
 msgstr "Користувач скасував дію."
 
-#: core/jobs/job.cpp:348
+#: core/jobs/job.cpp:346
 #, kde-format
 msgid "Unknown error."
 msgstr "Невідома помилка."
 
-#: core/jobs/job.cpp:387
+#: core/jobs/job.cpp:385
 #, kde-format
 msgid "Unexpected response"
 msgstr "Неочікувана відповідь"
@@ -308,38 +308,38 @@ msgstr "Неочікувана відповідь"
 msgid "Failed to create relation."
 msgstr "Не вдалося створити зв’язок."
 
-#: core/jobs/resourcesynchronizationjob.cpp:142
+#: core/jobs/resourcesynchronizationjob.cpp:139
 #, kde-format
 msgid "Resource synchronization timed out."
 msgstr "Час очікування синхронізації ресурсу перевищено."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:146
+#: core/jobs/specialcollectionshelperjobs.cpp:145
 #, kde-format
 msgid "Could not fetch root collection of resource %1."
 msgstr "Не вдалося отримати кореневу збірку ресурсу %1."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:193
+#: core/jobs/specialcollectionshelperjobs.cpp:189
 #, kde-format
 msgid "No resource ID given."
 msgstr "Не вказано ідентифікатора ресурсу."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:330
+#: core/jobs/specialcollectionshelperjobs.cpp:326
 #, kde-format
 msgid "Invalid resource identifier '%1'"
 msgstr "Некоректний ідентифікатор ресурсу «%1»"
 
-#: core/jobs/specialcollectionshelperjobs.cpp:346
-#: core/jobs/specialcollectionshelperjobs.cpp:354
+#: core/jobs/specialcollectionshelperjobs.cpp:342
+#: core/jobs/specialcollectionshelperjobs.cpp:350
 #, kde-format
 msgid "Failed to configure default resource via D-Bus."
 msgstr "Не вдалося налаштувати типовий ресурс за допомогою D-Bus."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:419
+#: core/jobs/specialcollectionshelperjobs.cpp:415
 #, kde-format
 msgid "Failed to fetch the resource collection."
 msgstr "Не вдалося отримати збірку ресурсів."
 
-#: core/jobs/specialcollectionshelperjobs.cpp:606
+#: core/jobs/specialcollectionshelperjobs.cpp:599
 #, kde-format
 msgid "Timeout trying to get lock."
 msgstr "Перевищення часу очікування блокування."
@@ -349,53 +349,53 @@ msgstr "Перевищення часу очікування блокуванн�
 msgid "Failed to create tag."
 msgstr "Не вдалося створити мітку."
 
-#: core/jobs/trashjob.cpp:155
+#: core/jobs/trashjob.cpp:163
 #, kde-format
 msgid "Move to trash collection failed, aborting trash operation"
 msgstr ""
 "Спроба пересунути збірку до смітника зазнала невдачі, дію з пересування "
 "перервано"
 
-#: core/jobs/trashjob.cpp:218 core/jobs/trashrestorejob.cpp:155
+#: core/jobs/trashjob.cpp:226 core/jobs/trashrestorejob.cpp:151
 #, kde-format
 msgid "Invalid items passed"
 msgstr "Передано некоректні об’єкти"
 
-#: core/jobs/trashjob.cpp:259 core/jobs/trashrestorejob.cpp:205
+#: core/jobs/trashjob.cpp:270 core/jobs/trashrestorejob.cpp:201
 #, kde-format
 msgid "Invalid collection passed"
 msgstr "Передано некоректну збірку"
 
-#: core/jobs/trashjob.cpp:376 core/jobs/trashrestorejob.cpp:347
+#: core/jobs/trashjob.cpp:387 core/jobs/trashrestorejob.cpp:351
 #, kde-format
 msgid "No valid collection or empty itemlist"
 msgstr "Не виявлено коректної збірки або порожній список об’єктів"
 
-#: core/jobs/trashrestorejob.cpp:90
+#: core/jobs/trashrestorejob.cpp:86
 #, kde-format
 msgid "Could not find restore collection and restore resource is not available"
 msgstr ""
 "Не вдалося знайти збірку для відновлення, ресурс відновлення недоступний."
 
-#: core/models/agentinstancemodel.cpp:186
+#: core/models/agentinstancemodel.cpp:183
 #, kde-format
 msgctxt "@title:column, name of a thing"
 msgid "Name"
 msgstr "Назва"
 
-#: core/models/entitytreemodel.cpp:197
+#: core/models/entitytreemodel.cpp:193
 #, kde-format
 msgctxt "@info:status"
 msgid "Loading..."
 msgstr "Завантаження…"
 
-#: core/models/entitytreemodel.cpp:489
+#: core/models/entitytreemodel.cpp:485
 #, kde-format
 msgctxt "@window:title"
 msgid "Error"
 msgstr "Помилка"
 
-#: core/models/entitytreemodel.cpp:490
+#: core/models/entitytreemodel.cpp:486
 #, kde-format
 msgid ""
 "The target collection '%1' contains already\n"
@@ -404,7 +404,7 @@ msgstr ""
 "У збірці призначення, «%1», вже міститься\n"
 "збірка з назвою «%2»."
 
-#: core/models/entitytreemodel.cpp:659
+#: core/models/entitytreemodel.cpp:655
 #, kde-format
 msgctxt "@title:column Name of a thing"
 msgid "Name"
@@ -440,13 +440,13 @@ msgctxt "@info"
 msgid "Could not link entity: <message>%1</message>"
 msgstr "Не вдалося пов'язати елемент: <message>%1</message>"
 
-#: core/models/entitytreemodel_p.cpp:1341
+#: core/models/entitytreemodel_p.cpp:1341 widgets/selftestdialog.cpp:650
 #, kde-format
 msgctxt "@title:window"
 msgid "Error"
 msgstr "Помилка"
 
-#: core/models/favoritecollectionsmodel.cpp:408
+#: core/models/favoritecollectionsmodel.cpp:405
 #, kde-format
 msgid "Favorite Folders"
 msgstr "Теки улюблених"
@@ -466,35 +466,35 @@ msgstr "Непрочитаних повідомлень"
 msgid "Quota"
 msgstr "Квота"
 
-#: core/models/statisticsproxymodel.cpp:105
+#: core/models/statisticsproxymodel.cpp:104
 #, kde-format
 msgid "Storage Size"
 msgstr "Об’єм сховища"
 
-#: core/models/statisticsproxymodel.cpp:111
+#: core/models/statisticsproxymodel.cpp:110
 #, kde-format
 msgid "Subfolder Storage Size"
 msgstr "Об’єм сховища підтек"
 
-#: core/models/statisticsproxymodel.cpp:228
+#: core/models/statisticsproxymodel.cpp:224
 #, kde-format
 msgctxt "number of unread entities in the collection"
 msgid "Unread"
 msgstr "Непрочитаних"
 
-#: core/models/statisticsproxymodel.cpp:229
+#: core/models/statisticsproxymodel.cpp:225
 #, kde-format
 msgctxt "number of entities in the collection"
 msgid "Total"
 msgstr "Всього"
 
-#: core/models/statisticsproxymodel.cpp:230
+#: core/models/statisticsproxymodel.cpp:226
 #, kde-format
 msgctxt "collection size"
 msgid "Size"
 msgstr "Розмір"
 
-#: core/models/tagmodel.cpp:67
+#: core/models/tagmodel.cpp:64
 #, kde-format
 msgid "Tag"
 msgstr "Мітка"
@@ -509,17 +509,17 @@ msgstr "Не вдалося отримати запис для індексув�
 msgid "Index is no longer available"
 msgstr "Покажчик недоступний"
 
-#: core/partfetcher.cpp:117
+#: core/partfetcher.cpp:114
 #, kde-format
 msgid "Payload part '%1' is not available for this index"
 msgstr "Не вдалося отримати доступ до змістовної частини «%1» цього покажчика"
 
-#: core/partfetcher.cpp:126
+#: core/partfetcher.cpp:123
 #, kde-format
 msgid "No session available for this index"
 msgstr "Не вдалося встановити сеансу для цього покажчика"
 
-#: core/partfetcher.cpp:135
+#: core/partfetcher.cpp:132
 #, kde-format
 msgid "No item available for this index"
 msgstr "У цьому покажчику немає пунктів"
@@ -534,7 +534,7 @@ msgstr "Додаток без назви"
 msgid "No description available"
 msgstr "Опис відсутній"
 
-#: core/servermanager.cpp:268
+#: core/servermanager.cpp:271
 #, kde-format
 msgid ""
 "The Akonadi server protocol version differs from the protocol version used "
@@ -548,7 +548,7 @@ msgstr ""
 "запису і увійдіть до нього знову, щоб усі програми могли скористатися "
 "належною версією протоколу."
 
-#: core/servermanager.cpp:285
+#: core/servermanager.cpp:288
 #, kde-format
 msgid ""
 "There are no Akonadi Agents available. Please verify your KDE PIM "
@@ -557,7 +557,7 @@ msgstr ""
 "Немає доступних агентів Akonadi. Будь ласка, перевірте, чи правильно "
 "встановлено KDE PIM у вашій системі."
 
-#: core/session.cpp:186
+#: core/session.cpp:185
 #, kde-format
 msgid ""
 "Protocol version mismatch. Server version is older (%1) than ours (%2). If "
@@ -567,7 +567,7 @@ msgstr ""
 "клієнтську (%2). Якщо вашу систему було нещодавно оновлено, будь ласка, "
 "перезапустіть сервер Akonadi."
 
-#: core/session.cpp:195
+#: core/session.cpp:194
 #, kde-format
 msgid ""
 "Protocol version mismatch. Server version is newer (%1) than ours (%2). If "
@@ -592,80 +592,78 @@ msgstr "Перевіряє сервер Akonadi і повідомляє про �
 msgid "(c) 2008 Volker Krause <vkrause@kde.org>"
 msgstr "© Volker Krause <vkrause@kde.org>, 2008"
 
-#: widgets/agentactionmanager.cpp:34
-#, kde-format
+#: widgets/agentactionmanager.cpp:36
 msgid "&New Agent Instance..."
 msgstr "С&творити екземпляр агента…"
 
-#: widgets/agentactionmanager.cpp:35
-#, kde-format
+#: widgets/agentactionmanager.cpp:37
 msgid "&Delete Agent Instance"
 msgstr "Ви&лучити екземпляр агента"
 
-#: widgets/agentactionmanager.cpp:36
-#, kde-format
+#: widgets/agentactionmanager.cpp:38
 msgid "&Configure Agent Instance"
 msgstr "&Налаштувати екземпляр агента"
 
-#: widgets/agentactionmanager.cpp:52
+#: widgets/agentactionmanager.cpp:54
 #, kde-format
 msgctxt "@title:window"
 msgid "New Agent Instance"
 msgstr "Новий екземпляр агента"
 
-#: widgets/agentactionmanager.cpp:54
+#: widgets/agentactionmanager.cpp:56
 #, kde-format
 msgid "Could not create agent instance: %1"
 msgstr "Не вдалося створити екземпляр агента: %1"
 
-#: widgets/agentactionmanager.cpp:56
+#: widgets/agentactionmanager.cpp:58
 #, kde-format
-msgid "Agent instance creation failed"
+msgctxt "@title:window"
+msgid "Agent Instance Creation Failed"
 msgstr "Спроба створення агента зазнала невдачі"
 
-#: widgets/agentactionmanager.cpp:58
+#: widgets/agentactionmanager.cpp:60
 #, kde-format
 msgctxt "@title:window"
 msgid "Delete Agent Instance?"
 msgstr "Вилучити екземпляр агента?"
 
-#: widgets/agentactionmanager.cpp:62
+#: widgets/agentactionmanager.cpp:64
 #, kde-format
 msgid "Do you really want to delete the selected agent instance?"
 msgstr "Ви справді бажаєте вилучити позначений екземпляр агента?"
 
 #: widgets/agentconfigurationdialog.cpp:56
 #, kde-format
-msgctxt "%1 = agent name"
+msgctxt "@title:window, %1 = agent name"
 msgid "%1 Configuration"
 msgstr "Налаштування %1"
 
-#: widgets/agentconfigurationdialog.cpp:85
+#: widgets/agentconfigurationdialog.cpp:89
 #, kde-format
 msgid "%1 Handbook"
 msgstr "Підручник з %1"
 
-#: widgets/agentconfigurationdialog.cpp:86
+#: widgets/agentconfigurationdialog.cpp:90
 #, kde-format
 msgid "About %1"
 msgstr "Про %1"
 
-#: widgets/agentconfigurationwidget.cpp:97
+#: widgets/agentconfigurationwidget.cpp:95
 #, kde-format
 msgid "The configuration dialog has been opened in another window"
 msgstr "Вікно налаштувань вже відкрито у іншому вікні програми"
 
-#: widgets/agentconfigurationwidget.cpp:104
+#: widgets/agentconfigurationwidget.cpp:102
 #, kde-format
 msgid "Configuration for %1 is already opened elsewhere."
 msgstr "Вікно налаштувань для %1 вже десь відкрито."
 
-#: widgets/agentconfigurationwidget.cpp:106
+#: widgets/agentconfigurationwidget.cpp:104
 #, kde-format
 msgid "Failed to register %1 configuration dialog."
 msgstr "Не вдалося зареєструвати вікно налаштувань %1."
 
-#: widgets/cachepolicypage.cpp:41 widgets/cachepolicypage.cpp:46
+#: widgets/cachepolicypage.cpp:42 widgets/cachepolicypage.cpp:47
 #, kde-format
 msgid "minute"
 msgid_plural "minutes"
@@ -674,7 +672,7 @@ msgstr[1] "хвилини"
 msgstr[2] "хвилин"
 msgstr[3] "хвилина"
 
-#: widgets/cachepolicypage.cpp:63
+#: widgets/cachepolicypage.cpp:69
 #, kde-format
 msgid "Retrieval"
 msgstr "Отримання"
@@ -692,13 +690,13 @@ msgid "Synchronize when selecting this folder"
 msgstr "Виконувати синхронізацію у разі позначення цієї теки"
 
 #. i18n: ectx: property (text), widget (QLabel, label_2)
-#: widgets/cachepolicypage.ui:42
+#: widgets/cachepolicypage.ui:40
 #, kde-format
-msgid "Automatically synchronize after:"
-msgstr "Автоматично синхронізувати кожні:"
+msgid "Synchronize after:"
+msgstr "Синхронізувати після:"
 
 #. i18n: ectx: property (specialValueText), widget (QSpinBox, checkInterval)
-#: widgets/cachepolicypage.ui:49
+#: widgets/cachepolicypage.ui:47
 #, kde-format
 msgctxt "never check the cache"
 msgid "Never"
@@ -706,48 +704,70 @@ msgstr "Ніколи"
 
 #. i18n: ectx: property (suffix), widget (QSpinBox, checkInterval)
 #. i18n: ectx: property (suffix), widget (QSpinBox, localCacheTimeout)
-#: widgets/cachepolicypage.ui:52 widgets/cachepolicypage.ui:162
+#: widgets/cachepolicypage.ui:50 widgets/cachepolicypage.ui:133
 #, kde-format
 msgid "minutes"
 msgstr "хв."
 
-#. i18n: ectx: property (title), widget (QGroupBox, groupBox_2)
+#. i18n: ectx: property (text), widget (QLabel, localPartsLabel)
+#: widgets/cachepolicypage.ui:66
+#, kde-format
+msgid "Locally cached parts:"
+msgstr "Локально кешовані частини:"
+
 #. i18n: ectx: property (title), widget (KEditListWidget, localParts)
-#: widgets/cachepolicypage.ui:89 widgets/cachepolicypage.ui:101
+#: widgets/cachepolicypage.ui:87
 #, kde-format
 msgid "Locally Cached Parts"
 msgstr "Локально кешовані частини"
 
-#. i18n: ectx: property (title), widget (QGroupBox, retrievalOptionsGroupBox)
-#: widgets/cachepolicypage.ui:127
+#. i18n: ectx: property (text), widget (QLabel, retrievalOptionsLabel)
+#: widgets/cachepolicypage.ui:94
 #, kde-format
-msgid "Retrieval Options"
-msgstr "Параметри отримання пошти"
+msgid "Retrieval Options:"
+msgstr "Параметри отримання:"
 
 #. i18n: ectx: property (text), widget (QRadioButton, retrieveFullMessages)
-#: widgets/cachepolicypage.ui:133
+#: widgets/cachepolicypage.ui:101
 #, kde-format
 msgid "Always retrieve full &messages"
 msgstr "Завжди &отримувати повідомлення повністю"
 
 #. i18n: ectx: property (text), widget (QRadioButton, retrieveOnlyHeaders)
-#: widgets/cachepolicypage.ui:143
+#: widgets/cachepolicypage.ui:111
 #, kde-format
 msgid "&Retrieve message bodies on demand"
 msgstr "О&тримувати вміст повідомлень на вимогу"
 
 #. i18n: ectx: property (text), widget (QLabel, label)
-#: widgets/cachepolicypage.ui:152
+#: widgets/cachepolicypage.ui:118
 #, kde-format
 msgid "Keep message bodies locally for:"
 msgstr "Зберігати вміст повідомлень локально протягом:"
 
 #. i18n: ectx: property (specialValueText), widget (QSpinBox, localCacheTimeout)
-#: widgets/cachepolicypage.ui:159
+#: widgets/cachepolicypage.ui:130
 #, kde-format
 msgctxt "no cache timeout"
 msgid "Forever"
 msgstr "Нескінченний"
+
+#: widgets/clearcachejob.cpp:54
+#, kde-format
+msgid ""
+"The collection '%1' contains %2 items without Remote ID. Those items were "
+"likely never uploaded to the destination server, so clearing this collection "
+"means that those <b>data will be lost</b>. Are you sure you want to proceed?"
+msgstr ""
+"У збірці «%1» міститься %2 записів без віддаленого ідентифікатора. Ці "
+"записи, ймовірно, ніколи не було вивантажено на сервер призначення, тому "
+"спорожнення цієї збірки означатиме, що ці <b>дані буде втрачено</b>. Ви "
+"справді хочете спорожнити збірку?"
+
+#: widgets/clearcachejob.cpp:83
+#, kde-format
+msgid "Collection cache cleared. You should restart Akonadi now."
+msgstr "Кеш збірок спорожнено. Тепер вам слід перезапустити Akonadi."
 
 #: widgets/collectiondialog.cpp:56
 #, kde-format
@@ -770,7 +790,7 @@ msgstr "&Нова підтека..."
 msgid "Create a new subfolder under the currently selected folder"
 msgstr "Створити нову підтеку у вибраній теці"
 
-#: widgets/collectiondialog.cpp:264 widgets/standardactionmanager.cpp:360
+#: widgets/collectiondialog.cpp:264 widgets/standardactionmanager.cpp:349
 #, kde-format
 msgctxt "@title:window"
 msgid "New Folder"
@@ -782,14 +802,15 @@ msgctxt "@label:textbox, name of a thing"
 msgid "Name"
 msgstr "Назва"
 
-#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:362
+#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:351
 #, kde-format
 msgid "Could not create folder: %1"
 msgstr "Не вдалося створити теку: %1"
 
-#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:363
+#: widgets/collectiondialog.cpp:285 widgets/standardactionmanager.cpp:352
 #, kde-format
-msgid "Folder creation failed"
+msgctxt "@title:window"
+msgid "Folder Creation Failed"
 msgstr "Помилка створення теки"
 
 #: widgets/collectiongeneralpropertiespage.cpp:27
@@ -847,7 +868,6 @@ msgstr "0 об’єктів"
 
 #. i18n: ectx: property (text), widget (QLabel, label_3)
 #: widgets/collectiongeneralpropertiespage.ui:82
-#: widgets/collectionmaintenancepage.ui:50
 #, kde-format
 msgid "Size:"
 msgstr "Розмір:"
@@ -858,22 +878,22 @@ msgstr "Розмір:"
 msgid "0 Byte"
 msgstr "0 бутів"
 
-#: widgets/collectionmaintenancepage.cpp:45
+#: widgets/collectionmaintenancepage.cpp:46
 #, kde-format
 msgid "Remember that indexing can take some minutes."
 msgstr "Зважте на те, що індексування може тривати декілька хвилин."
 
-#: widgets/collectionmaintenancepage.cpp:70
+#: widgets/collectionmaintenancepage.cpp:71
 #, kde-format
 msgid "Maintenance"
 msgstr "Обслуговування"
 
-#: widgets/collectionmaintenancepage.cpp:129
+#: widgets/collectionmaintenancepage.cpp:130
 #, kde-format
 msgid "Error while retrieving indexed items count"
 msgstr "Помилка під час спроби отримати кількість індексованих записів"
 
-#: widgets/collectionmaintenancepage.cpp:132
+#: widgets/collectionmaintenancepage.cpp:133
 #, kde-format
 msgid "Indexed %1 item in this folder"
 msgid_plural "Indexed %1 items in this folder"
@@ -882,19 +902,13 @@ msgstr[1] "Індексовано %1 записи у цій теці"
 msgstr[2] "Індексовано %1 записів у цій теці"
 msgstr[3] "Індексовано один запис у цій теці"
 
-#: widgets/collectionmaintenancepage.cpp:136
+#: widgets/collectionmaintenancepage.cpp:137
 #, kde-format
 msgid "Calculating indexed items..."
 msgstr "Обчислюємо кількість індексованих записів…"
 
-#. i18n: ectx: property (title), widget (QGroupBox, filesGroup)
-#: widgets/collectionmaintenancepage.ui:23
-#, kde-format
-msgid "Files"
-msgstr "Файли"
-
 #. i18n: ectx: property (text), widget (QLabel, label)
-#: widgets/collectionmaintenancepage.ui:29
+#: widgets/collectionmaintenancepage.ui:17
 #, kde-format
 msgid "Folder type:"
 msgstr "Тип теки:"
@@ -903,52 +917,52 @@ msgstr "Тип теки:"
 #. i18n: ectx: property (text), widget (QLabel, folderSizeLbl)
 #. i18n: ectx: property (text), widget (QLabel, itemsCountLbl)
 #. i18n: ectx: property (text), widget (QLabel, unreadItemsCountLbl)
-#: widgets/collectionmaintenancepage.ui:36
-#: widgets/collectionmaintenancepage.ui:43
-#: widgets/collectionmaintenancepage.ui:79
-#: widgets/collectionmaintenancepage.ui:93
+#: widgets/collectionmaintenancepage.ui:24
+#: widgets/collectionmaintenancepage.ui:31
+#: widgets/collectionmaintenancepage.ui:52
+#: widgets/collectionmaintenancepage.ui:66
 #, kde-format
 msgid "unknown"
 msgstr "невідомо"
 
-#. i18n: ectx: property (title), widget (QGroupBox, itemsGroup)
-#: widgets/collectionmaintenancepage.ui:66
+#. i18n: ectx: property (text), widget (QLabel, label_3)
+#: widgets/collectionmaintenancepage.ui:38
 #, kde-format
-msgid "Items"
-msgstr "Записи"
+msgid "File size:"
+msgstr "Розмір файла:"
 
 #. i18n: ectx: property (text), widget (QLabel, label_5)
-#: widgets/collectionmaintenancepage.ui:72
+#: widgets/collectionmaintenancepage.ui:45
 #, kde-format
 msgid "Total items:"
 msgstr "Загалом записів:"
 
 #. i18n: ectx: property (text), widget (QLabel, label_7)
-#: widgets/collectionmaintenancepage.ui:86
+#: widgets/collectionmaintenancepage.ui:59
 #, kde-format
 msgid "Unread items:"
 msgstr "Непрочитаних записів:"
 
-#. i18n: ectx: property (title), widget (QGroupBox, indexingGroup)
-#: widgets/collectionmaintenancepage.ui:109
+#. i18n: ectx: property (text), widget (QLabel, indexingLabel)
+#: widgets/collectionmaintenancepage.ui:73
 #, kde-format
-msgid "Indexing"
-msgstr "Індексування"
+msgid "Indexing:"
+msgstr "Індексування:"
 
 #. i18n: ectx: property (text), widget (QCheckBox, enableIndexingChkBox)
-#: widgets/collectionmaintenancepage.ui:115
+#: widgets/collectionmaintenancepage.ui:80
 #, kde-format
 msgid "Enable fulltext indexing"
 msgstr "Увімкнути повнотекстове індексування"
 
 #. i18n: ectx: property (text), widget (QLabel, indexedCountLbl)
-#: widgets/collectionmaintenancepage.ui:122
+#: widgets/collectionmaintenancepage.ui:87
 #, kde-format
-msgid "Retrieving indexed items count ..."
+msgid "Retrieving indexed items count..."
 msgstr "Отримуємо кількість індексованих записів…"
 
 #. i18n: ectx: property (text), widget (QPushButton, reindexButton)
-#: widgets/collectionmaintenancepage.ui:129
+#: widgets/collectionmaintenancepage.ui:94
 #, kde-format
 msgid "Reindex folder"
 msgstr "Повторно індексувати теку"
@@ -966,23 +980,8 @@ msgstr "Відкрити діалогове вікно збірки"
 #: widgets/collectionrequester.cpp:143
 #, kde-format
 msgctxt "@title:window"
-msgid "Select a collection"
+msgid "Select a Collection"
 msgstr "Виберіть збірку"
-
-#: widgets/collectionview.cpp:220
-#, kde-format
-msgid "&Move here"
-msgstr "&Пересунути сюди"
-
-#: widgets/collectionview.cpp:221
-#, kde-format
-msgid "&Copy here"
-msgstr "&Скопіювати сюди"
-
-#: widgets/collectionview.cpp:223
-#, kde-format
-msgid "Cancel"
-msgstr "Скасувати"
 
 #: widgets/conflictresolvedialog.cpp:129
 #, kde-format
@@ -1045,12 +1044,12 @@ msgstr ""
 msgid "Data"
 msgstr "Дані"
 
-#: widgets/controlgui.cpp:230
+#: widgets/controlgui.cpp:223
 #, kde-format
 msgid "Starting Akonadi server..."
 msgstr "Запуск сервера Akonadi..."
 
-#: widgets/controlgui.cpp:236
+#: widgets/controlgui.cpp:229
 #, kde-format
 msgid "Stopping Akonadi server..."
 msgstr "Зупинка сервера Akonadi..."
@@ -1070,12 +1069,12 @@ msgstr "&Скопіювати сюди"
 msgid "&Link Here"
 msgstr "С&творити посилання"
 
-#: widgets/dragdropmanager.cpp:228
+#: widgets/dragdropmanager.cpp:229
 #, kde-format
 msgid "C&ancel"
 msgstr "&Скасувати"
 
-#: widgets/erroroverlay.cpp:227
+#: widgets/erroroverlay.cpp:225
 #, kde-format
 msgctxt "%1 is a reason why"
 msgid ""
@@ -1087,23 +1086,23 @@ msgstr ""
 "\n"
 "%1"
 
-#: widgets/erroroverlay.cpp:231 widgets/erroroverlay.cpp:232
+#: widgets/erroroverlay.cpp:229 widgets/erroroverlay.cpp:230
 #, kde-format
 msgid "Personal information management service is starting..."
 msgstr "Запуск служби керування особистою інформацією…"
 
-#: widgets/erroroverlay.cpp:236 widgets/erroroverlay.cpp:237
+#: widgets/erroroverlay.cpp:234 widgets/erroroverlay.cpp:235
 #, kde-format
 msgid "Personal information management service is shutting down..."
 msgstr "Завершення роботи служби керування особистою інформацією…"
 
-#: widgets/erroroverlay.cpp:241
+#: widgets/erroroverlay.cpp:239
 #, kde-format
 msgid ""
 "Personal information management service is performing a database upgrade."
 msgstr "Служба керування особистими даними виконує оновлення бази даних."
 
-#: widgets/erroroverlay.cpp:243
+#: widgets/erroroverlay.cpp:241
 #, kde-format
 msgid ""
 "Personal information management service is performing a database upgrade.\n"
@@ -1158,12 +1157,12 @@ msgstr "Служба керування особистою інформаціє�
 msgid "Details..."
 msgstr "Подробиці…"
 
-#: widgets/manageaccountwidget.cpp:199
+#: widgets/manageaccountwidget.cpp:205
 #, kde-format
 msgid "Do you want to remove account '%1'?"
 msgstr "Хочете вилучити обліковий запис «%1»?"
 
-#: widgets/manageaccountwidget.cpp:199
+#: widgets/manageaccountwidget.cpp:206
 #, kde-format
 msgid "Remove account?"
 msgstr "Вилучити обліковий запис?"
@@ -1174,26 +1173,32 @@ msgstr "Вилучити обліковий запис?"
 msgid "Incoming accounts (add at least one):"
 msgstr "Вхідні облікові записи (додайте хоча б один):"
 
+#. i18n: ectx: property (placeholderText), widget (QLineEdit, mFilterAccount)
+#: widgets/manageaccountwidget.ui:26
+#, kde-format
+msgid "Filter…"
+msgstr "Фільтрувати…"
+
 #. i18n: ectx: property (text), widget (QPushButton, mAddAccountButton)
-#: widgets/manageaccountwidget.ui:36
+#: widgets/manageaccountwidget.ui:40
 #, kde-format
 msgid "A&dd..."
 msgstr "&Додати…"
 
 #. i18n: ectx: property (text), widget (QPushButton, mModifyAccountButton)
-#: widgets/manageaccountwidget.ui:46
+#: widgets/manageaccountwidget.ui:50
 #, kde-format
 msgid "&Modify..."
 msgstr "&Змінити…"
 
 #. i18n: ectx: property (text), widget (QPushButton, mRemoveAccountButton)
-#: widgets/manageaccountwidget.ui:56
+#: widgets/manageaccountwidget.ui:60
 #, kde-format
 msgid "R&emove"
 msgstr "Ви&лучити"
 
 #. i18n: ectx: property (text), widget (QPushButton, mRestartAccountButton)
-#: widgets/manageaccountwidget.ui:73
+#: widgets/manageaccountwidget.ui:77
 #, kde-format
 msgid "Restart"
 msgstr "Перезапустити"
@@ -1849,11 +1854,6 @@ msgstr "Збереження звіту про перевірку"
 
 #: widgets/selftestdialog.cpp:650
 #, kde-format
-msgid "Error"
-msgstr "Помилка"
-
-#: widgets/selftestdialog.cpp:650
-#, kde-format
 msgid "Could not open file '%1'"
 msgstr "Не вдалося відкрити файл «%1»"
 
@@ -1887,247 +1887,200 @@ msgstr ""
 "\"https://userbase.kde.org/Akonadi_(uk)\">userbase.kde.org/Akonadi_(uk)</a>."
 "</p>"
 
-#: widgets/standardactionmanager.cpp:76
-#, kde-format
+#: widgets/standardactionmanager.cpp:79
 msgid "&New Folder..."
 msgstr "&Нова тека..."
 
-#: widgets/standardactionmanager.cpp:76
-#, kde-format
+#: widgets/standardactionmanager.cpp:79
 msgid "New"
 msgstr "Створити"
 
-#: widgets/standardactionmanager.cpp:78
-#, kde-format
+#: widgets/standardactionmanager.cpp:81
 msgid "&Delete Folder"
 msgstr "&Вилучити теку"
 
-#: widgets/standardactionmanager.cpp:78
-#, kde-format
+#: widgets/standardactionmanager.cpp:81
 msgid "Delete"
 msgstr "Вилучити"
 
-#: widgets/standardactionmanager.cpp:80
-#, kde-format
+#: widgets/standardactionmanager.cpp:83
 msgid "&Synchronize Folder"
 msgstr "&Синхронізувати теку"
 
-#: widgets/standardactionmanager.cpp:81 widgets/standardactionmanager.cpp:162
-#: widgets/standardactionmanager.cpp:255
-#, kde-format
+#: widgets/standardactionmanager.cpp:84 widgets/standardactionmanager.cpp:158
+#: widgets/standardactionmanager.cpp:244
 msgid "Synchronize"
 msgstr "Синхронізувати"
 
-#: widgets/standardactionmanager.cpp:88
-#, kde-format
+#: widgets/standardactionmanager.cpp:91
 msgid "Folder &Properties"
 msgstr "В&ластивості теки"
 
-#: widgets/standardactionmanager.cpp:89 widgets/standardactionmanager.cpp:154
-#, kde-format
+#: widgets/standardactionmanager.cpp:92 widgets/standardactionmanager.cpp:150
 msgid "Properties"
 msgstr "Властивості"
 
-#: widgets/standardactionmanager.cpp:96
-#, kde-format
+#: widgets/standardactionmanager.cpp:99
 msgid "&Paste"
 msgstr "&Вставити"
 
-#: widgets/standardactionmanager.cpp:96
-#, kde-format
+#: widgets/standardactionmanager.cpp:99
 msgid "Paste"
 msgstr "Вставити"
 
-#: widgets/standardactionmanager.cpp:99
-#, kde-format
+#: widgets/standardactionmanager.cpp:102
 msgid "Manage Local &Subscriptions..."
 msgstr "Керування локальними &підписками..."
 
-#: widgets/standardactionmanager.cpp:100
-#, kde-format
+#: widgets/standardactionmanager.cpp:103
 msgid "Manage Local Subscriptions"
 msgstr "Керування локальними підписками"
 
-#: widgets/standardactionmanager.cpp:107
-#, kde-format
+#: widgets/standardactionmanager.cpp:110
 msgid "Add to Favorite Folders"
 msgstr "Додати до тек улюблених"
 
-#: widgets/standardactionmanager.cpp:108
-#, kde-format
+#: widgets/standardactionmanager.cpp:111
 msgid "Add to Favorite"
 msgstr "Додати до улюблених"
 
-#: widgets/standardactionmanager.cpp:115
-#, kde-format
+#: widgets/standardactionmanager.cpp:118
 msgid "Remove from Favorite Folders"
 msgstr "Вилучити з тек улюблених"
 
-#: widgets/standardactionmanager.cpp:116
-#, kde-format
+#: widgets/standardactionmanager.cpp:119
 msgid "Remove from Favorite"
 msgstr "Вилучити з улюблених"
 
-#: widgets/standardactionmanager.cpp:123
-#, kde-format
+#: widgets/standardactionmanager.cpp:125
 msgid "Rename Favorite..."
 msgstr "Перейменувати улюблене..."
 
-#: widgets/standardactionmanager.cpp:124
-#, kde-format
+#: widgets/standardactionmanager.cpp:125
 msgid "Rename"
 msgstr "Перейменувати"
 
-#: widgets/standardactionmanager.cpp:131 widgets/standardactionmanager.cpp:170
-#, kde-format
+#: widgets/standardactionmanager.cpp:127 widgets/standardactionmanager.cpp:165
 msgid "Copy Folder To..."
 msgstr "Скопіювати теку до..."
 
-#: widgets/standardactionmanager.cpp:132 widgets/standardactionmanager.cpp:138
-#: widgets/standardactionmanager.cpp:171 widgets/standardactionmanager.cpp:185
-#, kde-format
+#: widgets/standardactionmanager.cpp:128 widgets/standardactionmanager.cpp:134
+#: widgets/standardactionmanager.cpp:165 widgets/standardactionmanager.cpp:174
 msgid "Copy To"
 msgstr "Скопіювати до"
 
-#: widgets/standardactionmanager.cpp:138 widgets/standardactionmanager.cpp:185
-#, kde-format
+#: widgets/standardactionmanager.cpp:134 widgets/standardactionmanager.cpp:174
 msgid "Copy Item To..."
 msgstr "Скопіювати запис до..."
 
-#: widgets/standardactionmanager.cpp:139 widgets/standardactionmanager.cpp:186
-#, kde-format
+#: widgets/standardactionmanager.cpp:135 widgets/standardactionmanager.cpp:175
 msgid "Move Item To..."
 msgstr "Пересунути запис до..."
 
-#: widgets/standardactionmanager.cpp:139 widgets/standardactionmanager.cpp:142
-#: widgets/standardactionmanager.cpp:179 widgets/standardactionmanager.cpp:186
-#, kde-format
+#: widgets/standardactionmanager.cpp:135 widgets/standardactionmanager.cpp:138
+#: widgets/standardactionmanager.cpp:168 widgets/standardactionmanager.cpp:175
 msgid "Move To"
 msgstr "Пересунути до"
 
-#: widgets/standardactionmanager.cpp:141 widgets/standardactionmanager.cpp:178
-#, kde-format
+#: widgets/standardactionmanager.cpp:137 widgets/standardactionmanager.cpp:167
 msgid "Move Folder To..."
 msgstr "Пересунути теку до..."
 
-#: widgets/standardactionmanager.cpp:148
-#, kde-format
+#: widgets/standardactionmanager.cpp:144
 msgid "&Cut Item"
 msgstr "Ви&різати запис"
 
-#: widgets/standardactionmanager.cpp:148 widgets/standardactionmanager.cpp:149
-#, kde-format
+#: widgets/standardactionmanager.cpp:144 widgets/standardactionmanager.cpp:145
 msgid "Cut"
 msgstr "Вирізати"
 
-#: widgets/standardactionmanager.cpp:149
-#, kde-format
+#: widgets/standardactionmanager.cpp:145
 msgid "&Cut Folder"
 msgstr "Ви&різати теку"
 
-#: widgets/standardactionmanager.cpp:150
-#, kde-format
+#: widgets/standardactionmanager.cpp:146
 msgid "Create Resource"
 msgstr "Створити ресурс"
 
-#: widgets/standardactionmanager.cpp:151
-#, kde-format
+#: widgets/standardactionmanager.cpp:147
 msgid "Delete Resource"
 msgstr "Вилучити ресурс"
 
-#: widgets/standardactionmanager.cpp:153
-#, kde-format
+#: widgets/standardactionmanager.cpp:149
 msgid "&Resource Properties"
 msgstr "В&ластивості ресурсу"
 
-#: widgets/standardactionmanager.cpp:161
-#, kde-format
+#: widgets/standardactionmanager.cpp:157
 msgid "Synchronize Resource"
 msgstr "Синхронізувати ресурс"
 
-#: widgets/standardactionmanager.cpp:168
-#, kde-format
+#: widgets/standardactionmanager.cpp:164
 msgid "Work Offline"
 msgstr "Працювати автономно"
 
-#: widgets/standardactionmanager.cpp:188
-#, kde-format
+#: widgets/standardactionmanager.cpp:177
 msgid "&Synchronize Folder Recursively"
 msgstr "&Синхронізувати теку рекурсивно"
 
-#: widgets/standardactionmanager.cpp:189
-#, kde-format
+#: widgets/standardactionmanager.cpp:178
 msgid "Synchronize Recursively"
 msgstr "Синхронізувати рекурсивно"
 
-#: widgets/standardactionmanager.cpp:196
-#, kde-format
+#: widgets/standardactionmanager.cpp:185
 msgid "&Move Folder To Trash"
 msgstr "&Пересунути теку до смітника"
 
-#: widgets/standardactionmanager.cpp:197
-#, kde-format
+#: widgets/standardactionmanager.cpp:186
 msgid "Move Folder To Trash"
 msgstr "Пересунути теку до смітника"
 
-#: widgets/standardactionmanager.cpp:204
-#, kde-format
+#: widgets/standardactionmanager.cpp:193
 msgid "&Move Item To Trash"
 msgstr "&Пересунути об’єкт до смітника"
 
-#: widgets/standardactionmanager.cpp:205
-#, kde-format
+#: widgets/standardactionmanager.cpp:194
 msgid "Move Item To Trash"
 msgstr "Пересунути об’єкт до смітника"
 
-#: widgets/standardactionmanager.cpp:212 widgets/standardactionmanager.cpp:228
-#, kde-format
+#: widgets/standardactionmanager.cpp:201 widgets/standardactionmanager.cpp:217
 msgid "&Restore Folder From Trash"
 msgstr "Ві&дновити теку зі смітника"
 
-#: widgets/standardactionmanager.cpp:213 widgets/standardactionmanager.cpp:229
-#, kde-format
+#: widgets/standardactionmanager.cpp:202 widgets/standardactionmanager.cpp:218
 msgid "Restore Folder From Trash"
 msgstr "Відновити теку зі смітника"
 
-#: widgets/standardactionmanager.cpp:220 widgets/standardactionmanager.cpp:237
-#: widgets/standardactionmanager.cpp:244
-#, kde-format
+#: widgets/standardactionmanager.cpp:209 widgets/standardactionmanager.cpp:226
+#: widgets/standardactionmanager.cpp:233
 msgid "&Restore Item From Trash"
 msgstr "Ві&дновити об’єкт зі смітника"
 
-#: widgets/standardactionmanager.cpp:221 widgets/standardactionmanager.cpp:238
-#: widgets/standardactionmanager.cpp:244
-#, kde-format
+#: widgets/standardactionmanager.cpp:210 widgets/standardactionmanager.cpp:227
+#: widgets/standardactionmanager.cpp:233
 msgid "Restore Item From Trash"
 msgstr "Відновити об’єкт зі смітника"
 
-#: widgets/standardactionmanager.cpp:235
-#, kde-format
+#: widgets/standardactionmanager.cpp:224
 msgid "&Restore Collection From Trash"
 msgstr "Ві&дновити збірку зі смітника"
 
-#: widgets/standardactionmanager.cpp:235
-#, kde-format
+#: widgets/standardactionmanager.cpp:224
 msgid "Restore Collection From Trash"
 msgstr "Відновити збірку зі смітника"
 
-#: widgets/standardactionmanager.cpp:246
-#, kde-format
+#: widgets/standardactionmanager.cpp:235
 msgid "&Synchronize Favorite Folders"
 msgstr "&Синхронізувати теки улюблених"
 
-#: widgets/standardactionmanager.cpp:247
-#, kde-format
+#: widgets/standardactionmanager.cpp:236
 msgid "Synchronize Favorite Folders"
 msgstr "Синхронізація тек улюблених"
 
-#: widgets/standardactionmanager.cpp:254
-#, kde-format
+#: widgets/standardactionmanager.cpp:243
 msgid "Synchronize Folder Tree"
 msgstr "Синхронізувати ієрархію тек"
 
-#: widgets/standardactionmanager.cpp:340
+#: widgets/standardactionmanager.cpp:329
 #, kde-format
 msgid "&Copy Folder"
 msgid_plural "&Copy %1 Folders"
@@ -2136,7 +2089,7 @@ msgstr[1] "&Скопіювати %1 теки"
 msgstr[2] "&Скопіювати %1 тек"
 msgstr[3] "&Скопіювати %1 теку"
 
-#: widgets/standardactionmanager.cpp:341
+#: widgets/standardactionmanager.cpp:330
 #, kde-format
 msgid "&Copy Item"
 msgid_plural "&Copy %1 Items"
@@ -2145,7 +2098,7 @@ msgstr[1] "&Скопіювати %1 елементи"
 msgstr[2] "&Скопіювати %1 елементів"
 msgstr[3] "&Скопіювати %1 елемент"
 
-#: widgets/standardactionmanager.cpp:342
+#: widgets/standardactionmanager.cpp:331
 #, kde-format
 msgctxt "@action"
 msgid "&Cut Item"
@@ -2155,7 +2108,7 @@ msgstr[1] "Ви&різати %1 записи"
 msgstr[2] "Ви&різати %1 записів"
 msgstr[3] "Ви&різати запис"
 
-#: widgets/standardactionmanager.cpp:343
+#: widgets/standardactionmanager.cpp:332
 #, kde-format
 msgctxt "@action"
 msgid "&Cut Folder"
@@ -2165,7 +2118,7 @@ msgstr[1] "Ви&різати %1 теки"
 msgstr[2] "Ви&різати %1 тек"
 msgstr[3] "Ви&різати теку"
 
-#: widgets/standardactionmanager.cpp:344
+#: widgets/standardactionmanager.cpp:333
 #, kde-format
 msgid "&Delete Item"
 msgid_plural "&Delete %1 Items"
@@ -2174,7 +2127,7 @@ msgstr[1] "&Вилучити %1 елементи"
 msgstr[2] "&Вилучити %1 елементів"
 msgstr[3] "&Вилучити %1 елемент"
 
-#: widgets/standardactionmanager.cpp:345
+#: widgets/standardactionmanager.cpp:334
 #, kde-format
 msgctxt "@action"
 msgid "&Delete Folder"
@@ -2184,7 +2137,7 @@ msgstr[1] "&Вилучити %1 теки"
 msgstr[2] "&Вилучити %1 тек"
 msgstr[3] "&Вилучити теку"
 
-#: widgets/standardactionmanager.cpp:346
+#: widgets/standardactionmanager.cpp:335
 #, kde-format
 msgctxt "@action"
 msgid "&Synchronize Folder"
@@ -2194,7 +2147,7 @@ msgstr[1] "&Синхронізувати %1 теки"
 msgstr[2] "&Синхронізувати %1 тек"
 msgstr[3] "&Синхронізувати теку"
 
-#: widgets/standardactionmanager.cpp:347
+#: widgets/standardactionmanager.cpp:336
 #, kde-format
 msgid "&Delete Resource"
 msgid_plural "&Delete %1 Resources"
@@ -2203,7 +2156,7 @@ msgstr[1] "Ви&лучити %1 ресурси"
 msgstr[2] "Ви&лучити %1 ресурсів"
 msgstr[3] "Ви&лучити ресурс"
 
-#: widgets/standardactionmanager.cpp:348
+#: widgets/standardactionmanager.cpp:337
 #, kde-format
 msgid "&Synchronize Resource"
 msgid_plural "&Synchronize %1 Resources"
@@ -2212,7 +2165,7 @@ msgstr[1] "Син&хронізувати %1 ресурси"
 msgstr[2] "Син&хронізувати %1 ресурсів"
 msgstr[3] "Син&хронізувати ресурс"
 
-#: widgets/standardactionmanager.cpp:350
+#: widgets/standardactionmanager.cpp:339
 #, kde-format
 msgid "Copy Folder"
 msgid_plural "Copy %1 Folders"
@@ -2221,7 +2174,7 @@ msgstr[1] "Копіювати %1 теки"
 msgstr[2] "Копіювати %1 тек"
 msgstr[3] "Копіювати теку"
 
-#: widgets/standardactionmanager.cpp:351
+#: widgets/standardactionmanager.cpp:340
 #, kde-format
 msgid "Copy Item"
 msgid_plural "Copy %1 Items"
@@ -2230,7 +2183,7 @@ msgstr[1] "Копіювати %1 елементи"
 msgstr[2] "Копіювати %1 елементів"
 msgstr[3] "Копіювати елемент"
 
-#: widgets/standardactionmanager.cpp:352
+#: widgets/standardactionmanager.cpp:341
 #, kde-format
 msgid "Cut Item"
 msgid_plural "Cut %1 Items"
@@ -2239,7 +2192,7 @@ msgstr[1] "Вирізати %1 елементи"
 msgstr[2] "Вирізати %1 елементів"
 msgstr[3] "Вирізати елемент"
 
-#: widgets/standardactionmanager.cpp:353
+#: widgets/standardactionmanager.cpp:342
 #, kde-format
 msgid "Cut Folder"
 msgid_plural "Cut %1 Folders"
@@ -2248,7 +2201,7 @@ msgstr[1] "Вирізати %1 теки"
 msgstr[2] "Вирізати %1 тек"
 msgstr[3] "Вирізати теку"
 
-#: widgets/standardactionmanager.cpp:354
+#: widgets/standardactionmanager.cpp:343
 #, kde-format
 msgid "Delete Item"
 msgid_plural "Delete %1 Items"
@@ -2257,7 +2210,7 @@ msgstr[1] "Вилучити %1 елементи"
 msgstr[2] "Вилучити %1 елементів"
 msgstr[3] "Вилучити елемент"
 
-#: widgets/standardactionmanager.cpp:355
+#: widgets/standardactionmanager.cpp:344
 #, kde-format
 msgid "Delete Folder"
 msgid_plural "Delete %1 Folders"
@@ -2266,7 +2219,7 @@ msgstr[1] "Вилучити %1 теки"
 msgstr[2] "Вилучити %1 тек"
 msgstr[3] "Вилучити теку"
 
-#: widgets/standardactionmanager.cpp:356
+#: widgets/standardactionmanager.cpp:345
 #, kde-format
 msgid "Synchronize Folder"
 msgid_plural "Synchronize %1 Folders"
@@ -2275,7 +2228,7 @@ msgstr[1] "Синхронізувати %1 теки"
 msgstr[2] "Синхронізувати %1 тек"
 msgstr[3] "Синхронізувати теку"
 
-#: widgets/standardactionmanager.cpp:357
+#: widgets/standardactionmanager.cpp:346
 #, kde-format
 msgctxt "@action"
 msgid "Delete Resource"
@@ -2285,7 +2238,7 @@ msgstr[1] "Вилучити %1 ресурси"
 msgstr[2] "Вилучити %1 ресурсів"
 msgstr[3] "Вилучити ресурс"
 
-#: widgets/standardactionmanager.cpp:358
+#: widgets/standardactionmanager.cpp:347
 #, kde-format
 msgctxt "@action"
 msgid "Synchronize Resource"
@@ -2295,13 +2248,13 @@ msgstr[1] "Синхронізувати %1 ресурси"
 msgstr[2] "Синхронізувати %1 ресурсів"
 msgstr[3] "Синхронізувати ресурс"
 
-#: widgets/standardactionmanager.cpp:361
+#: widgets/standardactionmanager.cpp:350
 #, kde-format
 msgctxt "@label:textbox name of Akonadi folder"
 msgid "Name"
 msgstr "Назва"
 
-#: widgets/standardactionmanager.cpp:368
+#: widgets/standardactionmanager.cpp:357
 #, kde-format
 msgid "Do you really want to delete this folder and all its sub-folders?"
 msgid_plural ""
@@ -2311,33 +2264,34 @@ msgstr[1] "Ви справді бажаєте вилучити %1 теки і в
 msgstr[2] "Ви справді бажаєте вилучити %1 тек і всі їхні підтеки?"
 msgstr[3] "Ви справді бажаєте вилучити цю теку і всі її підтеки?"
 
-#: widgets/standardactionmanager.cpp:371
+#: widgets/standardactionmanager.cpp:360
 #, kde-format
 msgctxt "@title:window"
-msgid "Delete folder?"
-msgid_plural "Delete folders?"
+msgid "Delete Folder?"
+msgid_plural "Delete Folders?"
 msgstr[0] "Вилучити теки?"
 msgstr[1] "Вилучити теки?"
 msgstr[2] "Вилучити теки?"
 msgstr[3] "Вилучити теку?"
 
-#: widgets/standardactionmanager.cpp:372
+#: widgets/standardactionmanager.cpp:361
 #, kde-format
 msgid "Could not delete folder: %1"
 msgstr "Не вдалося вилучити теку: %1"
 
-#: widgets/standardactionmanager.cpp:373
+#: widgets/standardactionmanager.cpp:362
 #, kde-format
-msgid "Folder deletion failed"
+msgctxt "@title:window"
+msgid "Folder Deletion Failed"
 msgstr "Помилка вилучення теки"
 
-#: widgets/standardactionmanager.cpp:375
+#: widgets/standardactionmanager.cpp:364
 #, kde-format
 msgctxt "@title:window"
 msgid "Properties of Folder %1"
 msgstr "Властивості теки %1"
 
-#: widgets/standardactionmanager.cpp:379
+#: widgets/standardactionmanager.cpp:368
 #, kde-format
 msgid "Do you really want to delete the selected item?"
 msgid_plural "Do you really want to delete %1 items?"
@@ -2346,55 +2300,57 @@ msgstr[1] "Ви справді бажаєте вилучити %1 позначе
 msgstr[2] "Ви справді бажаєте вилучити %1 позначених пунктів?"
 msgstr[3] "Ви справді бажаєте вилучити позначений пункт?"
 
-#: widgets/standardactionmanager.cpp:380
+#: widgets/standardactionmanager.cpp:369
 #, kde-format
 msgctxt "@title:window"
-msgid "Delete item?"
-msgid_plural "Delete items?"
-msgstr[0] "Вилучити пункти?"
-msgstr[1] "Вилучити пункти?"
-msgstr[2] "Вилучити пункти?"
-msgstr[3] "Вилучити пункт?"
+msgid "Delete Item?"
+msgid_plural "Delete Items?"
+msgstr[0] "Вилучити записи?"
+msgstr[1] "Вилучити записи?"
+msgstr[2] "Вилучити записи?"
+msgstr[3] "Вилучити запис?"
 
-#: widgets/standardactionmanager.cpp:381
+#: widgets/standardactionmanager.cpp:370
 #, kde-format
 msgid "Could not delete item: %1"
 msgstr "Не вдалося вилучити пункт: %1"
 
-#: widgets/standardactionmanager.cpp:382
+#: widgets/standardactionmanager.cpp:371
 #, kde-format
-msgid "Item deletion failed"
-msgstr "Помилка вилучення пункту"
+msgctxt "@title:window"
+msgid "Item Deletion Failed"
+msgstr "Помилка вилучення запису"
 
-#: widgets/standardactionmanager.cpp:384
+#: widgets/standardactionmanager.cpp:373
 #, kde-format
 msgctxt "@title:window"
 msgid "Rename Favorite"
 msgstr "Перейменування улюбленого"
 
-#: widgets/standardactionmanager.cpp:385
+#: widgets/standardactionmanager.cpp:374
 #, kde-format
 msgctxt "@label:textbox name of the folder"
 msgid "Name:"
 msgstr "Назва:"
 
-#: widgets/standardactionmanager.cpp:387
+#: widgets/standardactionmanager.cpp:376
 #, kde-format
 msgctxt "@title:window"
 msgid "New Resource"
 msgstr "Новий ресурс"
 
-#: widgets/standardactionmanager.cpp:388
+#: widgets/standardactionmanager.cpp:377
 #, kde-format
 msgid "Could not create resource: %1"
 msgstr "Не вдалося створити ресурс: %1"
 
-#: widgets/standardactionmanager.cpp:389
+#: widgets/standardactionmanager.cpp:378
 #, kde-format
-msgid "Resource creation failed"
+msgctxt "@title:window"
+msgid "Resource Creation Failed"
 msgstr "Спроба створення ресурсу зазнала невдачі"
 
-#: widgets/standardactionmanager.cpp:393
+#: widgets/standardactionmanager.cpp:382
 #, kde-format
 msgid "Do you really want to delete this resource?"
 msgid_plural "Do you really want to delete %1 resources?"
@@ -2403,7 +2359,7 @@ msgstr[1] "Ви справді бажаєте вилучити %1 ресурси
 msgstr[2] "Ви справді бажаєте вилучити %1 ресурсів?"
 msgstr[3] "Ви справді бажаєте вилучити цей ресурс?"
 
-#: widgets/standardactionmanager.cpp:396
+#: widgets/standardactionmanager.cpp:385
 #, kde-format
 msgctxt "@title:window"
 msgid "Delete Resource?"
@@ -2413,32 +2369,34 @@ msgstr[1] "Вилучити ресурси?"
 msgstr[2] "Вилучити ресурси?"
 msgstr[3] "Вилучити ресурс?"
 
-#: widgets/standardactionmanager.cpp:398
+#: widgets/standardactionmanager.cpp:387
 #, kde-format
 msgid "Could not paste data: %1"
 msgstr "Не вдалося вставити дані: %1"
 
-#: widgets/standardactionmanager.cpp:399
+#: widgets/standardactionmanager.cpp:388
 #, kde-format
-msgid "Paste failed"
+msgctxt "@title:window"
+msgid "Paste Failed"
 msgstr "Спроба вставлення зазнала невдачі"
 
-#: widgets/standardactionmanager.cpp:752
+#: widgets/standardactionmanager.cpp:740
 #, kde-format
 msgid "We can not add \"/\" in folder name."
 msgstr "Не можна додавати «/» до назви теки."
 
-#: widgets/standardactionmanager.cpp:752 widgets/standardactionmanager.cpp:756
+#: widgets/standardactionmanager.cpp:740 widgets/standardactionmanager.cpp:744
 #, kde-format
-msgid "Create new folder error"
+msgctxt "@title:window"
+msgid "Create New Folder Error"
 msgstr "Помилка створення теки"
 
-#: widgets/standardactionmanager.cpp:756
+#: widgets/standardactionmanager.cpp:744
 #, kde-format
 msgid "We can not add \".\" at begin or end of folder name."
 msgstr "Не можна додавати «.» на початку або в кінці назви теки."
 
-#: widgets/standardactionmanager.cpp:995
+#: widgets/standardactionmanager.cpp:997
 #, kde-format
 msgid ""
 "Before syncing folder \"%1\" it is necessary to have the resource online. Do "
@@ -2447,23 +2405,23 @@ msgstr ""
 "Для того, щоб розпочати синхронізацію теки «%1», ресурс має бути переведено "
 "у режим роботи у мережі. Бажаєте перевести його у такий режим?"
 
-#: widgets/standardactionmanager.cpp:996
+#: widgets/standardactionmanager.cpp:998
 #, kde-format
 msgid "Account \"%1\" is offline"
 msgstr "Обліковий запис «%1» перебуває поза мережею"
 
-#: widgets/standardactionmanager.cpp:997
+#: widgets/standardactionmanager.cpp:999
 #, kde-format
 msgctxt "@action:button"
 msgid "Go Online"
 msgstr "Увійти в мережу"
 
-#: widgets/standardactionmanager.cpp:1592
+#: widgets/standardactionmanager.cpp:1622
 #, kde-format
 msgid "Move to This Folder"
 msgstr "Пересунути до цієї теки"
 
-#: widgets/standardactionmanager.cpp:1592
+#: widgets/standardactionmanager.cpp:1622
 #, kde-format
 msgid "Copy to This Folder"
 msgstr "Скопіювати в цю теку"
@@ -2475,7 +2433,7 @@ msgstr "Не вдалося оновити підписку: %1"
 
 #: widgets/subscriptiondialog.cpp:93
 #, kde-format
-msgctxt "@title"
+msgctxt "@title:window"
 msgid "Subscription Error"
 msgstr "Помилка, пов'язана із підпискою"
 
@@ -2509,29 +2467,30 @@ msgstr "П&ідписатися"
 msgid "&Unsubscribe"
 msgstr "&Відписатися"
 
-#: widgets/tageditwidget.cpp:116
+#: widgets/tageditwidget.cpp:117
 #, kde-format
 msgid "Failed to create a new tag"
 msgstr "Не вдалося створити мітку"
 
-#: widgets/tageditwidget.cpp:116
+#: widgets/tageditwidget.cpp:117
 #, kde-format
-msgid "An error occurred while creating a new tag"
+msgctxt "@title:window"
+msgid "An Error Occurred while Creating a New Tag"
 msgstr "Під час спроби створення мітки сталася помилка"
 
-#: widgets/tageditwidget.cpp:164
+#: widgets/tageditwidget.cpp:165
 #, kde-kuit-format
 msgctxt "@info"
 msgid "Do you really want to remove the tag <resource>%1</resource>?"
 msgstr "Ви справді хочете вилучити мітку <resource>%1</resource>?"
 
-#: widgets/tageditwidget.cpp:165
+#: widgets/tageditwidget.cpp:166
 #, kde-format
-msgctxt "@title"
-msgid "Delete tag"
+msgctxt "@title:window"
+msgid "Delete Tag"
 msgstr "Вилучення мітки"
 
-#: widgets/tageditwidget.cpp:189
+#: widgets/tageditwidget.cpp:195
 #, kde-format
 msgctxt "@info"
 msgid "Delete tag"
@@ -2555,7 +2514,7 @@ msgstr "Створити мітку"
 msgid "Manage Tags"
 msgstr "Керування мітками"
 
-#: widgets/tagselectioncombobox.cpp:124
+#: widgets/tagselectioncombobox.cpp:126
 #, kde-format
 msgctxt "@label Placeholder text in tag selection combobox"
 msgid "Select tags..."
@@ -2599,62 +2558,99 @@ msgstr "Перетворює ієрархію збірки Akonadi на файл
 msgid "(c) 2009 Volker Krause <vkrause@kde.org>"
 msgstr "© Volker Krause <vkrause@kde.org>, 2009"
 
-#: xml/xmldocument.cpp:84
+#: xml/xmldocument.cpp:85
 #, kde-format
 msgid "No data loaded."
 msgstr "Дані не завантажено."
 
-#: xml/xmldocument.cpp:123
+#: xml/xmldocument.cpp:121
 #, kde-format
 msgid "No filename specified"
 msgstr "Не вказано назви файла"
 
-#: xml/xmldocument.cpp:131
+#: xml/xmldocument.cpp:129
 #, kde-format
 msgid "Unable to open data file '%1'."
 msgstr "Не вдалося відкрити файл даних «%1»."
 
-#: xml/xmldocument.cpp:136
+#: xml/xmldocument.cpp:134
 #, kde-format
 msgid "File %1 does not exist."
 msgstr "Файла %1 не існує."
 
-#: xml/xmldocument.cpp:144
+#: xml/xmldocument.cpp:142
 #, kde-format
 msgid "Unable to parse data file '%1'."
 msgstr "Не вдалося обробити файл даних «%1»."
 
-#: xml/xmldocument.cpp:151
+#: xml/xmldocument.cpp:150
 #, kde-format
 msgid "Schema definition could not be loaded and parsed."
 msgstr "Не вдалося завантажити і обробити визначення схеми."
 
-#: xml/xmldocument.cpp:156
+#: xml/xmldocument.cpp:155
 #, kde-format
 msgid "Unable to create schema parser context."
 msgstr "Не вдалося створити контекст обробки схеми."
 
-#: xml/xmldocument.cpp:161
+#: xml/xmldocument.cpp:160
 #, kde-format
 msgid "Unable to create schema."
 msgstr "Не вдалося створити схему."
 
-#: xml/xmldocument.cpp:166
+#: xml/xmldocument.cpp:165
 #, kde-format
 msgid "Unable to create schema validation context."
 msgstr "Не вдалося створити контекст перевірки чинності схеми."
 
-#: xml/xmldocument.cpp:171
+#: xml/xmldocument.cpp:170
 #, kde-format
 msgid "Invalid file format."
 msgstr "Некоректний формат файла."
 
-#: xml/xmldocument.cpp:179
+#: xml/xmldocument.cpp:178
 #, kde-format
 msgid "Unable to parse data file: %1"
 msgstr "Не вдалося обробити файл даних: %1"
 
-#: xml/xmldocument.cpp:304
+#: xml/xmldocument.cpp:303
 #, kde-format
 msgid "Unable to find collection %1"
 msgstr "Не вдалося знайти збірку %1"
+
+#~ msgid "Error"
+#~ msgstr "Помилка"
+
+#~ msgctxt "@title:window"
+#~ msgid "Delete folder?"
+#~ msgid_plural "Delete folders?"
+#~ msgstr[0] "Вилучити теки?"
+#~ msgstr[1] "Вилучити теки?"
+#~ msgstr[2] "Вилучити теки?"
+#~ msgstr[3] "Вилучити теку?"
+
+#~ msgctxt "@title:window"
+#~ msgid "Delete item?"
+#~ msgid_plural "Delete items?"
+#~ msgstr[0] "Вилучити пункти?"
+#~ msgstr[1] "Вилучити пункти?"
+#~ msgstr[2] "Вилучити пункти?"
+#~ msgstr[3] "Вилучити пункт?"
+
+#~ msgid "Store emails locally:"
+#~ msgstr "Локальне зберігання повідомлень:"
+
+#~ msgid "&Move here"
+#~ msgstr "&Пересунути сюди"
+
+#~ msgid "&Copy here"
+#~ msgstr "&Скопіювати сюди"
+
+#~ msgid "Cancel"
+#~ msgstr "Скасувати"
+
+#~ msgid "Automatically synchronize after:"
+#~ msgstr "Автоматично синхронізувати кожні:"
+
+#~ msgid "Items"
+#~ msgstr "Записи"

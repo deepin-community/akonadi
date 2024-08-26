@@ -8,8 +8,6 @@ set_package_properties(LibXml2 PROPERTIES
 
 if (LIBXML2_FOUND)
     add_definitions(-DHAVE_LIBXML2)
-    # TODO: Use LibXml2::LibXml2 when we'll require CMake >= 3.12
-    include_directories(${LIBXML2_INCLUDE_DIR})
 endif ()
 
 if (BUILD_TESTING)
@@ -22,13 +20,17 @@ set(akonadixml_SRCS
     xmlwriter.cpp
 )
 
-ecm_generate_headers(AkonadiXml_HEADERS
+# base install include dir
+set(AkonadiXml_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiXml")
+
+ecm_generate_headers(AkonadiXml_CC_HEADERS
     HEADER_NAMES
     XmlDocument
     XmlReader
     XmlWriteJob
     XmlWriter
     REQUIRED_HEADERS AkonadiXml_HEADERS
+    PREFIX Akonadi
 )
 
 add_executable(akonadi2xml akonadi2xml.cpp)
@@ -50,7 +52,7 @@ generate_export_header(KF5AkonadiXml BASE_NAME akonadi-xml)
 
 add_library(KF5::AkonadiXml ALIAS KF5AkonadiXml)
 
-target_include_directories(KF5AkonadiXml INTERFACE "$<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR_KF5}/AkonadiXml>")
+target_include_directories(KF5AkonadiXml INTERFACE "$<INSTALL_INTERFACE:${AkonadiXml_INSTALL_INCLUDEDIR}>")
 target_include_directories(KF5AkonadiXml PUBLIC "$<BUILD_INTERFACE:${Akonadi_SOURCE_DIR}/src/core;${Akonadi_BINARY_DIR}/src/core>")
 
 target_link_libraries(KF5AkonadiXml
@@ -59,8 +61,10 @@ PUBLIC
     Qt::Xml
 PRIVATE
     KF5::I18n
-    ${LIBXML2_LIBRARIES}
 )
+if (LIBXML2_FOUND)
+    target_link_libraries(KF5AkonadiXml PRIVATE LibXml2::LibXml2)
+endif()
 
 set_target_properties(KF5AkonadiXml PROPERTIES
     VERSION ${AKONADI_VERSION}
@@ -75,17 +79,23 @@ ecm_generate_pri_file(BASE_NAME AkonadiXml
 
 install(TARGETS
     KF5AkonadiXml
-    EXPORT KF5AkonadiTargets ${KF5_INSTALL_TARGETS_DEFAULT_ARGS}
+    EXPORT KF5AkonadiTargets ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(TARGETS
-    akonadi2xml ${KF5_INSTALL_TARGETS_DEFAULT_ARGS}
+    akonadi2xml ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/akonadi-xml_export.h
     ${AkonadiXml_HEADERS}
-    DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF5}/AkonadiXml COMPONENT Devel
+    DESTINATION ${AkonadiXml_INSTALL_INCLUDEDIR}/akonadi
+    COMPONENT Devel
+)
+install(FILES
+    ${AkonadiXml_CC_HEADERS}
+    DESTINATION ${AkonadiXml_INSTALL_INCLUDEDIR}/Akonadi
+    COMPONENT Devel
 )
 
 install(FILES
@@ -95,5 +105,5 @@ install(FILES
 
 install(FILES
     akonadi-xml.xsd
-    DESTINATION ${KDE_INSTALL_DATADIR_KF5}/akonadi/
+    DESTINATION ${KDE_INSTALL_DATADIR_KF}/akonadi/
 )

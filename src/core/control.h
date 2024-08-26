@@ -10,8 +10,12 @@
 
 #include <QObject>
 
+#include <memory>
+
 namespace Akonadi
 {
+class ControlPrivate;
+
 /**
  * @short Provides methods to control the Akonadi server process.
  *
@@ -54,7 +58,7 @@ public:
     /**
      * Destroys the control object.
      */
-    ~Control();
+    ~Control() override;
 
     /**
      * Starts the Akonadi server synchronously if it is not already running.
@@ -87,10 +91,8 @@ protected:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<ControlPrivate> const d;
     /// @endcond
 };
 
 }
-

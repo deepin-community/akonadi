@@ -33,7 +33,7 @@ public:
      */
     explicit ConflictResolveDialog(QWidget *parent = nullptr);
 
-    ~ConflictResolveDialog();
+    ~ConflictResolveDialog() override;
 
     /**
      * Sets the items that causes the conflict.
@@ -67,4 +67,3 @@ private:
 };
 
 }
-

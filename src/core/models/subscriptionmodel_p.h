@@ -12,9 +12,12 @@
 
 #include "entitytreemodel.h"
 
+#include <memory>
+
 namespace Akonadi
 {
 class Monitor;
+class SubscriptionModelPrivate;
 
 /**
  * @internal
@@ -69,9 +72,7 @@ Q_SIGNALS:
     void modelLoaded();
 
 private:
-    class Private;
-    QScopedPointer<Private> const d;
+    std::unique_ptr<SubscriptionModelPrivate> const d;
 };
 
 }
-

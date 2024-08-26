@@ -9,8 +9,12 @@
 #include "akonadiwidgets_export.h"
 #include "collectionpropertiespage.h"
 
+#include <memory>
+
 namespace Akonadi
 {
+class CachePolicyPagePrivate;
+
 /**
  * @short A page in a collection properties dialog to configure the cache policy.
  *
@@ -67,12 +71,10 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<CachePolicyPagePrivate> const d;
     /// @endcond
 };
 
 AKONADI_COLLECTION_PROPERTIES_PAGE_FACTORY(CachePolicyPageFactory, CachePolicyPage)
 
 }
-

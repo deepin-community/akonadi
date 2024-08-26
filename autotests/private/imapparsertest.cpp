@@ -453,7 +453,7 @@ void ImapParserTest::testParseDateTime_data()
     QTest::addColumn<QDateTime>("result");
     QTest::addColumn<int>("end");
 
-    QTest::newRow("emtpy") << QByteArray() << 0 << QDateTime() << 0;
+    QTest::newRow("empty") << QByteArray() << 0 << QDateTime() << 0;
 
     QByteArray data(" \"28-May-2006 01:03:35 +0200\"");
     QByteArray data2("22-Jul-2008 16:31:48 +0000");
@@ -505,7 +505,7 @@ void ImapParserTest::testBulkParser()
     QVERIFY(buffer.open(QBuffer::ReadOnly));
 
     // reading continuation as a single block
-    forever {
+    for (;;) {
         if (buffer.atEnd()) {
             break;
         }
@@ -522,7 +522,7 @@ void ImapParserTest::testBulkParser()
     // reading continuations as smaller blocks
     buffer.reset();
     parser->reset();
-    forever {
+    for (;;) {
         if (buffer.atEnd()) {
             break;
         }

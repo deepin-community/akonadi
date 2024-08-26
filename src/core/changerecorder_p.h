@@ -10,8 +10,6 @@
 #include "changerecorder.h"
 #include "monitor_p.h"
 
-class QDataStream;
-
 namespace Akonadi
 {
 class ChangeRecorder;
@@ -50,4 +48,3 @@ private:
 };
 
 } // namespace Akonadi
-

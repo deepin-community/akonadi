@@ -11,8 +11,12 @@
 
 #include <KExtraColumnsProxyModel>
 
+#include <memory>
+
 namespace Akonadi
 {
+class StatisticsProxyModelPrivate;
+
 /**
  * @short A proxy model that exposes collection statistics through extra columns.
  *
@@ -77,20 +81,18 @@ public:
     Q_REQUIRED_RESULT QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     Q_REQUIRED_RESULT Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    Q_REQUIRED_RESULT virtual QModelIndexList match(const QModelIndex &start,
-                                                    int role,
-                                                    const QVariant &value,
-                                                    int hits = 1,
-                                                    Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchStartsWith | Qt::MatchWrap)) const override;
+    Q_REQUIRED_RESULT QModelIndexList match(const QModelIndex &start,
+                                            int role,
+                                            const QVariant &value,
+                                            int hits = 1,
+                                            Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchStartsWith | Qt::MatchWrap)) const override;
 
     void setSourceModel(QAbstractItemModel *model) override;
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<StatisticsProxyModelPrivate> const d;
     /// @endcond
 };
 
 }
-

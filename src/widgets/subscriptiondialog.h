@@ -10,8 +10,12 @@
 
 #include <QDialog>
 
+#include <memory>
+
 namespace Akonadi
 {
+class SubscriptionDialogPrivate;
+
 /**
  * Local subscription dialog.
  */
@@ -42,7 +46,7 @@ public:
      *       be destructed automatically as soon as all changes
      *       are written back to the server.
      */
-    ~SubscriptionDialog();
+    ~SubscriptionDialog() override;
 
     /**
      * @param showHidden shows hidden collections if set as @c true
@@ -51,9 +55,7 @@ public:
     void showHiddenCollection(bool showHidden);
 
 private:
-    class Private;
-    QScopedPointer<Private> const d;
+    std::unique_ptr<SubscriptionDialogPrivate> const d;
 };
 
 }
-

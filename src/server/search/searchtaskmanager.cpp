@@ -14,10 +14,10 @@
 #include <private/dbus_p.h>
 
 #include <QDBusConnection>
+#include <QDeadlineTimer>
 #include <QSqlError>
 #include <QTime>
 #include <QTimer>
-#include <QDeadlineTimer>
 using namespace Akonadi;
 using namespace Akonadi::Server;
 
@@ -190,11 +190,11 @@ void SearchTaskManager::searchLoop()
 
     QMutexLocker locker(&mLock);
 
-    Q_FOREVER {
+    for (;;) {
         qCDebug(AKONADISERVER_SEARCH_LOG) << "Search loop is waiting, will wake again in" << timeout << "ms";
         mWait.wait(&mLock, QDeadlineTimer(QDeadlineTimer::Forever));
         if (mShouldStop) {
-            Q_FOREACH (SearchTask *task, mTasklist) {
+            for (SearchTask *task : std::as_const(mTasklist)) {
                 QMutexLocker locker(&task->sharedLock);
                 task->queries.clear();
                 task->notifier.wakeAll();

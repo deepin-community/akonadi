@@ -12,7 +12,7 @@
 
 using namespace Akonadi;
 
-class ImapParser::Private
+class Akonadi::ImapParserPrivate
 {
 public:
     QByteArray tagBuffer;
@@ -52,7 +52,8 @@ public:
 
 namespace
 {
-template<typename T> int parseParenthesizedListHelper(const QByteArray &data, T &result, int start)
+template<typename T>
+int parseParenthesizedListHelper(const QByteArray &data, T &result, int start)
 {
     result.clear();
     if (start >= data.length()) {
@@ -579,15 +580,12 @@ void ImapParser::splitVersionedKey(const QByteArray &data, QByteArray &key, int 
 }
 
 ImapParser::ImapParser()
-    : d(new Private)
+    : d(new ImapParserPrivate)
 {
     reset();
 }
 
-ImapParser::~ImapParser()
-{
-    delete d;
-}
+ImapParser::~ImapParser() = default;
 
 bool ImapParser::parseNextLine(const QByteArray &readBuffer)
 {

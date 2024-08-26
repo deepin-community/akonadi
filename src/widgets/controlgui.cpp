@@ -20,7 +20,7 @@
 #include <QTimer>
 
 using namespace Akonadi;
-
+using namespace std::chrono_literals;
 namespace Akonadi
 {
 namespace Internal
@@ -61,20 +61,16 @@ Q_GLOBAL_STATIC(Internal::StaticControlGui, s_instance) // NOLINT(readability-re
 /**
  * @internal
  */
-class Q_DECL_HIDDEN ControlGui::Private
+class ControlGuiPrivate
 {
 public:
-    explicit Private(ControlGui *parent)
+    explicit ControlGuiPrivate(ControlGui *parent)
         : mParent(parent)
-        , mEventLoop(nullptr)
         , mProgressIndicator(nullptr)
-        , mSuccess(false)
-        , mStarting(false)
-        , mStopping(false)
     {
     }
 
-    ~Private()
+    ~ControlGuiPrivate()
     {
         delete mProgressIndicator;
     }
@@ -110,13 +106,13 @@ public:
     QEventLoop *mEventLoop = nullptr;
     QPointer<Internal::ControlProgressIndicator> mProgressIndicator;
     QList<QPointer<QWidget>> mPendingOverlays;
-    bool mSuccess;
+    bool mSuccess = false;
 
-    bool mStarting;
-    bool mStopping;
+    bool mStarting = false;
+    bool mStopping = false;
 };
 
-bool ControlGui::Private::exec()
+bool ControlGuiPrivate::exec()
 {
     if (mProgressIndicator) {
         mProgressIndicator->show();
@@ -149,7 +145,7 @@ bool ControlGui::Private::exec()
     return rv;
 }
 
-void ControlGui::Private::serverStateChanged(ServerManager::State state)
+void ControlGuiPrivate::serverStateChanged(ServerManager::State state)
 {
     qCDebug(AKONADIWIDGETS_LOG) << "Server state changed to" << state;
     if (mEventLoop && mEventLoop->isRunning()) {
@@ -163,7 +159,7 @@ void ControlGui::Private::serverStateChanged(ServerManager::State state)
 }
 
 ControlGui::ControlGui()
-    : d(new Private(this))
+    : d(new ControlGuiPrivate(this))
 {
     connect(ServerManager::self(), &ServerManager::stateChanged, this, [this](Akonadi::ServerManager::State state) {
         d->serverStateChanged(state);
@@ -177,15 +173,12 @@ ControlGui::ControlGui()
     }
 }
 
-ControlGui::~ControlGui()
-{
-    delete d;
-}
+ControlGui::~ControlGui() = default;
 
 bool ControlGui::start()
 {
     if (ServerManager::state() == ServerManager::Stopping) {
-        qCDebug(AKONADIWIDGETS_LOG) << "Server is currently being stopped, wont try to start it now";
+        qCDebug(AKONADIWIDGETS_LOG) << "Server is currently being stopped, won't try to start it now";
         return false;
     }
     if (ServerManager::isRunning() || s_instance->d->mEventLoop) {
@@ -252,7 +245,7 @@ void ControlGui::widgetNeedsAkonadi(QWidget *widget)
     s_instance->d->mPendingOverlays.append(widget);
     // delay the overlay creation since we rely on widget being reparented
     // correctly already
-    QTimer::singleShot(0, s_instance, []() {
+    QTimer::singleShot(0s, s_instance, []() {
         s_instance->d->createErrorOverlays();
     });
 }

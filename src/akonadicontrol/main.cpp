@@ -9,9 +9,8 @@
 #include "akonadicontrol_debug.h"
 #include "config-akonadi.h"
 #include "controlmanager.h"
-#include "processcontrol.h"
 
-#ifdef WITH_ACCOUNTS
+#if WITH_ACCOUNTS
 #include "accountsintegration.h"
 #endif
 
@@ -24,10 +23,10 @@
 #include <QSessionManager>
 
 #include <KAboutData>
-#include <KCrash/KCrash>
+#include <KCrash>
 
 #include <stdlib.h>
-#ifdef HAVE_UNISTD_H
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -66,13 +65,13 @@ int main(int argc, char **argv)
     ControlManager controlManager;
 
     AgentManager agentManager(app.commandLineArguments().isSet(QStringLiteral("verbose")));
-#ifdef WITH_ACCOUNTS
+#if WITH_ACCOUNTS
     AccountsIntegration accountsIntegration(agentManager);
 #endif
     KCrash::setEmergencySaveFunction(crashHandler);
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QGuiApplication::setFallbackSessionManagementEnabled(false);
-
+#endif
     // akonadi_control is started on-demand, no need to auto restart by session.
     auto disableSessionManagement = [](QSessionManager &sm) {
         sm.setRestartHint(QSessionManager::RestartNever);

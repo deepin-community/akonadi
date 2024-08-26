@@ -530,7 +530,8 @@ void QueryBuilder::buildWhereCondition(QString *query, const Query::Condition &c
         *query += compareOperatorToString(cond.mCompareOp);
         if (cond.mComparedColumn.isEmpty()) {
             if (cond.mComparedValue.isValid()) {
-                if (cond.mComparedValue.canConvert(QVariant::List)) {
+                if (cond.mComparedValue.canConvert(QVariant::List) && cond.mComparedValue.type() != QVariant::String
+                    && cond.mComparedValue.type() != QVariant::ByteArray) {
                     *query += QLatin1String("( ");
                     const QVariantList &entries = cond.mComparedValue.toList();
                     Q_ASSERT_X(!entries.isEmpty(), "QueryBuilder::buildWhereCondition()", "No values given for IN condition.");
@@ -556,7 +557,7 @@ void QueryBuilder::buildWhereCondition(QString *query, const Query::Condition &c
 void QueryBuilder::buildCaseStatement(QString *query, const Query::Case &caseStmt)
 {
     *query += QLatin1String("CASE ");
-    Q_FOREACH (const auto &whenThen, caseStmt.mWhenThen) {
+    for (const auto &whenThen : caseStmt.mWhenThen) {
         *query += QLatin1String("WHEN ");
         buildWhereCondition(query, whenThen.first); // When
         *query += QLatin1String(" THEN ") + whenThen.second; // then
@@ -650,6 +651,11 @@ QString QueryBuilder::getTable() const
     return mTable;
 }
 
+QString QueryBuilder::getTableWithColumn(const QString &column) const
+{
+    return mTable + QLatin1Char('.') + column;
+}
+
 QString QueryBuilder::getTableQuery(const QSqlQuery& query, const QString &alias)
 {
     Q_ASSERT_X(query.isValid() && query.isSelect(), "QueryBuilder::getTableQuery", "Table subquery use only for valid SELECT queries");
@@ -662,11 +668,18 @@ QString QueryBuilder::getTableQuery(const QSqlQuery& query, const QString &alias
 
     tableQuery.prepend(QLatin1String("( "));
 
-    const auto boundValues = query.boundValues();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    const QList<QVariant> boundValues = query.boundValues();
+    for (int pos = boundValues.size() - 1; pos >= 0; --pos) {
+        const QVariant &value = boundValues.at(pos);
+        const QString key(QLatin1Char(':') + QString::number(pos));
+#else
+    const QMap<QString, QVariant> boundValues = query.boundValues();
     for (int pos = boundValues.size() - 1; pos >= 0; --pos) {
 
         const QString key(QLatin1Char(':') + QString::number(pos));
         const auto value = boundValues.value(key);
+#endif
 
         QSqlField field(QLatin1String(""), value.type());
         if (value.isNull()) {

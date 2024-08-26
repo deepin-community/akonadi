@@ -22,20 +22,18 @@
 #include <KLocalizedString>
 #include <KSharedConfig>
 
-#include <memory>
-
 using namespace Akonadi;
-
-AgentConfigurationWidget::Private::Private(const AgentInstance &instance)
+using namespace std::chrono_literals;
+AgentConfigurationWidgetPrivate::AgentConfigurationWidgetPrivate(const AgentInstance &instance)
     : agentInstance(instance)
 {
 }
 
-AgentConfigurationWidget::Private::~Private()
+AgentConfigurationWidgetPrivate::~AgentConfigurationWidgetPrivate()
 {
 }
 
-void AgentConfigurationWidget::Private::setupErrorWidget(QWidget *parent, const QString &text)
+void AgentConfigurationWidgetPrivate::setupErrorWidget(QWidget *parent, const QString &text)
 {
     auto layout = new QVBoxLayout(parent);
     layout->addStretch(2);
@@ -45,7 +43,7 @@ void AgentConfigurationWidget::Private::setupErrorWidget(QWidget *parent, const 
     layout->addStretch(2);
 }
 
-bool AgentConfigurationWidget::Private::loadPlugin(const QString &pluginPath)
+bool AgentConfigurationWidgetPrivate::loadPlugin(const QString &pluginPath)
 {
     if (pluginPath.isEmpty()) {
         qCDebug(AKONADIWIDGETS_LOG) << "Haven't found config plugin for" << agentInstance.type().identifier();
@@ -71,7 +69,7 @@ bool AgentConfigurationWidget::Private::loadPlugin(const QString &pluginPath)
 
 AgentConfigurationWidget::AgentConfigurationWidget(const AgentInstance &instance, QWidget *parent)
     : QWidget(parent)
-    , d(new Private(instance))
+    , d(new AgentConfigurationWidgetPrivate(instance))
 {
     if (AgentConfigurationManager::self()->registerInstanceConfiguration(instance.identifier())) {
         const auto pluginPath = AgentConfigurationManager::self()->findConfigPlugin(instance.type().identifier());
@@ -80,7 +78,7 @@ AgentConfigurationWidget::AgentConfigurationWidget(const AgentInstance &instance
             configName = Akonadi::ServerManager::addNamespace(configName);
             KSharedConfigPtr config = KSharedConfig::openConfig(configName);
             auto layout = new QVBoxLayout(this);
-            layout->setContentsMargins(0, 0, 0, 0);
+            layout->setContentsMargins({});
             d->plugin = d->factory->create(config, this, {instance.identifier()});
             connect(d->plugin.data(), &AgentConfigurationBase::enableOkButton, this, &AgentConfigurationWidget::enableOkButton);
         } else {
@@ -88,7 +86,7 @@ AgentConfigurationWidget::AgentConfigurationWidget(const AgentInstance &instance
             if (auto dlg = qobject_cast<AgentConfigurationDialog *>(parent)) {
                 const_cast<AgentInstance &>(instance).configure(topLevelWidget()->parentWidget());
                 // If we are inside the AgentConfigurationDialog, hide the dialog
-                QTimer::singleShot(0, this, [dlg]() {
+                QTimer::singleShot(0s, this, [dlg]() {
                     dlg->reject();
                 });
             } else {

@@ -179,7 +179,8 @@ HandlerHelper::ancestorsResponse(int ancestorDepth, const QStack<Collection> &_a
             a.setName(c.name());
             if (!ancestorAttributes.isEmpty()) {
                 QMap<QByteArray, QByteArray> attrs;
-                Q_FOREACH (const CollectionAttribute &attr, ancestorAttributes.pop()) {
+                const auto ancestorAttrs = ancestorAttributes.pop();
+                for (const CollectionAttribute &attr : ancestorAttrs) {
                     attrs.insert(attr.type(), attr.value());
                 }
                 a.setAttributes(attrs);
@@ -404,7 +405,7 @@ Collection HandlerHelper::collectionFromScope(const Scope &scope, const CommandC
     } else if (c.count() == 1) {
         return c.at(0);
     } else {
-        throw HandlerException("Query returned more than one reslut");
+        throw HandlerException("Query returned more than one result");
     }
 }
 

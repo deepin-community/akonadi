@@ -28,7 +28,7 @@ public:
     {
         switch (static_cast<lzma_ret>(ev)) {
         case LZMA_OK:
-            return "Operation completed succesfully";
+            return "Operation completed successfully";
         case LZMA_STREAM_END:
             return "End of stream was reached";
         case LZMA_NO_CHECK:
@@ -67,7 +67,8 @@ const LZMAErrorCategory &lzmaErrorCategory()
 
 namespace std
 {
-template<> struct is_error_code_enum<lzma_ret> : std::true_type {
+template<>
+struct is_error_code_enum<lzma_ret> : std::true_type {
 };
 
 std::error_condition make_error_condition(lzma_ret ret)

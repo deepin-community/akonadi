@@ -7,12 +7,18 @@
 #pragma once
 
 #include "akonadiwidgets_export.h"
-#include "collection.h"
 #include "collectiondialog.h"
+// AkonadiCore
+#include <akonadi/collection.h>
+
 #include <QWidget>
+
+#include <memory>
 
 namespace Akonadi
 {
+class CollectionRequesterPrivate;
+
 /**
  * @short A widget to request an Akonadi collection from the user.
  *
@@ -126,9 +132,7 @@ Q_SIGNALS:
     void collectionChanged(const Akonadi::Collection &collection);
 
 private:
-    class Private;
-    Private *const d;
+    std::unique_ptr<CollectionRequesterPrivate> const d;
 };
 
 } // namespace Akonadi
-

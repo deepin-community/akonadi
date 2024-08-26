@@ -135,11 +135,12 @@ void SearchManager::loadSearchPlugins()
 
     const QStringList dirs = QCoreApplication::libraryPaths();
     for (const QString &pluginDir : dirs) {
-        QDir dir(pluginDir + QLatin1String("/akonadi"));
+        const QString path(pluginDir + QStringLiteral("/pim" QT_STRINGIFY(QT_VERSION_MAJOR)) + QStringLiteral("/akonadi"));
+        QDir dir(path);
         const QStringList fileNames = dir.entryList(QDir::Files);
-        qCDebug(AKONADISERVER_SEARCH_LOG) << "SEARCH MANAGER: searching in " << pluginDir + QLatin1String("/akonadi") << ":" << fileNames;
+        qCDebug(AKONADISERVER_SEARCH_LOG) << "SEARCH MANAGER: searching in " << path << ":" << fileNames;
         for (const QString &fileName : fileNames) {
-            const QString filePath = pluginDir % QLatin1String("/akonadi/") % fileName;
+            const QString filePath = path % QLatin1Char('/') % fileName;
             std::unique_ptr<QPluginLoader> loader(new QPluginLoader(filePath));
             const QVariantMap metadata = loader->metaData().value(QStringLiteral("MetaData")).toVariant().toMap();
             if (metadata.value(QStringLiteral("X-Akonadi-PluginType")).toString() != QLatin1String("SearchPlugin")) {
@@ -199,7 +200,7 @@ void SearchManager::scheduleSearchUpdate()
     // Reset if the timer is active (use QueuedConnection to invoke start() from
     // the thread the QTimer lives in instead of caller's thread, otherwise crashes
     // and weird things can happen.
-    QMetaObject::invokeMethod(mSearchUpdateTimer, QOverload<>::of(&QTimer::start), Qt::QueuedConnection);
+    QMetaObject::invokeMethod(mSearchUpdateTimer, qOverload<>(&QTimer::start), Qt::QueuedConnection);
 }
 
 void SearchManager::searchUpdateTimeout()
@@ -293,7 +294,7 @@ void SearchManager::updateSearchImpl(const Collection &collection)
     }
 
     // Query all plugins for search results
-    const QByteArray id = "searchUpdate-" + QByteArray::number(QDateTime::currentDateTimeUtc().toTime_t());
+    const QByteArray id = "searchUpdate-" + QByteArray::number(QDateTime::currentDateTimeUtc().toSecsSinceEpoch());
     SearchRequest request(id, *this, mAgentSearchManager);
     request.setCollections(queryCollections);
     request.setMimeTypes(queryMimeTypes);

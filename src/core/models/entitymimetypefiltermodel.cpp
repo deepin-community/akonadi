@@ -7,7 +7,6 @@
 
 #include "entitymimetypefiltermodel.h"
 #include "akonadicore_debug.h"
-#include "mimetypechecker.h"
 
 #include <QString>
 #include <QStringList>
@@ -47,10 +46,7 @@ EntityMimeTypeFilterModel::EntityMimeTypeFilterModel(QObject *parent)
 {
 }
 
-EntityMimeTypeFilterModel::~EntityMimeTypeFilterModel()
-{
-    delete d_ptr;
-}
+EntityMimeTypeFilterModel::~EntityMimeTypeFilterModel() = default;
 
 void EntityMimeTypeFilterModel::addMimeTypeInclusionFilters(const QStringList &typeList)
 {

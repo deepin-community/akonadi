@@ -14,8 +14,12 @@
 #include <QList>
 #include <QVarLengthArray>
 
+#include <memory>
+
 namespace Akonadi
 {
+class ImapParserPrivate;
+
 /**
   Parser for IMAP messages.
 */
@@ -55,7 +59,7 @@ public:
     static int parseQuotedString(const QByteArray &data, QByteArray &result, int start = 0);
 
     /**
-      Returns the number of leading espaces in @p data starting from @p start.
+      Returns the number of leading spaces in @p data starting from @p start.
       @param data The source data.
       @param start Start parsing at this index.
     */
@@ -188,9 +192,7 @@ public:
 
 private:
     Q_DISABLE_COPY(ImapParser)
-    class Private;
-    Private *const d;
+    std::unique_ptr<ImapParserPrivate> const d;
 };
 
 }
-

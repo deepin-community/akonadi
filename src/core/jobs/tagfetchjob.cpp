@@ -5,14 +5,13 @@
 */
 
 #include "tagfetchjob.h"
-#include "attributefactory.h"
 #include "job_p.h"
 #include "protocolhelper_p.h"
 #include "tagfetchscope.h"
 #include <QTimer>
 
 using namespace Akonadi;
-
+using namespace std::chrono_literals;
 class Akonadi::TagFetchJobPrivate : public JobPrivate
 {
 public:
@@ -26,7 +25,7 @@ public:
         Q_Q(TagFetchJob);
         mEmitTimer = new QTimer(q);
         mEmitTimer->setSingleShot(true);
-        mEmitTimer->setInterval(100);
+        mEmitTimer->setInterval(100ms);
         q->connect(mEmitTimer, &QTimer::timeout, q, [this]() {
             timeout();
         });
@@ -156,3 +155,6 @@ Tag::List TagFetchJob::tags() const
 }
 
 #include "moc_tagfetchjob.cpp"
+#include <chrono>
+
+using namespace std::chrono_literals;

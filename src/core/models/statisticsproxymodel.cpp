@@ -14,7 +14,7 @@
 #include "entitydisplayattribute.h"
 #include "entitytreemodel.h"
 
-#include <KFormat>
+#include <KIO/Global>
 #include <KIconLoader>
 #include <KLocalizedString>
 
@@ -27,10 +27,10 @@ using namespace Akonadi;
 /**
  * @internal
  */
-class Q_DECL_HIDDEN StatisticsProxyModel::Private
+class Akonadi::StatisticsProxyModelPrivate
 {
 public:
-    explicit Private(StatisticsProxyModel *parent)
+    explicit StatisticsProxyModelPrivate(StatisticsProxyModel *parent)
         : q(parent)
     {
     }
@@ -100,15 +100,14 @@ public:
             }
         }
 
-        KFormat formatter;
         qint64 currentFolderSize(collection.statistics().size());
-        tipInfo += QStringLiteral("      <strong>%1</strong>: %2<br>\n").arg(i18n("Storage Size"), formatter.formatByteSize(currentFolderSize));
+        tipInfo += QStringLiteral("      <strong>%1</strong>: %2<br>\n").arg(i18n("Storage Size"), KIO::convertSize(currentFolderSize));
 
         qint64 totalSize = 0;
         getCountRecursive(index, totalSize);
         totalSize -= currentFolderSize;
         if (totalSize > 0) {
-            tipInfo += QStringLiteral("<strong>%1</strong>: %2<br>").arg(i18n("Subfolder Storage Size"), formatter.formatByteSize(totalSize));
+            tipInfo += QStringLiteral("<strong>%1</strong>: %2<br>").arg(i18n("Subfolder Storage Size"), KIO::convertSize(totalSize));
         }
 
         QString iconName = CollectionUtils::defaultIconName(collection);
@@ -166,7 +165,7 @@ public:
     bool mExtraColumnsEnabled = false;
 };
 
-void StatisticsProxyModel::Private::_k_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void StatisticsProxyModelPrivate::_k_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     QModelIndex proxyTopLeft(q->mapFromSource(topLeft));
     QModelIndex proxyBottomRight(q->mapFromSource(bottomRight));
@@ -198,15 +197,12 @@ void StatisticsProxyModel::setSourceModel(QAbstractItemModel *model)
 
 StatisticsProxyModel::StatisticsProxyModel(QObject *parent)
     : KExtraColumnsProxyModel(parent)
-    , d(new Private(this))
+    , d(new StatisticsProxyModelPrivate(this))
 {
     setExtraColumnsEnabled(true);
 }
 
-StatisticsProxyModel::~StatisticsProxyModel()
-{
-    delete d;
-}
+StatisticsProxyModel::~StatisticsProxyModel() = default;
 
 void StatisticsProxyModel::setToolTipEnabled(bool enable)
 {
@@ -249,8 +245,7 @@ QVariant StatisticsProxyModel::extraColumnData(const QModelIndex &parent, int ro
         if (collection.isValid() && collection.statistics().count() >= 0) {
             const CollectionStatistics stats = collection.statistics();
             if (extraColumn == 2) {
-                KFormat formatter;
-                return formatter.formatByteSize(stats.size());
+                return KIO::convertSize(stats.size());
             } else if (extraColumn == 1) {
                 return stats.count();
             } else if (extraColumn == 0) {

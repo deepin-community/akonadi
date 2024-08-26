@@ -10,8 +10,12 @@
 
 #include <QAbstractItemModel>
 
+#include <memory>
+
 namespace Akonadi
 {
+class AgentTypeModelPrivate;
+
 /**
  * @short Provides a data model for agent types.
  *
@@ -70,10 +74,8 @@ public:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    std::unique_ptr<AgentTypeModelPrivate> const d;
     /// @endcond
 };
 
 }
-

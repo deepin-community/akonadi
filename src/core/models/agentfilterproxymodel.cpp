@@ -24,7 +24,7 @@ static_assert(static_cast<int>(AgentTypeModel::MimeTypesRole) == static_cast<int
 /**
  * @internal
  */
-class Q_DECL_HIDDEN AgentFilterProxyModel::Private
+class Akonadi::AgentFilterProxyModelPrivate
 {
 public:
     QStringList mimeTypes;
@@ -35,15 +35,12 @@ public:
 
 AgentFilterProxyModel::AgentFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
-    , d(new Private)
+    , d(new AgentFilterProxyModelPrivate)
 {
     setDynamicSortFilter(true);
 }
 
-AgentFilterProxyModel::~AgentFilterProxyModel()
-{
-    delete d;
-}
+AgentFilterProxyModel::~AgentFilterProxyModel() = default;
 
 void AgentFilterProxyModel::addMimeTypeFilter(const QString &mimeType)
 {
@@ -71,7 +68,7 @@ void AgentFilterProxyModel::clearFilters()
     invalidateFilter();
 }
 
-bool AgentFilterProxyModel::Private::filterAcceptRegExp(const QModelIndex &index, const QRegularExpression &filterRegExpStr)
+bool AgentFilterProxyModelPrivate::filterAcceptRegExp(const QModelIndex &index, const QRegularExpression &filterRegExpStr)
 {
     // First see if the name matches a set regexp filter.
     if (!filterRegExpStr.pattern().isEmpty()) {
@@ -127,9 +124,9 @@ bool AgentFilterProxyModel::filterAcceptsRow(int row, const QModelIndex & /*sour
             return false;
         }
 
-        if (found && !d->excludeCapabilities.isEmpty()) {
-            const QStringList lst = index.data(AgentTypeModel::CapabilitiesRole).toStringList();
-            for (const QString &capability : lst) {
+        if (!d->excludeCapabilities.isEmpty()) {
+            const QStringList lstCapabilities = index.data(AgentTypeModel::CapabilitiesRole).toStringList();
+            for (const QString &capability : lstCapabilities) {
                 if (d->excludeCapabilities.contains(capability)) {
                     found = false;
                     break;

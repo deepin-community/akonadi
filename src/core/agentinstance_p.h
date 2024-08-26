@@ -16,17 +16,14 @@ namespace Akonadi
 /**
  * @internal
  */
-class Q_DECL_HIDDEN AgentInstance::Private : public QSharedData
+class AgentInstancePrivate : public QSharedData
 {
 public:
-    Private()
-        : mStatus(0)
-        , mProgress(0)
-        , mIsOnline(false)
+    AgentInstancePrivate()
     {
     }
 
-    Private(const Private &other)
+    AgentInstancePrivate(const AgentInstancePrivate &other)
         : QSharedData(other)
     {
         mType = other.mType;
@@ -41,11 +38,10 @@ public:
     AgentType mType;
     QString mIdentifier;
     QString mName;
-    int mStatus;
+    int mStatus = 0;
     QString mStatusMessage;
-    int mProgress;
-    bool mIsOnline;
+    int mProgress = 0;
+    bool mIsOnline = false;
 };
 
 }
-

@@ -27,10 +27,10 @@ using namespace Akonadi;
 /**
  * @internal
  */
-class Q_DECL_HIDDEN FavoriteCollectionsModel::Private
+class Akonadi::FavoriteCollectionsModelPrivate
 {
 public:
-    Private(const KConfigGroup &group, FavoriteCollectionsModel *parent)
+    FavoriteCollectionsModelPrivate(const KConfigGroup &group, FavoriteCollectionsModel *parent)
         : q(parent)
         , configGroup(group)
     {
@@ -268,7 +268,7 @@ public:
 
 FavoriteCollectionsModel::FavoriteCollectionsModel(QAbstractItemModel *source, const KConfigGroup &group, QObject *parent)
     : KSelectionProxyModel(new QItemSelectionModel(source, parent), parent)
-    , d(new Private(group, this))
+    , d(new FavoriteCollectionsModelPrivate(group, this))
 {
     setSourceModel(source);
     setFilterBehavior(ExactSelection);
@@ -289,10 +289,7 @@ FavoriteCollectionsModel::FavoriteCollectionsModel(QAbstractItemModel *source, c
     });
 }
 
-FavoriteCollectionsModel::~FavoriteCollectionsModel()
-{
-    delete d;
-}
+FavoriteCollectionsModel::~FavoriteCollectionsModel() = default;
 
 void FavoriteCollectionsModel::setCollections(const Collection::List &collections)
 {

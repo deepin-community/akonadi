@@ -9,10 +9,13 @@
 #include "akonadicore_export.h"
 #include <qglobal.h>
 
+#include <memory>
+
 namespace Akonadi
 {
 class Item;
 class ItemFetchScope;
+class ItemMonitorPrivate;
 
 /**
  * @short A convenience class to monitor a single item for changes.
@@ -127,12 +130,11 @@ protected:
 
 private:
     /// @cond PRIVATE
-    class Private;
-    Private *const d;
+    friend class ItemMonitorPrivate;
+    std::unique_ptr<ItemMonitorPrivate> const d;
     /// @endcond
 
     Q_DISABLE_COPY(ItemMonitor)
 };
 
 }
-

@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <memory>
+#include "akonaditests_export.h"
 
 namespace Akonadi
 {
-class Config
+class AKONADI_TESTS_EXPORT Config
 {
 public:
     explicit Config();
@@ -35,4 +35,3 @@ public:
 };
 
 } // namespace Akonadi
-

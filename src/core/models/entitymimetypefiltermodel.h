@@ -12,6 +12,8 @@
 
 #include <QSortFilterProxyModel>
 
+#include <memory>
+
 namespace Akonadi
 {
 class EntityMimeTypeFilterModelPrivate;
@@ -132,9 +134,8 @@ protected:
 private:
     /// @cond PRIVATE
     Q_DECLARE_PRIVATE(EntityMimeTypeFilterModel)
-    EntityMimeTypeFilterModelPrivate *const d_ptr;
+    std::unique_ptr<EntityMimeTypeFilterModelPrivate> const d_ptr;
     /// @endcond
 };
 
 }
-

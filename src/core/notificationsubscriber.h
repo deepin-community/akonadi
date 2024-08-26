@@ -6,13 +6,15 @@
 
 #pragma once
 
-#include <akonadicore_export.h>
+#include "akonadicore_export.h"
 
 #include "monitor.h"
 #include <QSet>
 
 namespace Akonadi
 {
+class NotificationSubscriberPrivate;
+
 class AKONADICORE_EXPORT NotificationSubscriber
 {
 public:
@@ -67,8 +69,7 @@ public:
     void setTagFetchScope(const TagFetchScope &tagFetchScope);
 
 private:
-    class Private;
-    QSharedDataPointer<Private> d;
+    QSharedDataPointer<NotificationSubscriberPrivate> d;
 };
 
 }

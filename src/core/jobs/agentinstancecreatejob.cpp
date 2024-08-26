@@ -11,7 +11,6 @@
 #include "agentmanager_p.h"
 #include "controlinterface.h"
 #include "kjobprivatebase_p.h"
-#include "servermanager.h"
 #include <QDBusConnection>
 
 #include <KLocalizedString>
@@ -122,10 +121,7 @@ AgentInstanceCreateJob::AgentInstanceCreateJob(const QString &typeId, QObject *p
     d->agentTypeId = typeId;
 }
 
-AgentInstanceCreateJob::~AgentInstanceCreateJob()
-{
-    delete d;
-}
+AgentInstanceCreateJob::~AgentInstanceCreateJob() = default;
 
 void AgentInstanceCreateJob::configure(QWidget *parent)
 {
@@ -165,7 +161,7 @@ void AgentInstanceCreateJobPrivate::doStart()
         int timeout = safetyTimeout;
 #ifdef Q_OS_UNIX
         // Increate the timeout when valgrinding the agent, because that slows down things a log.
-        QString agentValgrind = QString::fromLocal8Bit(qgetenv("AKONADI_VALGRIND"));
+        const QString agentValgrind = QString::fromLocal8Bit(qgetenv("AKONADI_VALGRIND"));
         if (!agentValgrind.isEmpty() && agentType.identifier().contains(agentValgrind)) {
             timeout *= 15;
         }

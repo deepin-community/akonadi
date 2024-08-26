@@ -121,13 +121,13 @@ public:
      * @since 4.8
      */
     explicit ItemFetchJob(const QList<Item::Id> &items, QObject *parent = nullptr);
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     /**
      * Convenience ctor equivalent to ItemFetchJob(const Item::List &items, QObject *parent = nullptr)
      * @since 5.4
      */
     explicit ItemFetchJob(const QVector<Item::Id> &items, QObject *parent = nullptr);
-
+#endif
     /**
      * Creates a new item fetch job that retrieves all items tagged with specified @p tag.
      *
@@ -225,6 +225,18 @@ public:
      */
     int count() const;
 
+    /**
+     * Sets the limit of fetched items.
+     *
+     * @param limit the maximum number of items to retrieve.
+     * The default value for @p limit is -1, indicating no limit.
+     * @param start specifies the offset of the first item to retrieve.
+     * @param order specifies whether items will be fetched
+     * starting with the highest or lowest ID of the item.
+     */
+
+    void setLimit(int limit, int start, Qt::SortOrder order = Qt::DescendingOrder);
+
 Q_SIGNALS:
     /**
      * This signal is emitted whenever new items have been fetched completely.
@@ -248,4 +260,3 @@ private:
 }
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Akonadi::ItemFetchJob::DeliveryOptions)
-

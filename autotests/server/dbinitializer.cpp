@@ -133,7 +133,8 @@ DbInitializer::listResponse(const Collection &col, bool ancestors, bool mimetype
             if (!ancestorFetchScope.isEmpty()) {
                 anc.setRemoteId(parent.remoteId());
                 Akonadi::Protocol::Attributes attrs;
-                Q_FOREACH (const CollectionAttribute &attr, parent.attributes()) {
+                const auto parentAttrs = parent.attributes();
+                for (const CollectionAttribute &attr : parentAttrs) {
                     if (ancestorFetchScope.contains(QString::fromLatin1(attr.type()))) {
                         attrs.insert(attr.type(), attr.value());
                     }
@@ -154,7 +155,8 @@ DbInitializer::listResponse(const Collection &col, bool ancestors, bool mimetype
     resp->setIndexPref(static_cast<Tristate>(col.indexPref()));
 
     Akonadi::Protocol::Attributes attrs;
-    Q_FOREACH (const CollectionAttribute &attr, col.attributes()) {
+    const auto colAttrs = col.attributes();
+    for (const CollectionAttribute &attr : colAttrs) {
         attrs.insert(attr.type(), attr.value());
     }
     resp->setAttributes(attrs);
@@ -190,7 +192,8 @@ Collection DbInitializer::collection(const char *name)
 
 void DbInitializer::cleanup()
 {
-    Q_FOREACH (Collection col, mResource.collections()) { // krazy:exclude=foreach
+    const Collection::List collections = mResource.collections();
+    for (Collection col : collections) {
         if (!col.isVirtual()) {
             col.remove();
         }
@@ -212,10 +215,12 @@ void DbInitializer::cleanup()
         }
     }
 
-    Q_FOREACH (Part part, Part::retrieveAll()) { // krazy:exclude=foreach
+    const Part::List allParts = Part::retrieveAll();
+    for (Part part : allParts) {
         part.remove();
     }
-    Q_FOREACH (PimItem item, PimItem::retrieveAll()) { // krazy:exclude=foreach
+    const PimItem::List allItems = PimItem::retrieveAll();
+    for (PimItem item : allItems) {
         item.remove();
     }
 }

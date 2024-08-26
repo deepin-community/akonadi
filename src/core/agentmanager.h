@@ -57,7 +57,7 @@ public:
     /**
      * Destroys the agent manager.
      */
-    ~AgentManager();
+    ~AgentManager() override;
 
     /**
      * Returns the list of all available agent types.
@@ -193,4 +193,3 @@ private:
 };
 
 }
-
