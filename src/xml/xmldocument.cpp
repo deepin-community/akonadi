@@ -80,9 +80,9 @@ class XmlDocumentPrivate
 {
 public:
     XmlDocumentPrivate()
-        : valid(false)
+        : lastError(i18n("No data loaded."))
+        , valid(false)
     {
-        lastError = i18n("No data loaded.");
     }
 
     QDomElement findElementByRid(const QString &rid, const QString &elemName) const
@@ -104,15 +104,15 @@ XmlDocument::XmlDocument()
     d->document.appendChild(rootElem);
 }
 
-XmlDocument::XmlDocument(const QString &fileName)
+XmlDocument::XmlDocument(const QString &fileName, const QString &xsdFile)
     : d(new XmlDocumentPrivate)
 {
-    loadFile(fileName);
+    loadFile(fileName, xsdFile);
 }
 
 XmlDocument::~XmlDocument() = default;
 
-bool Akonadi::XmlDocument::loadFile(const QString &fileName)
+bool Akonadi::XmlDocument::loadFile(const QString &fileName, const QString &xsdFile)
 {
     d->valid = false;
     d->document = QDomDocument();
@@ -144,8 +144,8 @@ bool Akonadi::XmlDocument::loadFile(const QString &fileName)
     }
 
     const QString &schemaFileName =
-        QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kf" QT_STRINGIFY(QT_VERSION_MAJOR) "/akonadi/akonadi-xml.xsd"));
-    XmlPtr<xmlDocPtr, xmlFreeDoc> schemaDoc(xmlReadFile(schemaFileName.toLocal8Bit().constData(), nullptr, XML_PARSE_NONET));
+        xsdFile.isEmpty() ? QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kf6/akonadi/akonadi-xml.xsd")) : xsdFile;
+    const XmlPtr<xmlDocPtr, xmlFreeDoc> schemaDoc(xmlReadFile(schemaFileName.toLocal8Bit().constData(), nullptr, XML_PARSE_NONET));
     if (!schemaDoc) {
         d->lastError = i18n("Schema definition could not be loaded and parsed.");
         return false;
@@ -155,12 +155,12 @@ bool Akonadi::XmlDocument::loadFile(const QString &fileName)
         d->lastError = i18n("Unable to create schema parser context.");
         return false;
     }
-    XmlPtr<xmlSchemaPtr, xmlSchemaFree> schema(xmlSchemaParse(parserContext));
+    const XmlPtr<xmlSchemaPtr, xmlSchemaFree> schema(xmlSchemaParse(parserContext));
     if (!schema) {
         d->lastError = i18n("Unable to create schema.");
         return false;
     }
-    XmlPtr<xmlSchemaValidCtxtPtr, xmlSchemaFreeValidCtxt> validationContext(xmlSchemaNewValidCtxt(schema));
+    const XmlPtr<xmlSchemaValidCtxtPtr, xmlSchemaFreeValidCtxt> validationContext(xmlSchemaNewValidCtxt(schema));
     if (!validationContext) {
         d->lastError = i18n("Unable to create schema validation context.");
         return false;
@@ -173,9 +173,8 @@ bool Akonadi::XmlDocument::loadFile(const QString &fileName)
 #endif
 
     // DOM loading
-    QString errMsg;
-    if (!d->document.setContent(data, true, &errMsg)) {
-        d->lastError = i18n("Unable to parse data file: %1", errMsg);
+    if (const auto result = d->document.setContent(data, QDomDocument::ParseOption::UseNamespaceProcessing); !result) {
+        d->lastError = i18n("Unable to parse data file: %1", result.errorMessage);
         return false;
     }
 

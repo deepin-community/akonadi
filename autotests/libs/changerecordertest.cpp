@@ -70,9 +70,9 @@ private Q_SLOTS:
         QVERIFY(rec->isEmpty());
         for (const QString &action : std::as_const(actions)) {
             qDebug() << action;
-            if (action == QLatin1String("rn")) {
+            if (action == QLatin1StringView("rn")) {
                 replayNextAndExpectNothing(rec.get());
-            } else if (action == QLatin1String("reload")) {
+            } else if (action == QLatin1StringView("reload")) {
                 // Check saving and loading from disk
                 rec = createChangeRecorder();
             } else if (action.at(0) == QLatin1Char('c')) {
@@ -154,7 +154,7 @@ private:
         QCOMPARE(nothingSpy.count(), 1);
     }
 
-    std::unique_ptr<ChangeRecorder> createChangeRecorder() const
+    std::unique_ptr<ChangeRecorder> createChangeRecorder()
     {
         auto rec = std::make_unique<ChangeRecorder>();
         rec->setConfig(settings);
@@ -164,8 +164,7 @@ private:
         rec->itemFetchScope().setCacheOnly(true);
 
         // Ensure we listen to a signal, otherwise MonitorPrivate::isLazilyIgnored will ignore notifications
-        auto spy = new QSignalSpy(rec.get(), &Monitor::itemChanged);
-        spy->setParent(rec.get());
+        spies.push_back(std::make_unique<QSignalSpy>(rec.get(), &Monitor::itemChanged));
 
         QSignalSpy readySpy(rec.get(), &Monitor::monitorReady);
         if (!readySpy.wait()) {
@@ -177,6 +176,7 @@ private:
     }
 
     QSettings *settings = nullptr;
+    std::vector<std::unique_ptr<QSignalSpy>> spies;
 };
 
 QTEST_AKONADIMAIN(ChangeRecorderTest)

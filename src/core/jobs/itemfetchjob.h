@@ -121,13 +121,6 @@ public:
      * @since 4.8
      */
     explicit ItemFetchJob(const QList<Item::Id> &items, QObject *parent = nullptr);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    /**
-     * Convenience ctor equivalent to ItemFetchJob(const Item::List &items, QObject *parent = nullptr)
-     * @since 5.4
-     */
-    explicit ItemFetchJob(const QVector<Item::Id> &items, QObject *parent = nullptr);
-#endif
     /**
      * Creates a new item fetch job that retrieves all items tagged with specified @p tag.
      *
@@ -151,7 +144,7 @@ public:
      * @note The items are invalid before the result(KJob*)
      *       signal has been emitted or if an error occurred.
      */
-    Q_REQUIRED_RESULT Item::List items() const;
+    [[nodiscard]] Item::List items() const;
 
     /**
      * Save memory by clearing the fetched items.

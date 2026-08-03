@@ -1,14 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2011-2022 Laurent Montel <montel@kde.org>
+ * SPDX-FileCopyrightText: 2011-2024 Laurent Montel <montel@kde.org>
  *
  * SPDX-License-Identifier: LGPL-2.0-or-later
  */
 #pragma once
 
 #include "collection.h"
+#include "standardactionmanager.h"
 #include <QModelIndex>
 #include <QStringList>
-#include <standardactionmanager.h>
 
 class QMenu;
 class QAbstractItemModel;

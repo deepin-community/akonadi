@@ -76,16 +76,16 @@ public:
     /**
      * Returns the current quota value in bytes.
      */
-    qint64 currentValue() const;
+    [[nodiscard]] qint64 currentValue() const;
 
     /**
      * Returns the maximum quota value in bytes.
      */
-    qint64 maximumValue() const;
+    [[nodiscard]] qint64 maximumValue() const;
 
     QByteArray type() const override;
     Attribute *clone() const override;
-    QByteArray serialized() const override;
+    [[nodiscard]] QByteArray serialized() const override;
     void deserialize(const QByteArray &data) override;
 
 private:

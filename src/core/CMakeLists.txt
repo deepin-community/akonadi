@@ -1,16 +1,7 @@
-if (BUILD_QCH)
-    ecm_install_qch_export(
-        TARGETS KF5AkonadiCore_QCH
-        FILE KF5AkonadiCoreQchTargets.cmake
-        DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
-        COMPONENT Devel
-    )
-    set(PACKAGE_INCLUDE_QCHTARGETS "include(\"\${CMAKE_CURRENT_LIST_DIR}/KF5AkonadiCoreQchTargets.cmake\")")
-endif()
 configure_file(akonaditests_export.h.in "${CMAKE_CURRENT_BINARY_DIR}/akonaditests_export.h")
 
 # base install include dir
-set(AkonadiCore_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiCore")
+set(AkonadiCore_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR}/KPim6/AkonadiCore")
 
 set(akonadicore_base_SRCS
     agentconfigurationbase.cpp
@@ -37,7 +28,7 @@ set(akonadicore_base_SRCS
     collectionpathresolver.cpp
     collectionstatistics.cpp
     collectionsync.cpp
-    collectionutils.cpp
+    collectionutils.cpp collectionutils.h
     conflicthandler.cpp
     control.cpp
     entitycache.cpp
@@ -61,8 +52,6 @@ set(akonadicore_base_SRCS
     pluginloader.cpp
     protocolhelper.cpp
     remotelog.cpp
-    relation.cpp
-    relationsync.cpp
     searchquery.cpp
     servermanager.cpp
     session.cpp
@@ -80,6 +69,7 @@ set(akonadicore_base_SRCS
     agentconfigurationmanager_p.h
     agentinstance_p.h
     agentmanager.h
+    agentmanager_p.h
     agenttype.h
     asyncselectionhandler_p.h
     attributefactory.h
@@ -106,7 +96,6 @@ set(akonadicore_base_SRCS
     item.h
     itemchangelog_p.h
     itemfetchscope.h
-    itemfetchscope_p.h
     itemmonitor.h
     itemmonitor_p.h
     itemserializer_p.h
@@ -122,8 +111,6 @@ set(akonadicore_base_SRCS
     pastehelper_p.h
     pluginloader_p.h
     protocolhelper_p.h
-    relation.h
-    relationsync.h
     searchquery.h
     servermanager.h
     servermanager_p.h
@@ -139,8 +126,10 @@ set(akonadicore_base_SRCS
     trashsettings.h
     typepluginloader_p.h
 
+    accountactivitiesabstract.h
+    accountactivitiesabstract.cpp
 
-    )
+   )
 
 ecm_generate_headers(AkonadiCore_base_CC_HEADERS
     HEADER_NAMES
@@ -171,7 +160,6 @@ ecm_generate_headers(AkonadiCore_base_CC_HEADERS
     NotificationSubscriber
     Monitor
     PartFetcher
-    Relation
     SearchQuery
     ServerManager
     Session
@@ -182,31 +170,34 @@ ecm_generate_headers(AkonadiCore_base_CC_HEADERS
     TagFetchScope
     TrashSettings
     CollectionPathResolver
+    AccountActivitiesAbstract
     REQUIRED_HEADERS AkonadiCore_base_HEADERS
     PREFIX Akonadi
 )
 
 set(akonadicore_attributes_SRCS
     attributes/attribute.cpp
-    attributes/collectioncolorattribute.cpp
-    attributes/collectionquotaattribute.cpp
-    attributes/collectionidentificationattribute.cpp
+    attributes/collectionannotationsattribute.cpp attributes/collectionannotationsattribute.h
+    attributes/collectioncolorattribute.cpp attributes/collectioncolorattribute.h
+    attributes/collectionquotaattribute.cpp attributes/collectionquotaattribute.h
+    attributes/collectionidentificationattribute.cpp attributes/collectionidentificationattribute.h
     attributes/collectionrightsattribute.cpp
-    attributes/entityannotationsattribute.cpp
-    attributes/entitydeletedattribute.cpp
-    attributes/entitydeletedattribute.cpp
-    attributes/entitydisplayattribute.cpp
-    attributes/entityhiddenattribute.cpp
-    attributes/favoritecollectionattribute.cpp
-    attributes/indexpolicyattribute.cpp
-    attributes/persistentsearchattribute.cpp
-    attributes/specialcollectionattribute.cpp
-    attributes/tagattribute.cpp
+    attributes/entityannotationsattribute.cpp attributes/entityannotationsattribute.h
+    attributes/entitydeletedattribute.cpp attributes/entitydeletedattribute.h
+    attributes/entitydeletedattribute.cpp attributes/entitydeletedattribute.h
+    attributes/entitydisplayattribute.cpp attributes/entitydisplayattribute.h
+    attributes/entityhiddenattribute.cpp attributes/entityhiddenattribute.h
+    attributes/favoritecollectionattribute.cpp attributes/favoritecollectionattribute.h
+    attributes/indexpolicyattribute.cpp attributes/indexpolicyattribute.h
+    attributes/persistentsearchattribute.cpp attributes/persistentsearchattribute.h
+    attributes/specialcollectionattribute.cpp attributes/specialcollectionattribute.h
+    attributes/tagattribute.cpp attributes/tagattribute.h
 )
 
 ecm_generate_headers(AkonadiCore_attributes_CC_HEADERS
     HEADER_NAMES
     Attribute
+    CollectionAnnotationsAttribute
     CollectionColorAttribute
     CollectionIdentificationAttribute
     CollectionQuotaAttribute
@@ -225,29 +216,31 @@ ecm_generate_headers(AkonadiCore_attributes_CC_HEADERS
 )
 
 set(akonadicore_models_SRCS
-    models/agentfilterproxymodel.cpp
-    models/agentinstancemodel.cpp
-    models/agenttypemodel.cpp
+    models/agentfilterproxymodel.cpp models/agentfilterproxymodel.h
+    models/agentinstancemodel.cpp models/agentinstancemodel.h
+    models/agenttypemodel.cpp models/agenttypemodel.h
     models/collectionfilterproxymodel.cpp
-    models/entitymimetypefiltermodel.cpp
-    models/entityorderproxymodel.cpp
-    models/entityrightsfiltermodel.cpp
-    models/entitytreemodel.cpp
-    models/entitytreemodel_p.cpp
-    models/favoritecollectionsmodel.cpp
-    models/recursivecollectionfilterproxymodel.cpp
-    models/selectionproxymodel.cpp
-    models/statisticsproxymodel.cpp
+    models/entitymimetypefiltermodel.cpp models/entitymimetypefiltermodel.h
+    models/entityorderproxymodel.cpp models/entityorderproxymodel.h
+    models/entityrightsfiltermodel.cpp models/entityrightsfiltermodel.h
+    models/entitytreemodel.cpp models/entitytreemodel.h
+    models/entitytreemodel_p.cpp models/entitytreemodel_p.h
+    models/favoritecollectionsmodel.cpp models/favoritecollectionsmodel.h
+    models/recursivecollectionfilterproxymodel.cpp models/recursivecollectionfilterproxymodel.h
+    models/selectionproxymodel.cpp models/selectionproxymodel.h
+    models/statisticsproxymodel.cpp models/statisticsproxymodel.h
     models/subscriptionmodel.cpp
-    models/tagmodel.cpp
-    models/tagmodel_p.cpp
-    models/trashfilterproxymodel.cpp
+    models/tagmodel.cpp models/tagmodel.h
+    models/tagmodel_p.cpp models/tagmodel_p.h
+    models/trashfilterproxymodel.cpp models/trashfilterproxymodel.h
+    models/agentinstancefilterproxymodel.cpp models/agentinstancefilterproxymodel.h
 )
 
 ecm_generate_headers(AkonadiCore_models_CC_HEADERS
     HEADER_NAMES
     AgentFilterProxyModel
     AgentInstanceModel
+    AgentInstanceFilterProxyModel
     AgentTypeModel
     CollectionFilterProxyModel
     EntityMimeTypeFilterModel
@@ -289,12 +282,9 @@ set(akonadicore_jobs_SRCS
     jobs/recursiveitemfetchjob.cpp
     jobs/resourceselectjob.cpp
     jobs/resourcesynchronizationjob.cpp
-    jobs/relationfetchjob.cpp
-    jobs/relationcreatejob.cpp
-    jobs/relationdeletejob.cpp
     jobs/searchcreatejob.cpp
     jobs/searchresultjob.cpp
-    jobs/specialcollectionsdiscoveryjob.cpp
+    jobs/specialcollectionsdiscoveryjob.cpp jobs/specialcollectionsdiscoveryjob.h
     jobs/specialcollectionshelperjobs.cpp
     jobs/specialcollectionsrequestjob.cpp
     jobs/subscriptionjob.cpp
@@ -330,9 +320,6 @@ set(akonadicore_jobs_SRCS
     jobs/recursiveitemfetchjob.h
     jobs/resourceselectjob_p.h
     jobs/resourcesynchronizationjob.h
-    jobs/relationfetchjob.h
-    jobs/relationcreatejob.h
-    jobs/relationdeletejob.h
     jobs/searchcreatejob.h
     jobs/searchresultjob_p.h
     jobs/specialcollectionshelperjobs_p.h
@@ -348,7 +335,7 @@ set(akonadicore_jobs_SRCS
     jobs/trashrestorejob.h
     jobs/unlinkjob.h
 
-    )
+   )
 
 ecm_generate_headers(AkonadiCore_jobs_CC_HEADERS
     HEADER_NAMES
@@ -372,9 +359,6 @@ ecm_generate_headers(AkonadiCore_jobs_CC_HEADERS
     LinkJob
     RecursiveItemFetchJob
     ResourceSynchronizationJob
-    RelationFetchJob
-    RelationCreateJob
-    RelationDeleteJob
     SearchCreateJob
     SpecialCollectionsDiscoveryJob
     SpecialCollectionsRequestJob
@@ -396,7 +380,7 @@ set(akonadicore_dbus_xml ${Akonadi_SOURCE_DIR}/src/interfaces/org.freedesktop.Ak
 qt_add_dbus_interface(akonadicore_dbus_SRCS ${akonadicore_dbus_xml} notificationmanagerinterface)
 
 set(akonadicore_dbus_xml ${Akonadi_SOURCE_DIR}/src/interfaces/org.freedesktop.Akonadi.NotificationSource.xml)
-set_source_files_properties(${akonadicore_dbus_xml} PROPERTIES INCLUDE "${Akonadi_SOURCE_DIR}/src/private/protocol_p.h" )
+set_source_files_properties(${akonadicore_dbus_xml} PROPERTIES INCLUDE "${Akonadi_SOURCE_DIR}/src/private/protocol_p.h")
 qt_add_dbus_interface(akonadicore_dbus_SRCS ${akonadicore_dbus_xml} notificationsourceinterface)
 
 qt_add_dbus_interfaces(akonadicore_dbus_SRCS ${Akonadi_SOURCE_DIR}/src/interfaces/org.freedesktop.Akonadi.AgentManager.xml)
@@ -417,54 +401,47 @@ ecm_qt_declare_logging_category(akonadicore_SRCS HEADER akonadicore_debug.h IDEN
         DESCRIPTION "akonadi (Akonadi Core Library)"
         OLD_CATEGORY_NAMES log_akonadicore
         EXPORT AKONADI
-    )
+   )
 
 
-add_library(KF5AkonadiCore ${akonadicore_SRCS})
-#if (COMPILE_WITH_UNITY_CMAKE_SUPPORT)
-#    set_target_properties(KF5AkonadiCore PROPERTIES UNITY_BUILD ON)
+add_library(KPim6AkonadiCore ${akonadicore_SRCS})
+#if(COMPILE_WITH_UNITY_CMAKE_SUPPORT)
+#    set_target_properties(KPim6AkonadiCore PROPERTIES UNITY_BUILD ON)
 #endif()
 
-generate_export_header(KF5AkonadiCore BASE_NAME akonadicore)
+generate_export_header(KPim6AkonadiCore BASE_NAME akonadicore)
 
-add_library(KF5::AkonadiCore ALIAS KF5AkonadiCore)
-target_include_directories(KF5AkonadiCore INTERFACE "$<INSTALL_INTERFACE:${AkonadiCore_INSTALL_INCLUDEDIR}>")
-target_include_directories(KF5AkonadiCore PUBLIC "$<BUILD_INTERFACE:${Akonadi_SOURCE_DIR}/src/core;${Akonadi_BINARY_DIR}/src/core;${Akonadi_BINARY_DIR}/src/private>")
-target_include_directories(KF5AkonadiCore PUBLIC "$<BUILD_INTERFACE:${Akonadi_BINARY_DIR};${Akonadi_SOURCE_DIR}/src/core/jobs;${Akonadi_SOURCE_DIR}/src/core/models;${Akonadi_SOURCE_DIR}/src/core/attributes>")
+add_library(KPim6::AkonadiCore ALIAS KPim6AkonadiCore)
+target_include_directories(KPim6AkonadiCore INTERFACE "$<INSTALL_INTERFACE:${AkonadiCore_INSTALL_INCLUDEDIR}>")
+target_include_directories(KPim6AkonadiCore PUBLIC "$<BUILD_INTERFACE:${Akonadi_SOURCE_DIR}/src/core;${Akonadi_BINARY_DIR}/src/core;${Akonadi_BINARY_DIR}/src/private>")
+target_include_directories(KPim6AkonadiCore PUBLIC "$<BUILD_INTERFACE:${Akonadi_BINARY_DIR};${Akonadi_SOURCE_DIR}/src/core/jobs;${Akonadi_SOURCE_DIR}/src/core/models;${Akonadi_SOURCE_DIR}/src/core/attributes>")
 
-kde_target_enable_exceptions(KF5AkonadiCore PUBLIC)
+kde_target_enable_exceptions(KPim6AkonadiCore PUBLIC)
 
-target_link_libraries(KF5AkonadiCore
+target_link_libraries(KPim6AkonadiCore
 PUBLIC
-    KF5::CoreAddons # for KJob
-    KF5::ItemModels
+    KF6::CoreAddons # for KJob
+    KF6::ItemModels
     Qt::Gui # for QColor
 PRIVATE
     Qt::Network
     Qt::Widgets
-    KF5::AkonadiPrivate
-    KF5::KIOCore
-    KF5::I18n
-    KF5::IconThemes
-    KF5::ConfigCore
-    KF5AkonadiPrivate
+    KF6::I18n
+    KF6::IconThemes
+    KF6::ConfigCore
+    KPim6::AkonadiPrivate
     akonadi_shared
 )
 
-set_target_properties(KF5AkonadiCore PROPERTIES
+set_target_properties(KPim6AkonadiCore PROPERTIES
     VERSION ${AKONADI_VERSION}
     SOVERSION ${AKONADI_SOVERSION}
     EXPORT_NAME AkonadiCore
 )
 
-ecm_generate_pri_file(BASE_NAME AkonadiCore
-    LIB_NAME KF5AkonadiCore
-    DEPS "KItemModels KCoreAddons" FILENAME_VAR PRI_FILENAME
-)
-
 install(TARGETS
-    KF5AkonadiCore
-    EXPORT KF5AkonadiTargets ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
+    KPim6AkonadiCore
+    EXPORT KPim6AkonadiTargets ${KDE_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
@@ -492,21 +469,16 @@ install(FILES
 )
 
 install(FILES
-    ${PRI_FILENAME}
-    DESTINATION ${ECM_MKSPECS_INSTALL_DIR}
-)
-
-install( FILES
     kcfg2dbus.xsl
     DESTINATION ${KDE_INSTALL_DATADIR_KF}/akonadi
 )
 
 
-if (BUILD_QCH)
+if(BUILD_QCH)
     ecm_add_qch(
-        KF5AkonadiCore_QCH
-        NAME KF5AkonadiCore
-        BASE_NAME KF5AkonadiCore
+        KPim6AkonadiCore_QCH
+        NAME KPim6AkonadiCore
+        BASE_NAME KPim6AkonadiCore
         VERSION ${PIM_VERSION}
         ORG_DOMAIN org.kde
         SOURCES # using only public headers, to cover only public API
@@ -518,9 +490,9 @@ if (BUILD_QCH)
         #MD_MAINPAGE "${CMAKE_SOURCE_DIR}/README.md"
         #IMAGE_DIRS "${CMAKE_SOURCE_DIR}/docs/pics"
         LINK_QCHS
-            Qt5Core_QCH
-            Qt5Gui_QCH
-            Qt5Widgets_QCH
+            Qt6Core_QCH
+            Qt6Gui_QCH
+            Qt6Widgets_QCH
         INCLUDE_DIRS
             ${CMAKE_CURRENT_BINARY_DIR}
         BLANK_MACROS
@@ -528,5 +500,5 @@ if (BUILD_QCH)
         TAGFILE_INSTALL_DESTINATION ${KDE_INSTALL_QTQCHDIR}
         QCH_INSTALL_DESTINATION ${KDE_INSTALL_QTQCHDIR}
         COMPONENT Devel
-    )
+   )
 endif()

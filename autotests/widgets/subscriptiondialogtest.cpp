@@ -7,8 +7,7 @@
 
 #include "qtest_akonadi.h"
 
-#include <shared/akscopeguard.h>
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
 #include "subscriptiondialog.h"
 #include "subscriptionjob_p.h"
@@ -19,6 +18,7 @@
 #include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QScopeGuard>
 #include <QSignalSpy>
 #include <QTest>
 #include <QTreeView>
@@ -38,8 +38,8 @@ class SubscriptionDialogTest : public QObject
         };
 
         TestSetup()
+            : widget(std::make_unique<SubscriptionDialog>(QStringList{Collection::mimeType(), QStringLiteral("application/octet-stream")}))
         {
-            widget = std::make_unique<SubscriptionDialog>(QStringList{Collection::mimeType(), QStringLiteral("application/octet-stream")});
             widget->setAttribute(Qt::WA_DeleteOnClose, false);
             widget->show();
 
@@ -190,7 +190,7 @@ private Q_SLOTS:
     void testSubscribedOnlyCheckbox()
     {
         const auto col = Collection{AkonadiTest::collectionIdFromPath(QStringLiteral("res1/foo/bla"))};
-        const AkScopeGuard guard([col]() {
+        const auto guard = qScopeGuard([col]() {
             TestSetup::subscribeCollection(col);
         });
 
@@ -211,7 +211,7 @@ private Q_SLOTS:
     void testSubscribeButton()
     {
         const auto col = Collection{AkonadiTest::collectionIdFromPath(QStringLiteral("res1/foo/bla"))};
-        const AkScopeGuard guard([col]() {
+        const auto guard = qScopeGuard([col]() {
             TestSetup::subscribeCollection(col);
         });
 

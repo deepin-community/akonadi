@@ -1,5 +1,5 @@
 /*
-    SPDX-FileCopyrightText: 2014-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2014-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -10,6 +10,7 @@
 #include "agentfilterproxymodel.h"
 #include "agentinstance.h"
 #include "agentinstancecreatejob.h"
+#include "agentinstancefilterproxymodel.h"
 #include "agentmanager.h"
 #include "agenttypedialog.h"
 
@@ -17,12 +18,10 @@
 
 #include <KLocalizedString>
 #include <KMessageBox>
-#include <KWindowSystem>
 #include <QAbstractItemDelegate>
 #include <QAbstractItemView>
 #include <QKeyEvent>
 #include <QPointer>
-#include <kwidgetsaddons_version.h>
 
 using namespace Akonadi;
 
@@ -58,6 +57,7 @@ ManageAccountWidget::ManageAccountWidget(QWidget *parent)
     connect(d->ui.mFilterAccount, &QLineEdit::textChanged, this, &ManageAccountWidget::slotSearchAgentType);
 
     d->ui.mFilterAccount->installEventFilter(this);
+    d->ui.accountOnCurrentActivity->setVisible(false);
     slotAccountSelected(d->ui.mAccountList->currentAgentInstance());
 }
 
@@ -65,12 +65,33 @@ ManageAccountWidget::~ManageAccountWidget() = default;
 
 void ManageAccountWidget::slotSearchAgentType(const QString &str)
 {
-    d->ui.mAccountList->agentFilterProxyModel()->setFilterRegularExpression(str);
+    d->ui.mAccountList->agentInstanceFilterProxyModel()->setFilterRegularExpression(str);
 }
 
 void ManageAccountWidget::disconnectAddAccountButton()
 {
     disconnect(d->ui.mAddAccountButton, &QPushButton::clicked, this, &ManageAccountWidget::slotAddAccount);
+}
+
+bool ManageAccountWidget::enablePlasmaActivities() const
+{
+    return d->ui.mAccountList->enablePlasmaActivities();
+}
+
+void ManageAccountWidget::setEnablePlasmaActivities(bool newEnablePlasmaActivities)
+{
+    d->ui.accountOnCurrentActivity->setVisible(newEnablePlasmaActivities);
+    d->ui.mAccountList->setEnablePlasmaActivities(newEnablePlasmaActivities);
+}
+
+AccountActivitiesAbstract *ManageAccountWidget::accountActivitiesAbstract() const
+{
+    return d->ui.mAccountList->accountActivitiesAbstract();
+}
+
+void ManageAccountWidget::setAccountActivitiesAbstract(AccountActivitiesAbstract *abstract)
+{
+    d->ui.mAccountList->setAccountActivitiesAbstract(abstract);
 }
 
 QPushButton *ManageAccountWidget::addAccountButton() const
@@ -139,7 +160,7 @@ void ManageAccountWidget::setExcludeCapabilities(const QStringList &excludeCapab
 {
     d->mExcludeCapabilities = excludeCapabilities;
     for (const QString &capability : std::as_const(d->mExcludeCapabilities)) {
-        d->ui.mAccountList->agentFilterProxyModel()->excludeCapabilities(capability);
+        d->ui.mAccountList->agentInstanceFilterProxyModel()->excludeCapabilities(capability);
     }
 }
 
@@ -157,7 +178,7 @@ void ManageAccountWidget::setCapabilityFilter(const QStringList &capabilityFilte
 {
     d->mCapabilityFilter = capabilityFilter;
     for (const QString &capability : std::as_const(d->mCapabilityFilter)) {
-        d->ui.mAccountList->agentFilterProxyModel()->addCapabilityFilter(capability);
+        d->ui.mAccountList->agentInstanceFilterProxyModel()->addCapabilityFilter(capability);
     }
 }
 
@@ -170,7 +191,7 @@ void ManageAccountWidget::setMimeTypeFilter(const QStringList &mimeTypeFilter)
 {
     d->mMimeTypeFilter = mimeTypeFilter;
     for (const QString &mimeType : std::as_const(d->mMimeTypeFilter)) {
-        d->ui.mAccountList->agentFilterProxyModel()->addMimeTypeFilter(mimeType);
+        d->ui.mAccountList->agentInstanceFilterProxyModel()->addMimeTypeFilter(mimeType);
     }
 }
 
@@ -178,7 +199,6 @@ void ManageAccountWidget::slotModifySelectedAccount()
 {
     Akonadi::AgentInstance instance = d->ui.mAccountList->currentAgentInstance();
     if (instance.isValid()) {
-        KWindowSystem::allowExternalProcessWindowActivation();
         QPointer<AgentConfigurationDialog> dlg(new AgentConfigurationDialog(instance, this));
         dlg->exec();
         delete dlg;
@@ -197,20 +217,12 @@ void ManageAccountWidget::slotRemoveSelectedAccount()
 {
     const Akonadi::AgentInstance instance = d->ui.mAccountList->currentAgentInstance();
 
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
     const int rc = KMessageBox::questionTwoActions(this,
-#else
-    const int rc = KMessageBox::questionYesNo(this,
-#endif
                                                    i18n("Do you want to remove account '%1'?", instance.name()),
-                                                   i18n("Remove account?"),
+                                                   i18nc("@title:window", "Remove account?"),
                                                    KStandardGuiItem::remove(),
                                                    KStandardGuiItem::cancel());
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
     if (rc == KMessageBox::ButtonCode::SecondaryAction) {
-#else
-    if (rc == KMessageBox::No) {
-#endif
         return;
     }
 
@@ -224,7 +236,7 @@ void ManageAccountWidget::slotRemoveSelectedAccount()
 void ManageAccountWidget::slotAccountSelected(const Akonadi::AgentInstance &current)
 {
     if (current.isValid()) {
-        d->ui.mModifyAccountButton->setEnabled(!current.type().capabilities().contains(QLatin1String("NoConfig")));
+        d->ui.mModifyAccountButton->setEnabled(!current.type().capabilities().contains(QLatin1StringView("NoConfig")));
         d->ui.mRemoveAccountButton->setEnabled(d->mSpecialCollectionIdentifier != current.identifier());
         // Restarting an agent is not possible if it's in Running status... (see AgentProcessInstance::restartWhenIdle)
         d->ui.mRestartAccountButton->setEnabled((current.status() != 1));
@@ -234,3 +246,5 @@ void ManageAccountWidget::slotAccountSelected(const Akonadi::AgentInstance &curr
         d->ui.mRestartAccountButton->setEnabled(false);
     }
 }
+
+#include "moc_manageaccountwidget.cpp"

@@ -13,7 +13,8 @@
 #include "entities.h"
 #include "fakeakonadiserver.h"
 
-#include <private/scope_p.h>
+#include "private/scope_p.h"
+#include "protocol_p.h"
 
 #include <QTest>
 
@@ -24,7 +25,7 @@ typedef QPair<Tag, TagAttribute::List> TagTagAttributeListPair;
 
 Q_DECLARE_METATYPE(Akonadi::Server::Tag::List)
 Q_DECLARE_METATYPE(Akonadi::Server::Tag)
-Q_DECLARE_METATYPE(QVector<TagTagAttributeListPair>)
+Q_DECLARE_METATYPE(QList<TagTagAttributeListPair>)
 
 static Protocol::ChangeNotificationList extractNotifications(const QSharedPointer<QSignalSpy> &notificationSpy)
 {
@@ -88,7 +89,7 @@ private Q_SLOTS:
         }
 
         QTest::addColumn<TestScenario::List>("scenarios");
-        QTest::addColumn<QVector<QPair<Tag, TagAttribute::List>>>("expectedTags");
+        QTest::addColumn<QList<QPair<Tag, TagAttribute::List>>>("expectedTags");
         QTest::addColumn<Protocol::ChangeNotificationList>("expectedNotifications");
 
         {
@@ -124,7 +125,7 @@ private Q_SLOTS:
             notification->setSessionId(FakeAkonadiServer::instanceName().toLatin1());
             notification->setTag(Protocol::FetchTagsResponse(1));
 
-            QTest::newRow("uid create relation") << scenarios << QVector<TagTagAttributeListPair>{{tag, {attribute}}}
+            QTest::newRow("uid create relation") << scenarios << QList<TagTagAttributeListPair>{{tag, {attribute}}}
                                                  << Protocol::ChangeNotificationList{notification};
         }
 
@@ -161,7 +162,7 @@ private Q_SLOTS:
             notification->setSessionId(FakeAkonadiServer::instanceName().toLatin1());
             notification->setTag(Protocol::FetchTagsResponse(2));
 
-            QTest::newRow("create child tag") << scenarios << QVector<TagTagAttributeListPair>{{tag, {attribute}}}
+            QTest::newRow("create child tag") << scenarios << QList<TagTagAttributeListPair>{{tag, {attribute}}}
                                               << Protocol::ChangeNotificationList{notification};
         }
     }
@@ -169,7 +170,7 @@ private Q_SLOTS:
     void testStoreTag()
     {
         QFETCH(TestScenario::List, scenarios);
-        QFETCH(QVector<TagTagAttributeListPair>, expectedTags);
+        QFETCH(QList<TagTagAttributeListPair>, expectedTags);
         QFETCH(Protocol::ChangeNotificationList, expectedNotifications);
 
         mAkonadi.setScenarios(scenarios);
@@ -320,7 +321,7 @@ private Q_SLOTS:
             itemUntaggedNtf->setItems({*initializer->fetchResponse(pimItem)});
             itemUntaggedNtf->setResource(res2.name().toLatin1());
             itemUntaggedNtf->setParentCollection(col.id());
-            itemUntaggedNtf->setRemovedTags(QSet<qint64>() << tag.id());
+            itemUntaggedNtf->setRemovedTags({Protocol::FetchTagsResponse(tag.id())});
 
             auto tagRemoveNtf = Protocol::TagChangeNotificationPtr::create();
             tagRemoveNtf->setOperation(Protocol::TagChangeNotification::Remove);

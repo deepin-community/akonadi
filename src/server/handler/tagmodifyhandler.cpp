@@ -7,12 +7,10 @@
 #include "tagmodifyhandler.h"
 
 #include "connection.h"
+#include "shared/akranges.h"
 #include "storage/datastore.h"
 #include "storage/querybuilder.h"
 #include "tagfetchhelper.h"
-#include <shared/akranges.h>
-
-#include <private/imapset_p.h>
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
@@ -136,16 +134,11 @@ bool TagModifyHandler::parseStream()
             storageBackend()->notificationCollector()->tagChanged(changedTag);
         }
 
-        ImapSet set;
-        set.add(QVector<qint64>() << cmd.tagId());
-
         Protocol::TagFetchScope fetchScope;
         fetchScope.setFetchRemoteID(true);
         fetchScope.setFetchAllAttributes(true);
 
-        Scope scope;
-        scope.setUidSet(set);
-        TagFetchHelper helper(connection(), scope, fetchScope);
+        TagFetchHelper helper(connection(), Scope(cmd.tagId()), fetchScope);
         if (!helper.fetchTags()) {
             return failureResponse("Failed to fetch response");
         }

@@ -10,7 +10,7 @@
 
 #include "entitytreemodel.h"
 
-#include <KIconLoader>
+#include <KPixmapSequenceLoader>
 
 #include <QAbstractItemView>
 #include <QTimerEvent>
@@ -20,8 +20,8 @@ using namespace Akonadi;
 DelegateAnimator::DelegateAnimator(QAbstractItemView *view)
     : QObject(view)
     , m_view(view)
+    , m_pixmapSequence(KPixmapSequenceLoader::load(QStringLiteral("process-working"), 22))
 {
-    m_pixmapSequence = KIconLoader::global()->loadPixmapSequence(QStringLiteral("process-working"), 22);
 }
 
 void DelegateAnimator::push(const QModelIndex &index)
@@ -105,7 +105,9 @@ void ProgressSpinnerDelegate::initStyleOption(QStyleOptionViewItem *option, cons
     }
 }
 
-uint Akonadi::qHash(const Akonadi::DelegateAnimator::Animation &anim)
+size_t Akonadi::qHash(const Akonadi::DelegateAnimator::Animation &anim, size_t seed) noexcept
 {
-    return qHash(anim.index);
+    return qHash(anim.index, seed);
 }
+
+#include "moc_progressspinnerdelegate_p.cpp"

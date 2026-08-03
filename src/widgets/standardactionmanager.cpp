@@ -50,7 +50,6 @@
 #include <QTimer>
 
 #include <KLazyLocalizedString>
-#include <kwidgetsaddons_version.h>
 
 using namespace Akonadi;
 
@@ -70,15 +69,29 @@ struct StandardActionData { // NOLINT(clang-analyzer-optin.performance.Padding) 
     const KLazyLocalizedString iconLabel;
     const char *icon;
     const char *altIcon;
-    int shortcut;
+    QKeySequence shortcut;
     const char *slot;
     ActionType actionType;
 };
 
 static const StandardActionData standardActionData[] = {
-    {"akonadi_collection_create", kli18n("&New Folder..."), kli18n("New"), "folder-new", nullptr, 0, SLOT(slotCreateCollection()), NormalAction},
-    {"akonadi_collection_copy", KLazyLocalizedString(), KLazyLocalizedString(), "edit-copy", nullptr, 0, SLOT(slotCopyCollections()), NormalAction},
-    {"akonadi_collection_delete", kli18n("&Delete Folder"), kli18n("Delete"), "edit-delete", nullptr, 0, SLOT(slotDeleteCollection()), NormalAction},
+    {"akonadi_collection_create", kli18n("&New Folder..."), kli18n("New"), "folder-new", nullptr, QKeySequence(), SLOT(slotCreateCollection()), NormalAction},
+    {"akonadi_collection_copy",
+     KLazyLocalizedString(),
+     KLazyLocalizedString(),
+     "edit-copy",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotCopyCollections()),
+     NormalAction},
+    {"akonadi_collection_delete",
+     kli18n("&Delete Folder"),
+     kli18n("Delete"),
+     "edit-delete",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotDeleteCollection()),
+     NormalAction},
     {"akonadi_collection_sync",
      kli18n("&Synchronize Folder"),
      kli18n("Synchronize"),
@@ -92,7 +105,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Properties"),
      "configure",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotCollectionProperties()),
      NormalAction},
     {"akonadi_item_copy", KLazyLocalizedString(), KLazyLocalizedString(), "edit-copy", nullptr, 0, SLOT(slotCopyItems()), NormalAction},
@@ -103,7 +116,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Manage Local Subscriptions"),
      "folder-bookmarks",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotLocalSubscription()),
      NormalAction},
     {"akonadi_collection_add_to_favorites",
@@ -111,7 +124,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Add to Favorite"),
      "bookmark-new",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotAddToFavorites()),
      NormalAction},
     {"akonadi_collection_remove_from_favorites",
@@ -119,38 +132,73 @@ static const StandardActionData standardActionData[] = {
      kli18n("Remove from Favorite"),
      "edit-delete",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotRemoveFromFavorites()),
      NormalAction},
-    {"akonadi_collection_rename_favorite", kli18n("Rename Favorite..."), kli18n("Rename"), "edit-rename", nullptr, 0, SLOT(slotRenameFavorite()), NormalAction},
+    {"akonadi_collection_rename_favorite",
+     kli18n("Rename Favorite..."),
+     kli18n("Rename"),
+     "edit-rename",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotRenameFavorite()),
+     NormalAction},
     {"akonadi_collection_copy_to_menu",
      kli18n("Copy Folder To..."),
      kli18n("Copy To"),
      "edit-copy",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotCopyCollectionTo(QAction *)),
      MenuAction},
-    {"akonadi_item_copy_to_menu", kli18n("Copy Item To..."), kli18n("Copy To"), "edit-copy", nullptr, 0, SLOT(slotCopyItemTo(QAction *)), MenuAction},
-    {"akonadi_item_move_to_menu", kli18n("Move Item To..."), kli18n("Move To"), "edit-move", "go-jump", 0, SLOT(slotMoveItemTo(QAction *)), MenuAction},
+    {"akonadi_item_copy_to_menu",
+     kli18n("Copy Item To..."),
+     kli18n("Copy To"),
+     "edit-copy",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotCopyItemTo(QAction *)),
+     MenuAction},
+    {"akonadi_item_move_to_menu",
+     kli18n("Move Item To..."),
+     kli18n("Move To"),
+     "edit-move",
+     "go-jump",
+     QKeySequence(),
+     SLOT(slotMoveItemTo(QAction *)),
+     MenuAction},
     {"akonadi_collection_move_to_menu",
      kli18n("Move Folder To..."),
      kli18n("Move To"),
      "edit-move",
      "go-jump",
-     0,
+     QKeySequence(),
      SLOT(slotMoveCollectionTo(QAction *)),
      MenuAction},
     {"akonadi_item_cut", kli18n("&Cut Item"), kli18n("Cut"), "edit-cut", nullptr, Qt::CTRL | Qt::Key_X, SLOT(slotCutItems()), NormalAction},
     {"akonadi_collection_cut", kli18n("&Cut Folder"), kli18n("Cut"), "edit-cut", nullptr, Qt::CTRL | Qt::Key_X, SLOT(slotCutCollections()), NormalAction},
-    {"akonadi_resource_create", kli18n("Create Resource"), KLazyLocalizedString(), "folder-new", nullptr, 0, SLOT(slotCreateResource()), NormalAction},
-    {"akonadi_resource_delete", kli18n("Delete Resource"), KLazyLocalizedString(), "edit-delete", nullptr, 0, SLOT(slotDeleteResource()), NormalAction},
+    {"akonadi_resource_create",
+     kli18n("Create Resource"),
+     KLazyLocalizedString(),
+     "folder-new",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotCreateResource()),
+     NormalAction},
+    {"akonadi_resource_delete",
+     kli18n("Delete Resource"),
+     KLazyLocalizedString(),
+     "edit-delete",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotDeleteResource()),
+     NormalAction},
     {"akonadi_resource_properties",
      kli18n("&Resource Properties"),
      kli18n("Properties"),
      "configure",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotResourceProperties()),
      NormalAction},
     {"akonadi_resource_synchronize",
@@ -158,21 +206,35 @@ static const StandardActionData standardActionData[] = {
      kli18n("Synchronize"),
      "view-refresh",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotSynchronizeResource()),
      NormalAction},
-    {"akonadi_work_offline", kli18n("Work Offline"), KLazyLocalizedString(), "user-offline", nullptr, 0, SLOT(slotToggleWorkOffline(bool)), ToggleAction},
-    {"akonadi_collection_copy_to_dialog", kli18n("Copy Folder To..."), kli18n("Copy To"), "edit-copy", nullptr, 0, SLOT(slotCopyCollectionTo()), NormalAction},
+    {"akonadi_work_offline",
+     kli18n("Work Offline"),
+     KLazyLocalizedString(),
+     "user-offline",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotToggleWorkOffline(bool)),
+     ToggleAction},
+    {"akonadi_collection_copy_to_dialog",
+     kli18n("Copy Folder To..."),
+     kli18n("Copy To"),
+     "edit-copy",
+     nullptr,
+     QKeySequence(),
+     SLOT(slotCopyCollectionTo()),
+     NormalAction},
     {"akonadi_collection_move_to_dialog",
      kli18n("Move Folder To..."),
      kli18n("Move To"),
      "edit-move",
      "go-jump",
-     0,
+     QKeySequence(),
      SLOT(slotMoveCollectionTo()),
      NormalAction},
-    {"akonadi_item_copy_to_dialog", kli18n("Copy Item To..."), kli18n("Copy To"), "edit-copy", nullptr, 0, SLOT(slotCopyItemTo()), NormalAction},
-    {"akonadi_item_move_to_dialog", kli18n("Move Item To..."), kli18n("Move To"), "edit-move", "go-jump", 0, SLOT(slotMoveItemTo()), NormalAction},
+    {"akonadi_item_copy_to_dialog", kli18n("Copy Item To..."), kli18n("Copy To"), "edit-copy", nullptr, QKeySequence(), SLOT(slotCopyItemTo()), NormalAction},
+    {"akonadi_item_move_to_dialog", kli18n("Move Item To..."), kli18n("Move To"), "edit-move", "go-jump", QKeySequence(), SLOT(slotMoveItemTo()), NormalAction},
     {"akonadi_collection_sync_recursive",
      kli18n("&Synchronize Folder Recursively"),
      kli18n("Synchronize Recursively"),
@@ -186,7 +248,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Move Folder To Trash"),
      "edit-delete",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotMoveCollectionToTrash()),
      NormalAction},
     {"akonadi_move_item_to_trash",
@@ -194,7 +256,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Move Item To Trash"),
      "edit-delete",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotMoveItemToTrash()),
      NormalAction},
     {"akonadi_restore_collection_from_trash",
@@ -202,7 +264,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Restore Folder From Trash"),
      "view-refresh",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotRestoreCollectionFromTrash()),
      NormalAction},
     {"akonadi_restore_item_from_trash",
@@ -210,7 +272,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Restore Item From Trash"),
      "view-refresh",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotRestoreItemFromTrash()),
      NormalAction},
     {"akonadi_collection_trash_restore",
@@ -218,10 +280,17 @@ static const StandardActionData standardActionData[] = {
      kli18n("Restore Folder From Trash"),
      "edit-delete",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotTrashRestoreCollection()),
      ActionWithAlternative},
-    {nullptr, kli18n("&Restore Collection From Trash"), kli18n("Restore Collection From Trash"), "view-refresh", nullptr, 0, nullptr, ActionAlternative},
+    {nullptr,
+     kli18n("&Restore Collection From Trash"),
+     kli18n("Restore Collection From Trash"),
+     "view-refresh",
+     nullptr,
+     QKeySequence(),
+     nullptr,
+     ActionAlternative},
     {"akonadi_item_trash_restore",
      kli18n("&Restore Item From Trash"),
      kli18n("Restore Item From Trash"),
@@ -230,7 +299,7 @@ static const StandardActionData standardActionData[] = {
      0,
      SLOT(slotTrashRestoreItem()),
      ActionWithAlternative},
-    {nullptr, kli18n("&Restore Item From Trash"), kli18n("Restore Item From Trash"), "view-refresh", nullptr, 0, nullptr, ActionAlternative},
+    {nullptr, kli18n("&Restore Item From Trash"), kli18n("Restore Item From Trash"), "view-refresh", nullptr, QKeySequence(), nullptr, ActionAlternative},
     {"akonadi_collection_sync_favorite_folders",
      kli18n("&Synchronize Favorite Folders"),
      kli18n("Synchronize Favorite Folders"),
@@ -244,7 +313,7 @@ static const StandardActionData standardActionData[] = {
      kli18n("Synchronize"),
      "view-refresh",
      nullptr,
-     0,
+     QKeySequence(),
      SLOT(slotSynchronizeCollectionTree()),
      NormalAction},
 
@@ -804,12 +873,7 @@ public:
         const QString collectionName = collections.first().name();
         const QString text = contextText(StandardActionManager::DeleteCollections, StandardActionManager::MessageBoxText, collections.count(), collectionName);
 
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
         if (KMessageBox::questionTwoActions(
-#else
-        if (KMessageBox::questionYesNo(
-
-#endif
                 parentWidget,
                 text,
                 contextText(StandardActionManager::DeleteCollections, StandardActionManager::MessageBoxTitle, collections.count(), collectionName),
@@ -817,11 +881,7 @@ public:
                 KStandardGuiItem::cancel(),
                 QString(),
                 KMessageBox::Dangerous)
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
             != KMessageBox::ButtonCode::PrimaryAction) {
-#else
-            != KMessageBox::Yes) {
-#endif
             return;
         }
 
@@ -981,28 +1041,19 @@ public:
         //
         // FIXME: AgentManager should return a valid AgentInstance even
         // for virtual resources, which would be always online.
-        if (collection.resource() == QLatin1String("akonadi_search_resource")) {
+        if (collection.resource() == QLatin1StringView("akonadi_search_resource")) {
             return true;
         }
 
         Akonadi::AgentInstance instance = Akonadi::AgentManager::self()->instance(collection.resource());
         if (!instance.isOnline()) {
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
             if (KMessageBox::questionTwoActions(
-#else
-            if (KMessageBox::questionYesNo(
-
-#endif
                     parentWidget,
                     i18n("Before syncing folder \"%1\" it is necessary to have the resource online. Do you want to make it online?", collection.displayName()),
                     i18n("Account \"%1\" is offline", instance.name()),
-                    KGuiItem(i18nc("@action:button", "Go Online")),
+                    KGuiItem(i18nc("@action:button", "Go Online"), QIcon::fromTheme(QStringLiteral("user-online"))),
                     KStandardGuiItem::cancel())
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
                 != KMessageBox::ButtonCode::PrimaryAction) {
-#else
-                != KMessageBox::Yes) {
-#endif
                 return false;
             }
             instance.setIsOnline(true);
@@ -1111,23 +1162,14 @@ public:
     {
         Q_ASSERT(itemSelectionModel);
 
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
         if (KMessageBox::questionTwoActions(parentWidget,
-#else
-        if (KMessageBox::questionYesNo(parentWidget,
-
-#endif
                                             contextText(StandardActionManager::DeleteItems, StandardActionManager::MessageBoxText, items.count(), QString()),
                                             contextText(StandardActionManager::DeleteItems, StandardActionManager::MessageBoxTitle, items.count(), QString()),
                                             KStandardGuiItem::del(),
                                             KStandardGuiItem::cancel(),
                                             QString(),
                                             KMessageBox::Dangerous)
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
             != KMessageBox::ButtonCode::PrimaryAction) {
-#else
-            != KMessageBox::Yes) {
-#endif
             return;
         }
 
@@ -1327,12 +1369,7 @@ public:
             return;
         }
 
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
         if (KMessageBox::questionTwoActions(
-#else
-        if (KMessageBox::questionYesNo(
-
-#endif
                 parentWidget,
                 contextText(StandardActionManager::DeleteResources, StandardActionManager::MessageBoxText, instances.count(), instances.first().name()),
                 contextText(StandardActionManager::DeleteResources, StandardActionManager::MessageBoxTitle, instances.count(), instances.first().name()),
@@ -1340,11 +1377,7 @@ public:
                 KStandardGuiItem::cancel(),
                 QString(),
                 KMessageBox::Dangerous)
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
             != KMessageBox::ButtonCode::PrimaryAction) {
-#else
-            != KMessageBox::Yes) {
-#endif
             return;
         }
 
@@ -1610,7 +1643,7 @@ public:
                 // new level
                 auto popup = new QMenu(menu);
                 const bool moveAction = (type == StandardActionManager::MoveCollectionToMenu || type == StandardActionManager::MoveItemToMenu);
-                popup->setObjectName(QStringLiteral("subMenu"));
+                popup->setObjectName(QLatin1StringView("subMenu"));
                 popup->setTitle(label);
                 popup->setIcon(icon);
 
@@ -1744,7 +1777,7 @@ public:
     FavoriteCollectionsModel *favoritesModel;
     QItemSelectionModel *favoriteSelectionModel;
     bool insideSelectionSlot;
-    QVector<QAction *> actions;
+    QList<QAction *> actions;
     QHash<StandardActionManager::Type, KLocalizedString> pluralLabels;
     QHash<StandardActionManager::Type, KLocalizedString> pluralIconLabels;
     QTimer mDelayedUpdateTimer;

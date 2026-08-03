@@ -28,18 +28,9 @@
 #include <KLocalizedString>
 
 #include <KAboutData>
-#include <kcoreaddons_version.h>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <Kdelibs4ConfigMigrator>
-#endif
 
 #include <QCommandLineParser>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QNetworkConfiguration>
-#include <QNetworkConfigurationManager>
-#else
 #include <QNetworkInformation>
-#endif
 #include <QPointer>
 #include <QSettings>
 #include <QTimer>
@@ -47,6 +38,7 @@
 #include <QStandardPaths>
 #include <signal.h>
 #include <stdlib.h>
+#include <strstream>
 #if defined __GLIBC__
 #include <malloc.h> // for dumping memory information
 #endif
@@ -230,89 +222,48 @@ void AgentBase::ObserverV3::itemsUnlinked(const Akonadi::Item::List &items, cons
     }
 }
 
-void AgentBase::ObserverV4::tagAdded(const Tag &tag)
+AgentBase::TagObserver::TagObserver() = default;
+
+AgentBase::TagObserver::~TagObserver() = default;
+
+void AgentBase::TagObserver::tagAdded(const Akonadi::Tag &tag)
 {
     Q_UNUSED(tag)
-
     if (sAgentBase) {
-        // not implementation, let's disconnect the signal to enable optimization in Monitor
         QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagAdded, sAgentBase->d_ptr.get(), &AgentBasePrivate::tagAdded);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
 
-void AgentBase::ObserverV4::tagChanged(const Tag &tag)
+void AgentBase::TagObserver::tagChanged(const Akonadi::Tag &tag)
 {
     Q_UNUSED(tag)
-
     if (sAgentBase) {
-        // not implementation, let's disconnect the signal to enable optimization in Monitor
         QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagChanged, sAgentBase->d_ptr.get(), &AgentBasePrivate::tagChanged);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
 
-void AgentBase::ObserverV4::tagRemoved(const Tag &tag)
+void AgentBase::TagObserver::tagRemoved(const Akonadi::Tag &tag)
 {
     Q_UNUSED(tag)
-
     if (sAgentBase) {
-        // not implementation, let's disconnect the signal to enable optimization in Monitor
         QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::tagRemoved, sAgentBase->d_ptr.get(), &AgentBasePrivate::tagRemoved);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
 
-void AgentBase::ObserverV4::itemsTagsChanged(const Item::List &items, const QSet<Tag> &addedTags, const QSet<Tag> &removedTags)
+void AgentBase::TagObserver::itemsTagsChanged(const Akonadi::Item::List &items, const QSet<Akonadi::Tag> &addedTags, const QSet<Akonadi::Tag> &removedTags)
 {
     Q_UNUSED(items)
     Q_UNUSED(addedTags)
     Q_UNUSED(removedTags)
 
     if (sAgentBase) {
-        // not implementation, let's disconnect the signal to enable optimization in Monitor
         QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::itemsTagsChanged, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsTagsChanged);
         sAgentBase->d_ptr->changeProcessed();
     }
 }
-
-void AgentBase::ObserverV4::relationAdded(const Akonadi::Relation &relation)
-{
-    Q_UNUSED(relation)
-
-    if (sAgentBase) {
-        // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::relationAdded, sAgentBase->d_ptr.get(), &AgentBasePrivate::relationAdded);
-        sAgentBase->d_ptr->changeProcessed();
-    }
-}
-
-void AgentBase::ObserverV4::relationRemoved(const Akonadi::Relation &relation)
-{
-    Q_UNUSED(relation)
-
-    if (sAgentBase) {
-        // not implementation, let's disconnect the signal to enable optimization in Monitor
-        QObject::disconnect(sAgentBase->changeRecorder(), &Monitor::relationRemoved, sAgentBase->d_ptr.get(), &AgentBasePrivate::relationRemoved);
-        sAgentBase->d_ptr->changeProcessed();
-    }
-}
-
-void AgentBase::ObserverV4::itemsRelationsChanged(const Akonadi::Item::List &items,
-                                                  const Akonadi::Relation::List &addedRelations,
-                                                  const Akonadi::Relation::List &removedRelations)
-{
-    Q_UNUSED(items)
-    Q_UNUSED(addedRelations)
-    Q_UNUSED(removedRelations)
-
-    if (sAgentBase) {
-        // not implementation, let's disconnect the signal to enable optimization in Monitor
-        disconnect(sAgentBase->changeRecorder(), &Monitor::itemsRelationsChanged, sAgentBase->d_ptr.get(), &AgentBasePrivate::itemsRelationsChanged);
-        sAgentBase->d_ptr->changeProcessed();
-    }
-}
-
 /// @cond PRIVATE
 
 AgentBasePrivate::AgentBasePrivate(AgentBase *parent)
@@ -330,9 +281,6 @@ AgentBasePrivate::AgentBasePrivate(AgentBase *parent)
     , mPowerInterface(nullptr)
     , mTemporaryOfflineTimer(nullptr)
     , mEventLoopLocker(nullptr)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    , mNetworkManager(nullptr)
-#endif
 {
     Internal::setClientType(Internal::Agent);
 }
@@ -346,11 +294,6 @@ AgentBasePrivate::~AgentBasePrivate()
 void AgentBasePrivate::init()
 {
     Q_Q(AgentBase);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    Kdelibs4ConfigMigrator migrate(mId);
-    migrate.setConfigFiles(QStringList() << QStringLiteral("%1rc").arg(mId));
-    migrate.migrate();
-#endif
     /**
      * Create a default session for this process.
      */
@@ -368,26 +311,28 @@ void AgentBasePrivate::init()
     mSettings = new QSettings(ServerManager::agentConfigFilePath(mId), QSettings::IniFormat);
 
     mChangeRecorder = new ChangeRecorder(q);
-    mChangeRecorder->setObjectName(QStringLiteral("AgentBaseChangeRecorder"));
+    mChangeRecorder->setObjectName(QLatin1StringView("AgentBaseChangeRecorder"));
     mChangeRecorder->ignoreSession(Session::defaultSession());
     mChangeRecorder->itemFetchScope().setCacheOnly(true);
     mChangeRecorder->setConfig(mSettings);
 
-    mDesiredOnlineState = mSettings->value(QStringLiteral("Agent/DesiredOnlineState"), true).toBool();
+    mDesiredOnlineState = mSettings->value(QLatin1StringView("Agent/DesiredOnlineState"), true).toBool();
     mOnline = mDesiredOnlineState;
 
     // reinitialize the status message now that online state is available
     mStatusMessage = defaultReadyMessage();
 
-    mName = mSettings->value(QStringLiteral("Agent/Name")).toString();
+    mName = mSettings->value(QLatin1StringView("Agent/Name")).toString();
     if (mName.isEmpty()) {
-        mName = mSettings->value(QStringLiteral("Resource/Name")).toString();
+        mName = mSettings->value(QLatin1StringView("Resource/Name")).toString();
         if (!mName.isEmpty()) {
-            mSettings->remove(QStringLiteral("Resource/Name"));
-            mSettings->setValue(QStringLiteral("Agent/Name"), mName);
+            mSettings->remove(QLatin1StringView("Resource/Name"));
+            mSettings->setValue(QLatin1StringView("Agent/Name"), mName);
         }
     }
 
+    mActivities = mSettings->value(QLatin1StringView("Agent/Activities")).toStringList();
+    mActivitiesEnabled = mSettings->value(QLatin1StringView("Agent/ActivitiesEnabled"), false).toBool();
     connect(mChangeRecorder, &Monitor::itemAdded, this, &AgentBasePrivate::itemAdded);
     connect(mChangeRecorder, &Monitor::itemChanged, this, &AgentBasePrivate::itemChanged);
     connect(mChangeRecorder, &Monitor::collectionAdded, this, &AgentBasePrivate::collectionAdded);
@@ -601,9 +546,8 @@ void AgentBasePrivate::itemsUnlinked(const Akonadi::Item::List &items, const Ako
 
 void AgentBasePrivate::tagAdded(const Akonadi::Tag &tag)
 {
-    auto observer4 = dynamic_cast<AgentBase::ObserverV4 *>(mObserver);
-    if (observer4) {
-        observer4->tagAdded(tag);
+    if (auto tagObserver = dynamic_cast<AgentBase::TagObserver *>(mObserver); tagObserver) {
+        tagObserver->tagAdded(tag);
     } else {
         changeProcessed();
     }
@@ -611,9 +555,8 @@ void AgentBasePrivate::tagAdded(const Akonadi::Tag &tag)
 
 void AgentBasePrivate::tagChanged(const Akonadi::Tag &tag)
 {
-    auto observer4 = dynamic_cast<AgentBase::ObserverV4 *>(mObserver);
-    if (observer4) {
-        observer4->tagChanged(tag);
+    if (auto tagObserver = dynamic_cast<AgentBase::TagObserver *>(mObserver); tagObserver) {
+        tagObserver->tagChanged(tag);
     } else {
         changeProcessed();
     }
@@ -621,9 +564,8 @@ void AgentBasePrivate::tagChanged(const Akonadi::Tag &tag)
 
 void AgentBasePrivate::tagRemoved(const Akonadi::Tag &tag)
 {
-    auto observer4 = dynamic_cast<AgentBase::ObserverV4 *>(mObserver);
-    if (observer4) {
-        observer4->tagRemoved(tag);
+    if (auto tagObserver = dynamic_cast<AgentBase::TagObserver *>(mObserver); tagObserver) {
+        tagObserver->tagRemoved(tag);
     } else {
         changeProcessed();
     }
@@ -631,41 +573,8 @@ void AgentBasePrivate::tagRemoved(const Akonadi::Tag &tag)
 
 void AgentBasePrivate::itemsTagsChanged(const Akonadi::Item::List &items, const QSet<Akonadi::Tag> &addedTags, const QSet<Akonadi::Tag> &removedTags)
 {
-    auto observer4 = dynamic_cast<AgentBase::ObserverV4 *>(mObserver);
-    if (observer4) {
-        observer4->itemsTagsChanged(items, addedTags, removedTags);
-    } else {
-        changeProcessed();
-    }
-}
-
-void AgentBasePrivate::relationAdded(const Akonadi::Relation &relation)
-{
-    auto observer4 = dynamic_cast<AgentBase::ObserverV4 *>(mObserver);
-    if (observer4) {
-        observer4->relationAdded(relation);
-    } else {
-        changeProcessed();
-    }
-}
-
-void AgentBasePrivate::relationRemoved(const Akonadi::Relation &relation)
-{
-    auto observer4 = dynamic_cast<AgentBase::ObserverV4 *>(mObserver);
-    if (observer4) {
-        observer4->relationRemoved(relation);
-    } else {
-        changeProcessed();
-    }
-}
-
-void AgentBasePrivate::itemsRelationsChanged(const Akonadi::Item::List &items,
-                                             const Akonadi::Relation::List &addedRelations,
-                                             const Akonadi::Relation::List &removedRelations)
-{
-    auto observer4 = dynamic_cast<AgentBase::ObserverV4 *>(mObserver);
-    if (observer4) {
-        observer4->itemsRelationsChanged(items, addedRelations, removedRelations);
+    if (auto tagObserver = dynamic_cast<AgentBase::TagObserver *>(mObserver); tagObserver) {
+        tagObserver->itemsTagsChanged(items, addedTags, removedTags);
     } else {
         changeProcessed();
     }
@@ -810,11 +719,7 @@ void AgentBasePrivate::slotNetworkStatusChange(bool isOnline)
 void AgentBasePrivate::slotResumedFromSuspend()
 {
     if (mNeedsNetwork) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        slotNetworkStatusChange(mNetworkManager->isOnline());
-#else
         slotNetworkStatusChange(QNetworkInformation::instance()->reachability() != QNetworkInformation::Reachability::Online);
-#endif
     }
 }
 
@@ -857,7 +762,7 @@ QString AgentBasePrivate::dumpMemoryInfoToString() const
            << "Total free space (fordblks):          " << mi.fordblks << '\n'
            << "Topmost releasable block (keepcost):  " << mi.keepcost << '\n';
 #else
-    str = QLatin1String("mallinfo() not supported");
+    str = QLatin1StringView("mallinfo() not supported");
 #endif
     return str;
 }
@@ -901,7 +806,7 @@ QString AgentBase::parseArguments(int argc, char **argv)
 {
     Q_UNUSED(argc)
 
-    QCommandLineOption identifierOption(QStringLiteral("identifier"), i18n("Agent identifier"), QStringLiteral("argument"));
+    QCommandLineOption identifierOption(QStringLiteral("identifier"), i18nc("@info:shell", "Agent identifier"), QStringLiteral("argument"));
     QCommandLineParser parser;
     parser.addOption(identifierOption);
     parser.addHelpOption();
@@ -938,7 +843,7 @@ QString AgentBase::parseArguments(int argc, char **argv)
 
 int AgentBase::init(AgentBase &r)
 {
-    KLocalizedString::setApplicationDomain("libakonadi5");
+    KLocalizedString::setApplicationDomain(QByteArrayLiteral("libakonadi6"));
     KAboutData::setApplicationData(r.aboutData());
     return qApp->exec();
 }
@@ -986,25 +891,10 @@ void AgentBase::setNeedsNetwork(bool needsNetwork)
     }
 
     d->mNeedsNetwork = needsNetwork;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (d->mNeedsNetwork) {
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
-        QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
-        d->mNetworkManager = new QNetworkConfigurationManager(this);
-        connect(d->mNetworkManager, &QNetworkConfigurationManager::onlineStateChanged, d, &AgentBasePrivate::slotNetworkStatusChange, Qt::UniqueConnection);
-        QT_WARNING_POP
-    } else {
-        delete d->mNetworkManager;
-        d->mNetworkManager = nullptr;
-        setOnlineInternal(d->mDesiredOnlineState);
-    }
-#else
-    QNetworkInformation::load(QNetworkInformation::Feature::Reachability);
-    connect(QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this, [this, d](auto reachability) {
+    QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability);
+    connect(QNetworkInformation::instance(), &QNetworkInformation::reachabilityChanged, this, [d](auto reachability) {
         d->slotNetworkStatusChange(reachability == QNetworkInformation::Reachability::Online);
     });
-#endif
 }
 
 void AgentBase::setOnline(bool state)
@@ -1016,7 +906,11 @@ void AgentBase::setOnline(bool state)
     }
 
     d->mDesiredOnlineState = state;
-    d->mSettings->setValue(QStringLiteral("Agent/DesiredOnlineState"), state);
+    if (!d->mSettings) {
+        d->mSettings = new QSettings(ServerManager::agentConfigFilePath(identifier()), QSettings::IniFormat);
+        d->mSettings->setValue(QLatin1StringView("Agent/Name"), agentName());
+    }
+    d->mSettings->setValue(QLatin1StringView("Agent/DesiredOnlineState"), state);
     setOnlineInternal(state);
 }
 
@@ -1044,17 +938,10 @@ void AgentBase::setOnlineInternal(bool state)
 {
     Q_D(AgentBase);
     if (state && d->mNeedsNetwork) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        if (!d->mNetworkManager->isOnline()) {
-            // Don't go online if the resource needs network but there is none
-            state = false;
-        }
-#else
         if (QNetworkInformation::instance()->reachability() != QNetworkInformation::Reachability::Online) {
             // Don't go online if the resource needs network but there is none
             state = false;
         }
-#endif
     }
     d->mOnline = state;
 
@@ -1079,7 +966,7 @@ void AgentBase::doSetOnline(bool online)
 KAboutData AgentBase::aboutData() const
 {
     // akonadi_google_resource_1 -> org.kde.akonadi_google_resource
-    const QString desktopEntry = QLatin1String("org.kde.") + qApp->applicationName().remove(QRegularExpression(QStringLiteral("_[0-9]+$")));
+    const QString desktopEntry = QLatin1StringView("org.kde.") + qApp->applicationName().remove(QRegularExpression(QStringLiteral("_[0-9]+$")));
 
     KAboutData data(qApp->applicationName(), agentName(), qApp->applicationVersion());
     data.setDesktopFileName(desktopEntry);
@@ -1203,7 +1090,7 @@ void AgentBase::registerObserver(Observer *observer)
     d->mObserver = observer;
 
     const bool hasObserverV3 = (dynamic_cast<AgentBase::ObserverV3 *>(d->mObserver) != nullptr);
-    const bool hasObserverV4 = (dynamic_cast<AgentBase::ObserverV4 *>(d->mObserver) != nullptr);
+    const bool hasTagObserver = (dynamic_cast<AgentBase::TagObserver *>(d->mObserver) != nullptr);
 
     disconnect(d->mChangeRecorder, &Monitor::tagAdded, d, &AgentBasePrivate::tagAdded);
     disconnect(d->mChangeRecorder, &Monitor::tagChanged, d, &AgentBasePrivate::tagChanged);
@@ -1219,11 +1106,16 @@ void AgentBase::registerObserver(Observer *observer)
     disconnect(d->mChangeRecorder, &Monitor::itemLinked, d, &AgentBasePrivate::itemLinked);
     disconnect(d->mChangeRecorder, &Monitor::itemUnlinked, d, &AgentBasePrivate::itemUnlinked);
 
-    if (hasObserverV4) {
+    if (hasTagObserver) {
         connect(d->mChangeRecorder, &Monitor::tagAdded, d, &AgentBasePrivate::tagAdded);
         connect(d->mChangeRecorder, &Monitor::tagChanged, d, &AgentBasePrivate::tagChanged);
         connect(d->mChangeRecorder, &Monitor::tagRemoved, d, &AgentBasePrivate::tagRemoved);
         connect(d->mChangeRecorder, &Monitor::itemsTagsChanged, d, &AgentBasePrivate::itemsTagsChanged);
+
+        // If the agent has a TagObserver, we assume it wants to receive everything tag-related.
+        d->mChangeRecorder->itemFetchScope().setFetchTags(true);
+        d->mChangeRecorder->tagFetchScope().setFetchAllAttributes(true);
+        d->mChangeRecorder->tagFetchScope().setFetchRemoteId(true);
     }
 
     if (hasObserverV3) {
@@ -1257,10 +1149,10 @@ void AgentBase::setAgentName(const QString &name)
     d->mName = name;
 
     if (d->mName.isEmpty() || d->mName == d->mId) {
-        d->mSettings->remove(QStringLiteral("Resource/Name"));
-        d->mSettings->remove(QStringLiteral("Agent/Name"));
+        d->mSettings->remove(QLatin1StringView("Resource/Name"));
+        d->mSettings->remove(QLatin1StringView("Agent/Name"));
     } else {
-        d->mSettings->setValue(QStringLiteral("Agent/Name"), d->mName);
+        d->mSettings->setValue(QLatin1StringView("Agent/Name"), d->mName);
     }
 
     d->mSettings->sync();
@@ -1278,6 +1170,46 @@ QString AgentBase::agentName() const
     } else {
         return d->mName;
     }
+}
+
+void AgentBase::setActivities(const QStringList &activities)
+{
+    Q_D(AgentBase);
+    if (activities == d->mActivities) {
+        return;
+    }
+
+    d->mActivities = activities;
+    if (d->mActivities.isEmpty()) {
+        d->mSettings->remove(QStringLiteral("Agent/Activities"));
+    } else {
+        d->mSettings->setValue(QStringLiteral("Agent/Activities"), d->mActivities);
+    }
+    Q_EMIT agentActivitiesChanged(d->mActivities);
+}
+
+QStringList AgentBase::activities() const
+{
+    Q_D(const AgentBase);
+    return d->mActivities;
+}
+
+bool AgentBase::activitiesEnabled() const
+{
+    Q_D(const AgentBase);
+    return d->mActivitiesEnabled;
+}
+
+void AgentBase::setActivitiesEnabled(bool enabled)
+{
+    Q_D(AgentBase);
+    if (enabled == d->mActivitiesEnabled) {
+        return;
+    }
+
+    d->mActivitiesEnabled = enabled;
+    d->mSettings->setValue(QStringLiteral("Agent/ActivitiesEnabled"), enabled);
+    Q_EMIT agentActivitiesEnabledChanged(d->mActivitiesEnabled);
 }
 
 void AgentBase::changeProcessed()

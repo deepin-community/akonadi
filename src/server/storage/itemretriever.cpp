@@ -7,9 +7,7 @@
 
 #include "itemretriever.h"
 
-#include "akonadi.h"
 #include "connection.h"
-#include "storage/datastore.h"
 #include "storage/itemqueryhelper.h"
 #include "storage/itemretrievalmanager.h"
 #include "storage/itemretrievalrequest.h"
@@ -19,8 +17,8 @@
 #include "storage/selectquerybuilder.h"
 #include "utils.h"
 
-#include <private/protocol_p.h>
-#include <shared/akranges.h>
+#include "private/protocol_p.h"
+#include "shared/akranges.h"
 
 #include <QEventLoop>
 
@@ -53,7 +51,7 @@ Connection *ItemRetriever::connection() const
     return mConnection;
 }
 
-void ItemRetriever::setRetrieveParts(const QVector<QByteArray> &parts)
+void ItemRetriever::setRetrieveParts(const QList<QByteArray> &parts)
 {
     mParts = parts;
     std::sort(mParts.begin(), mParts.end());
@@ -65,27 +63,15 @@ void ItemRetriever::setRetrieveParts(const QVector<QByteArray> &parts)
     }
 }
 
-void ItemRetriever::setItemSet(const ImapSet &set, const Collection &collection)
+void ItemRetriever::setItemSet(const QList<PimItem::Id> &set, const Collection &collection)
 {
     mItemSet = set;
     mCollection = collection;
 }
 
-void ItemRetriever::setItemSet(const ImapSet &set, bool isUid)
+void ItemRetriever::setItem(PimItem::Id id)
 {
-    if (!isUid && mContext.collectionId() >= 0) {
-        setItemSet(set, mContext.collection());
-    } else {
-        setItemSet(set);
-    }
-}
-
-void ItemRetriever::setItem(Entity::Id id)
-{
-    ImapSet set;
-    set.add(ImapInterval(id, id));
-    mItemSet = set;
-    mCollection = Collection();
+    setItemSet({id});
 }
 
 void ItemRetriever::setRetrieveFullPayload(bool fullPayload)
@@ -100,7 +86,7 @@ void ItemRetriever::setRetrieveFullPayload(bool fullPayload)
 void ItemRetriever::setCollection(const Collection &collection, bool recursive)
 {
     mCollection = collection;
-    mItemSet = ImapSet();
+    mItemSet.clear();
     mRecursive = recursive;
 }
 
@@ -119,7 +105,7 @@ void ItemRetriever::setChangedSince(const QDateTime &changedSince)
     mChangedSince = changedSince;
 }
 
-QVector<QByteArray> ItemRetriever::retrieveParts() const
+QList<QByteArray> ItemRetriever::retrieveParts() const
 {
     return mParts;
 }
@@ -134,7 +120,7 @@ enum QueryColumns {
     PartDatasizeColumn
 };
 
-QSqlQuery ItemRetriever::buildQuery() const
+QueryBuilder ItemRetriever::buildQuery() const
 {
     QueryBuilder qb(PimItem::tableName());
 
@@ -183,7 +169,7 @@ QSqlQuery ItemRetriever::buildQuery() const
 
     qb.query().next();
 
-    return qb.query();
+    return qb;
 }
 
 namespace
@@ -202,7 +188,7 @@ bool ItemRetriever::runItemRetrievalRequests(std::list<ItemRetrievalRequest> req
     std::vector<ItemRetrievalRequest::Id> pendingRequests;
     connect(&mItemRetrievalManager,
             &ItemRetrievalManager::requestFinished,
-            this,
+            &eventLoop,
             [this, &eventLoop, &pendingRequests](const ItemRetrievalResult &result) { // clazy:exclude=lambda-in-connect
                 const auto requestId = std::find(pendingRequests.begin(), pendingRequests.end(), result.request.id);
                 if (requestId != pendingRequests.end()) {
@@ -262,7 +248,7 @@ std::optional<ItemRetriever::PreparedRequests> ItemRetriever::prepareRequests(QS
     std::list<ItemRetrievalRequest> requests;
     QHash<qint64 /* collection */, decltype(requests)::iterator> colRequests;
     QHash<qint64 /* item */, decltype(requests)::iterator> itemRequests;
-    QVector<qint64> readyItems;
+    QList<qint64> readyItems;
     qint64 prevPimItemId = -1;
     QSet<QByteArray> availableParts;
     auto lastRequest = requests.end();
@@ -366,7 +352,8 @@ bool ItemRetriever::exec()
 
     verifyCache();
 
-    QSqlQuery query = buildQuery();
+    auto qb = buildQuery();
+    auto &query = qb.query();
     const auto parts = mParts | Views::filter([](const auto &part) {
                            return part.startsWith(AKONADI_PARAM_PLD);
                        })
@@ -439,3 +426,5 @@ QByteArray ItemRetriever::lastError() const
 {
     return mLastError;
 }
+
+#include "moc_itemretriever.cpp"

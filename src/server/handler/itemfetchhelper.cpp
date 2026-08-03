@@ -14,8 +14,6 @@
 #include "shared/akranges.h"
 #include "storage/itemqueryhelper.h"
 #include "storage/itemretrievalmanager.h"
-#include "storage/itemretrievalrequest.h"
-#include "storage/parthelper.h"
 #include "storage/parttypehelper.h"
 #include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
@@ -23,11 +21,9 @@
 #include "agentmanagerinterface.h"
 #include "akonadiserver_debug.h"
 #include "intervalcheck.h"
-#include "relationfetchhandler.h"
-#include "tagfetchhelper.h"
 #include "utils.h"
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
 #include <QDateTime>
 #include <QSqlQuery>
@@ -78,8 +74,7 @@ ItemFetchHelper::ItemFetchHelper(Connection *connection,
     , mTagFetchScope(tagFetchScope)
     , mAkonadi(akonadi)
     , mItemsLimit(itemsLimit)
-    , mItemQuery(PimItem::tableName())
-    , mPimItemQueryAlias(QLatin1String("pimItem_alias"))
+    , mPimItemQueryAlias(QLatin1StringView("pimItem_alias"))
 {
     std::fill(mItemQueryColumnMap, mItemQueryColumnMap + ItemQueryColumnCount, -1);
 }
@@ -98,13 +93,10 @@ enum PartQueryColumns {
     PartQueryDataSizeColumn
 };
 
-QSqlQuery ItemFetchHelper::buildPartQuery(const QVector<QByteArray> &partList, bool allPayload, bool allAttrs)
+QueryBuilder ItemFetchHelper::buildPartQuery(QSqlQuery &itemQuery, const QList<QByteArray> &partList, bool allPayload, bool allAttrs)
 {
     /// TODO: merge with ItemQuery
-    QueryBuilder partQuery(PimItem::tableName());
-    if (mItemsLimit.limit() > 0) {
-        partQuery = QueryBuilder(mItemQuery.query(), mPimItemQueryAlias);
-    }
+    QueryBuilder partQuery = mItemsLimit.limit() > 0 ? QueryBuilder(itemQuery, mPimItemQueryAlias) : QueryBuilder(PimItem::tableName());
 
     if (!partList.isEmpty() || allPayload || allAttrs) {
         partQuery.addJoin(QueryBuilder::InnerJoin, Part::tableName(), partQuery.getTableWithColumn(PimItem::idColumn()), Part::pimItemIdFullColumnName());
@@ -145,15 +137,16 @@ QSqlQuery ItemFetchHelper::buildPartQuery(const QVector<QByteArray> &partList, b
         partQuery.query().next();
     }
 
-    return partQuery.query();
+    return partQuery;
 }
 
-QSqlQuery ItemFetchHelper::buildItemQuery()
+QueryBuilder ItemFetchHelper::buildItemQuery()
 {
     int column = 0;
+    QueryBuilder itemQuery(PimItem::tableName());
 #define ADD_COLUMN(colName, colId)                                                                                                                             \
     {                                                                                                                                                          \
-        mItemQuery.addColumn(colName);                                                                                                                         \
+        itemQuery.addColumn(colName);                                                                                                                          \
         mItemQueryColumnMap[colId] = column++;                                                                                                                 \
     }
     ADD_COLUMN(PimItem::idFullColumnName(), ItemQueryPimItemIdColumn);
@@ -177,24 +170,24 @@ QSqlQuery ItemFetchHelper::buildItemQuery()
     }
 #undef ADD_COLUMN
 
-    mItemQuery.addSortColumn(PimItem::idFullColumnName(), static_cast<Query::SortOrder>(mItemsLimit.sortOrder()));
+    itemQuery.addSortColumn(PimItem::idFullColumnName(), static_cast<Query::SortOrder>(mItemsLimit.sortOrder()));
     if (mItemsLimit.limit() > 0) {
-        mItemQuery.setLimit(mItemsLimit.limit(), mItemsLimit.limitOffset());
+        itemQuery.setLimit(mItemsLimit.limit(), mItemsLimit.limitOffset());
     }
 
-    ItemQueryHelper::scopeToQuery(mScope, mContext, mItemQuery);
+    ItemQueryHelper::scopeToQuery(mScope, mContext, itemQuery);
 
     if (mItemFetchScope.changedSince().isValid()) {
-        mItemQuery.addValueCondition(PimItem::datetimeFullColumnName(), Query::GreaterOrEqual, mItemFetchScope.changedSince().toUTC());
+        itemQuery.addValueCondition(PimItem::datetimeFullColumnName(), Query::GreaterOrEqual, mItemFetchScope.changedSince().toUTC());
     }
 
-    if (!mItemQuery.exec()) {
+    if (!itemQuery.exec()) {
         throw HandlerException("Unable to list items");
     }
 
-    mItemQuery.query().next();
+    itemQuery.query().next();
 
-    return mItemQuery.query();
+    return itemQuery;
 }
 
 enum FlagQueryColumns {
@@ -202,12 +195,9 @@ enum FlagQueryColumns {
     FlagQueryFlagIdColumn,
 };
 
-QSqlQuery ItemFetchHelper::buildFlagQuery()
+QueryBuilder ItemFetchHelper::buildFlagQuery(QSqlQuery &itemQuery)
 {
-    QueryBuilder flagQuery(PimItem::tableName());
-    if (mItemsLimit.limit() > 0) {
-        flagQuery = QueryBuilder(mItemQuery.query(), mPimItemQueryAlias);
-    }
+    QueryBuilder flagQuery = mItemsLimit.limit() > 0 ? QueryBuilder(itemQuery, mPimItemQueryAlias) : QueryBuilder(PimItem::tableName());
 
     flagQuery.addJoin(QueryBuilder::InnerJoin,
                       PimItemFlagRelation::tableName(),
@@ -226,7 +216,7 @@ QSqlQuery ItemFetchHelper::buildFlagQuery()
 
     flagQuery.query().next();
 
-    return flagQuery.query();
+    return flagQuery;
 }
 
 enum TagQueryColumns {
@@ -234,11 +224,11 @@ enum TagQueryColumns {
     TagQueryTagIdColumn,
 };
 
-QSqlQuery ItemFetchHelper::buildTagQuery()
+QueryBuilder ItemFetchHelper::buildTagQuery(QSqlQuery &itemQuery)
 {
     QueryBuilder tagQuery(PimItem::tableName());
     if (mItemsLimit.limit() > 0) {
-        tagQuery = QueryBuilder(mItemQuery.query(), mPimItemQueryAlias);
+        tagQuery = QueryBuilder(itemQuery, mPimItemQueryAlias);
     }
 
     tagQuery.addJoin(QueryBuilder::InnerJoin,
@@ -258,7 +248,7 @@ QSqlQuery ItemFetchHelper::buildTagQuery()
 
     tagQuery.query().next();
 
-    return tagQuery.query();
+    return tagQuery;
 }
 
 enum VRefQueryColumns {
@@ -266,11 +256,11 @@ enum VRefQueryColumns {
     VRefQueryItemIdColumn,
 };
 
-QSqlQuery ItemFetchHelper::buildVRefQuery()
+QueryBuilder ItemFetchHelper::buildVRefQuery(QSqlQuery &itemQuery)
 {
     QueryBuilder vRefQuery(PimItem::tableName());
     if (mItemsLimit.limit() > 0) {
-        vRefQuery = QueryBuilder(mItemQuery.query(), mPimItemQueryAlias);
+        vRefQuery = QueryBuilder(itemQuery, mPimItemQueryAlias);
     }
 
     vRefQuery.addJoin(QueryBuilder::LeftJoin,
@@ -288,7 +278,7 @@ QSqlQuery ItemFetchHelper::buildVRefQuery()
 
     vRefQuery.query().next();
 
-    return vRefQuery.query();
+    return vRefQuery;
 }
 
 bool ItemFetchHelper::isScopeLocal(const Scope &scope)
@@ -318,7 +308,7 @@ bool ItemFetchHelper::isScopeLocal(const Scope &scope)
     // collections, then don't bother and just return FALSE. This case is aimed
     // specifically on Baloo, which fetches items from each collection independently,
     // so it will pass this check.
-    QSqlQuery query = qb.query();
+    QSqlQuery &query = qb.query();
     if (query.size() != 1) {
         return false;
     }
@@ -391,7 +381,8 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
     END_TIMER(itemRetriever)
 
     BEGIN_TIMER(items)
-    QSqlQuery itemQuery = buildItemQuery();
+    std::optional<QueryBuilder> itemQb = buildItemQuery();
+    auto &itemQuery = itemQb->query();
     END_TIMER(items)
 
     // error if query did not find any item and scope is not listing items but
@@ -413,32 +404,32 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
     }
     // build part query if needed
     BEGIN_TIMER(parts)
-    QSqlQuery partQuery(storageBackend()->database());
+    std::optional<QueryBuilder> partQb;
     if (!mItemFetchScope.requestedParts().isEmpty() || mItemFetchScope.fullPayload() || mItemFetchScope.allAttributes()) {
-        partQuery = buildPartQuery(mItemFetchScope.requestedParts(), mItemFetchScope.fullPayload(), mItemFetchScope.allAttributes());
+        partQb = buildPartQuery(itemQuery, mItemFetchScope.requestedParts(), mItemFetchScope.fullPayload(), mItemFetchScope.allAttributes());
     }
     END_TIMER(parts)
 
     // build flag query if needed
     BEGIN_TIMER(flags)
-    QSqlQuery flagQuery(storageBackend()->database());
+    std::optional<QueryBuilder> flagQb;
     if (mItemFetchScope.fetchFlags()) {
-        flagQuery = buildFlagQuery();
+        flagQb = buildFlagQuery(itemQuery);
     }
     END_TIMER(flags)
 
     // build tag query if needed
     BEGIN_TIMER(tags)
-    QSqlQuery tagQuery(storageBackend()->database());
+    std::optional<QueryBuilder> tagQb;
     if (mItemFetchScope.fetchTags()) {
-        tagQuery = buildTagQuery();
+        tagQb = buildTagQuery(itemQuery);
     }
     END_TIMER(tags)
 
     BEGIN_TIMER(vRefs)
-    QSqlQuery vRefQuery(storageBackend()->database());
+    std::optional<QueryBuilder> vRefQb;
     if (mItemFetchScope.fetchVirtualReferences()) {
-        vRefQuery = buildVRefQuery();
+        vRefQb = buildVRefQuery(itemQuery);
     }
     END_TIMER(vRefs)
 
@@ -478,7 +469,7 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
             response.setSize(extractQueryResult(itemQuery, ItemQuerySizeColumn).toLongLong());
         }
         if (mItemFetchScope.fetchMTime()) {
-            response.setMTime(Utils::variantToDateTime(extractQueryResult(itemQuery, ItemQueryDatetimeColumn)));
+            response.setMTime(extractQueryResult(itemQuery, ItemQueryDatetimeColumn).toDateTime());
         }
         if (mItemFetchScope.fetchRemoteRevision()) {
             response.setRemoteRevision(extractQueryResult(itemQuery, ItemQueryRemoteRevisionColumn).toString());
@@ -487,8 +478,9 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
             response.setGid(extractQueryResult(itemQuery, ItemQueryPimItemGidColumn).toString());
         }
 
-        if (mItemFetchScope.fetchFlags()) {
-            QVector<QByteArray> flags;
+        if (mItemFetchScope.fetchFlags() && flagQb) {
+            QList<QByteArray> flags;
+            auto &flagQuery = flagQb->query();
             while (flagQuery.isValid()) {
                 const qint64 id = flagQuery.value(FlagQueryPimItemIdColumn).toLongLong();
                 if (id > pimItemId) {
@@ -508,9 +500,10 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
             response.setFlags(flags);
         }
 
-        if (mItemFetchScope.fetchTags()) {
-            QVector<qint64> tagIds;
-            QVector<Protocol::FetchTagsResponse> tags;
+        if (mItemFetchScope.fetchTags() && tagQb) {
+            QList<qint64> tagIds;
+            QList<Protocol::FetchTagsResponse> tags;
+            auto &tagQuery = tagQb->query();
             while (tagQuery.isValid()) {
                 PROF_INC(tagsCount)
                 const qint64 id = tagQuery.value(TagQueryItemIdColumn).toLongLong();
@@ -540,8 +533,9 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
             response.setTags(tags);
         }
 
-        if (mItemFetchScope.fetchVirtualReferences()) {
-            QVector<qint64> vRefs;
+        if (mItemFetchScope.fetchVirtualReferences() && vRefQb) {
+            QList<qint64> vRefs;
+            auto &vRefQuery = vRefQb->query();
             while (vRefQuery.isValid()) {
                 PROF_INC(vRefsCount)
                 const qint64 id = vRefQuery.value(VRefQueryItemIdColumn).toLongLong();
@@ -557,88 +551,69 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
             response.setVirtualReferences(vRefs);
         }
 
-        if (mItemFetchScope.fetchRelations()) {
-            SelectQueryBuilder<Relation> qb;
-            Query::Condition condition;
-            condition.setSubQueryMode(Query::Or);
-            condition.addValueCondition(Relation::leftIdFullColumnName(), Query::Equals, pimItemId);
-            condition.addValueCondition(Relation::rightIdFullColumnName(), Query::Equals, pimItemId);
-            qb.addCondition(condition);
-            qb.addGroupColumns(QStringList() << Relation::leftIdColumn() << Relation::rightIdColumn() << Relation::typeIdColumn()
-                                             << Relation::remoteIdColumn());
-            if (!qb.exec()) {
-                throw HandlerException("Unable to list item relations");
-            }
-            QVector<Protocol::FetchRelationsResponse> relations;
-            const auto result = qb.result();
-            relations.reserve(result.size());
-            for (const Relation &rel : result) {
-                relations.push_back(HandlerHelper::fetchRelationsResponse(rel));
-                ;
-            }
-            response.setRelations(relations);
-        }
-
         if (mItemFetchScope.ancestorDepth() != Protocol::ItemFetchScope::NoAncestor) {
             response.setAncestors(ancestorsForItem(response.parentId()));
         }
 
         bool skipItem = false;
 
-        QVector<QByteArray> cachedParts;
-        QVector<Protocol::StreamPayloadResponse> parts;
-        while (partQuery.isValid()) {
-            PROF_INC(partsCount)
-            const qint64 id = partQuery.value(PartQueryPimIdColumn).toLongLong();
-            if (id > pimItemId) {
-                partQuery.next();
-                continue;
-            } else if (id < pimItemId) {
-                break;
-            }
-
-            const qint64 partTypeId = partQuery.value(PartQueryTypeIdColumn).toLongLong();
-            auto ptIter = partTypeIdNameCache.find(partTypeId);
-            if (ptIter == partTypeIdNameCache.end()) {
-                ptIter = partTypeIdNameCache.insert(partTypeId, PartTypeHelper::fullName(PartType::retrieveById(partTypeId)).toUtf8());
-            }
-            Protocol::PartMetaData metaPart;
-            Protocol::StreamPayloadResponse partData;
-            partData.setPayloadName(ptIter.value());
-            metaPart.setName(ptIter.value());
-            metaPart.setVersion(partQuery.value(PartQueryVersionColumn).toInt());
-            metaPart.setSize(partQuery.value(PartQueryDataSizeColumn).toLongLong());
-
-            const QByteArray data = Utils::variantToByteArray(partQuery.value(PartQueryDataColumn));
-            if (mItemFetchScope.checkCachedPayloadPartsOnly()) {
-                if (!data.isEmpty()) {
-                    cachedParts << ptIter.value();
-                }
-                partQuery.next();
-            } else {
-                if (mItemFetchScope.ignoreErrors() && data.isEmpty()) {
-                    // We wanted the payload, couldn't get it, and are ignoring errors. Skip the item.
-                    // This is not an error though, it's fine to have empty payload parts (to denote existing but not cached parts)
-                    qCDebug(AKONADISERVER_LOG) << "item" << id << "has an empty payload part in parttable for part" << metaPart.name();
-                    skipItem = true;
+        QList<QByteArray> cachedParts;
+        if (partQb) {
+            QList<Protocol::StreamPayloadResponse> parts;
+            auto &partQuery = partQb->query();
+            while (partQuery.isValid()) {
+                PROF_INC(partsCount)
+                const qint64 id = partQuery.value(PartQueryPimIdColumn).toLongLong();
+                if (id > pimItemId) {
+                    partQuery.next();
+                    continue;
+                } else if (id < pimItemId) {
                     break;
                 }
-                metaPart.setStorageType(static_cast<Protocol::PartMetaData::StorageType>(partQuery.value(PartQueryStorageColumn).toInt()));
-                if (data.isEmpty()) {
-                    partData.setData(QByteArray(""));
+
+                const qint64 partTypeId = partQuery.value(PartQueryTypeIdColumn).toLongLong();
+                auto ptIter = partTypeIdNameCache.find(partTypeId);
+                if (ptIter == partTypeIdNameCache.end()) {
+                    ptIter = partTypeIdNameCache.insert(partTypeId, PartTypeHelper::fullName(PartType::retrieveById(partTypeId)).toUtf8());
+                }
+                Protocol::PartMetaData metaPart;
+                Protocol::StreamPayloadResponse partData;
+                partData.setPayloadName(ptIter.value());
+                metaPart.setName(ptIter.value());
+                metaPart.setVersion(partQuery.value(PartQueryVersionColumn).toInt());
+                metaPart.setSize(partQuery.value(PartQueryDataSizeColumn).toLongLong());
+
+                const QByteArray data = Utils::variantToByteArray(partQuery.value(PartQueryDataColumn));
+                if (mItemFetchScope.checkCachedPayloadPartsOnly()) {
+                    if (!data.isEmpty()) {
+                        cachedParts << ptIter.value();
+                    }
+                    partQuery.next();
                 } else {
-                    partData.setData(data);
-                }
-                partData.setMetaData(metaPart);
+                    if (mItemFetchScope.ignoreErrors() && data.isEmpty()) {
+                        // We wanted the payload, couldn't get it, and are ignoring errors. Skip the item.
+                        // This is not an error though, it's fine to have empty payload parts (to denote existing but not cached parts)
+                        qCDebug(AKONADISERVER_LOG) << "item" << id << "has an empty payload part in parttable for part" << metaPart.name();
+                        skipItem = true;
+                        break;
+                    }
+                    metaPart.setStorageType(static_cast<Protocol::PartMetaData::StorageType>(partQuery.value(PartQueryStorageColumn).toInt()));
+                    if (data.isEmpty()) {
+                        partData.setData(QByteArray(""));
+                    } else {
+                        partData.setData(data);
+                    }
+                    partData.setMetaData(metaPart);
 
-                if (mItemFetchScope.requestedParts().contains(ptIter.value()) || mItemFetchScope.fullPayload() || mItemFetchScope.allAttributes()) {
-                    parts.append(partData);
-                }
+                    if (mItemFetchScope.requestedParts().contains(ptIter.value()) || mItemFetchScope.fullPayload() || mItemFetchScope.allAttributes()) {
+                        parts.append(partData);
+                    }
 
-                partQuery.next();
+                    partQuery.next();
+                }
             }
+            response.setParts(parts);
         }
-        response.setParts(parts);
 
         if (skipItem) {
             itemQuery.next();
@@ -657,11 +632,13 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
 
         itemQuery.next();
     }
-    tagQuery.finish();
-    flagQuery.finish();
-    partQuery.finish();
-    vRefQuery.finish();
-    itemQuery.finish();
+    // Destroy the query builders in order to finalize and cache the prepared statements
+    // before doing any more SQL queries.
+    tagQb.reset();
+    flagQb.reset();
+    partQb.reset();
+    vRefQb.reset();
+    itemQb.reset();
     END_TIMER(processing)
 
     // update atime (only if the payload was actually requested, otherwise a simple resource sync prevents cache clearing)
@@ -693,7 +670,7 @@ bool ItemFetchHelper::fetchItems(std::function<void(Protocol::FetchItemsResponse
     return true;
 }
 
-bool ItemFetchHelper::needsAccessTimeUpdate(const QVector<QByteArray> &parts)
+bool ItemFetchHelper::needsAccessTimeUpdate(const QList<QByteArray> &parts)
 {
     // TODO technically we should compare the part list with the cache policy of
     // the parent collection of the retrieved items, but that's kinda expensive
@@ -737,17 +714,17 @@ void ItemFetchHelper::triggerOnDemandFetch()
     mConnection->akonadi().intervalChecker().requestCollectionSync(collection);
 }
 
-QVector<Protocol::Ancestor> ItemFetchHelper::ancestorsForItem(Collection::Id parentColId)
+QList<Protocol::Ancestor> ItemFetchHelper::ancestorsForItem(Collection::Id parentColId)
 {
     if (mItemFetchScope.ancestorDepth() == Protocol::ItemFetchScope::NoAncestor || parentColId == 0) {
-        return QVector<Protocol::Ancestor>();
+        return QList<Protocol::Ancestor>();
     }
     const auto it = mAncestorCache.constFind(parentColId);
     if (it != mAncestorCache.cend()) {
         return *it;
     }
 
-    QVector<Protocol::Ancestor> ancestors;
+    QList<Protocol::Ancestor> ancestors;
     Collection col = Collection::retrieveById(parentColId);
     const int depthNum = mItemFetchScope.ancestorDepth() == Protocol::ItemFetchScope::ParentAncestor ? 1 : INT_MAX;
     for (int i = 0; i < depthNum; ++i) {

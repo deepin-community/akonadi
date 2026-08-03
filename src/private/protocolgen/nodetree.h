@@ -6,8 +6,8 @@
 
 #pragma once
 
+#include <QList>
 #include <QMultiMap>
-#include <QVector>
 
 class Node
 {
@@ -34,11 +34,11 @@ public:
 
     void appendNode(Node *child);
 
-    const QVector<Node const *> &children() const;
+    const QList<Node const *> &children() const;
 
 protected:
     Node *mParent;
-    QVector<Node const *> mChildren;
+    QList<Node const *> mChildren;
     NodeType mType;
 };
 
@@ -70,13 +70,9 @@ public:
     ClassType classType() const;
     QString className() const;
     QString parentClassName() const;
-    QVector<PropertyNode const *> properties() const;
+    QList<PropertyNode const *> properties() const;
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static ClassType elementNameToType(const QStringRef &name);
-#else
     static ClassType elementNameToType(QStringView name);
-#endif
 
 private:
     QString mName;
@@ -97,14 +93,14 @@ public:
         }
     };
 
-    CtorNode(const QVector<Argument> &args, ClassNode *parent);
+    CtorNode(const QList<Argument> &args, ClassNode *parent);
     ~CtorNode() override;
 
-    QVector<Argument> arguments() const;
+    QList<Argument> arguments() const;
     void setArgumentType(const QString &name, const QString &type);
 
 private:
-    QVector<Argument> mArgs;
+    QList<Argument> mArgs;
 };
 
 class EnumNode : public Node
@@ -120,11 +116,10 @@ public:
 
     QString name() const;
     EnumType enumType() const;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static EnumType elementNameToType(const QStringRef &name);
-#else
     static EnumType elementNameToType(QStringView name);
-#endif
+
+    QString flagsName() const;
+
 private:
     QString mName;
     EnumType mEnumType;
@@ -170,6 +165,7 @@ public:
     void setAsReference(bool asReference);
 
     bool isPointer() const;
+    bool isEnum() const;
 
     QMultiMap<QString, QString> dependencies() const;
     void addDependency(const QString &enumVar, const QString &enumValue);

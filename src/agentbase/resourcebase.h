@@ -12,9 +12,9 @@
 #include "agentbase.h"
 #include "akonadiagentbase_export.h"
 // AkonadiCore
-#include <akonadi/collection.h>
-#include <akonadi/item.h>
-#include <akonadi/itemsync.h>
+#include "akonadi/collection.h"
+#include "akonadi/item.h"
+#include "akonadi/itemsync.h"
 
 class KJob;
 class Akonadi__ResourceAdaptor;
@@ -192,7 +192,27 @@ public:
     /**
      * Returns the name of the resource.
      */
-    Q_REQUIRED_RESULT QString name() const;
+    [[nodiscard]] QString name() const;
+
+    /**
+     * This method sets list of activities.
+     */
+    void setActivities(const QStringList &activities);
+
+    /**
+     * return list of activities.
+     */
+    [[nodiscard]] QStringList activities() const;
+
+    /**
+     * This method enables or not activities support.
+     */
+    void setActivitiesEnabled(bool enable);
+
+    /**
+     * Returns true if activities is enabled.
+     */
+    [[nodiscard]] bool activitiesEnabled() const;
 
     /**
      * Enable or disable automatic progress reporting. By default, it is enabled.
@@ -268,12 +288,6 @@ protected Q_SLOTS:
     virtual void retrieveTags();
 
     /**
-     * Retrieve all relations from the backend
-     * @see relationsRetrieved()
-     */
-    virtual void retrieveRelations();
-
-    /**
      * Retrieve the attributes of a single collection from the backend. The
      * collection to retrieve attributes for is provided as @p collection.
      * Add the attributes parts and call collectionAttributesRetrieved()
@@ -308,7 +322,7 @@ protected Q_SLOTS:
      * @see retrieveNextItemSyncBatch(int), retrieveItems(Akonadi::Collection)
      * @since 4.14
      */
-    int itemSyncBatchSize() const;
+    [[nodiscard]] int itemSyncBatchSize() const;
 
     /**
      * Set the batch size used during the item sync.
@@ -457,7 +471,6 @@ protected:
     void collectionsRetrieved(const Collection::List &collections);
 
     void tagsRetrieved(const Tag::List &tags, const QHash<QString, Item::List> &tagMembers);
-    void relationsRetrieved(const Relation::List &relations);
 
     /**
      * Call this to supply incrementally retrieved collections from the remote server.
@@ -633,7 +646,7 @@ protected:
      * @note Calling this method is only allowed during a collection synchronization task, that
      * is directly or indirectly from retrieveItems().
      */
-    Collection currentCollection() const;
+    [[nodiscard]] Collection currentCollection() const;
 
     /**
      * Returns the item that is currently retrieved.
@@ -647,7 +660,7 @@ protected:
      * @note Calling this method is only allowed during item fetch, that is
      * directly or indirectly from retrieveItems(Akonadi::Item::List,QSet<QByteArray>)
      */
-    Item::List currentItems() const;
+    [[nodiscard]] Item::List currentItems() const;
 
     /**
      * This method is called whenever the resource should start synchronize all data.
@@ -693,11 +706,6 @@ protected:
      * Refetches Tags.
      */
     void synchronizeTags();
-
-    /**
-     * Refetches Relations.
-     */
-    void synchronizeRelations();
 
     /**
      * Stops the execution of the current task and continues with the next one.
@@ -790,7 +798,7 @@ protected:
      * Dump the contents of the current ChangeReplay
      * @since 4.8.1
      */
-    QString dumpNotificationListToString() const;
+    [[nodiscard]] QString dumpNotificationListToString() const;
 
     /**
      *  Dumps memory usage information to stdout.
@@ -808,13 +816,13 @@ protected:
      *
      *  @since 4.11
      */
-    QString dumpMemoryInfoToString() const;
+    [[nodiscard]] QString dumpMemoryInfoToString() const;
 
     /**
      * Dump the state of the scheduler
      * @since 4.8.1
      */
-    QString dumpSchedulerToString() const;
+    [[nodiscard]] QString dumpSchedulerToString() const;
 
 private:
     static QString parseArguments(int argc, char **argv);
@@ -823,7 +831,7 @@ private:
     // dbus resource interface
     friend class ::Akonadi__ResourceAdaptor;
 
-    void requestItemDelivery(const QVector<qint64> &uids, const QByteArrayList &parts);
+    void requestItemDelivery(const QList<qint64> &uids, const QByteArrayList &parts);
 
 private:
     Q_DECLARE_PRIVATE(ResourceBase)
@@ -846,16 +854,14 @@ private:
     Q_PRIVATE_SLOT(d_func(), void slotDelayedEmitProgress())
     Q_PRIVATE_SLOT(d_func(), void slotPrepareItemRetrieval(const Akonadi::Item &items))
     Q_PRIVATE_SLOT(d_func(), void slotPrepareItemRetrievalResult(KJob *))
-    Q_PRIVATE_SLOT(d_func(), void slotPrepareItemsRetrieval(const QVector<Akonadi::Item> &items))
+    Q_PRIVATE_SLOT(d_func(), void slotPrepareItemsRetrieval(const QList<Akonadi::Item> &items))
     Q_PRIVATE_SLOT(d_func(), void slotPrepareItemsRetrievalResult(KJob *))
     Q_PRIVATE_SLOT(d_func(), void changeCommittedResult(KJob *))
     Q_PRIVATE_SLOT(d_func(), void slotSessionReconnected())
     Q_PRIVATE_SLOT(d_func(), void slotRecursiveMoveReplay(RecursiveMover *))
     Q_PRIVATE_SLOT(d_func(), void slotRecursiveMoveReplayResult(KJob *))
     Q_PRIVATE_SLOT(d_func(), void slotTagSyncDone(KJob *))
-    Q_PRIVATE_SLOT(d_func(), void slotRelationSyncDone(KJob *job))
     Q_PRIVATE_SLOT(d_func(), void slotSynchronizeTags())
-    Q_PRIVATE_SLOT(d_func(), void slotSynchronizeRelations())
     Q_PRIVATE_SLOT(d_func(), void slotItemRetrievalCollectionFetchDone(KJob *))
     Q_PRIVATE_SLOT(d_func(), void slotAttributeRetrievalCollectionFetchDone(KJob *))
 };

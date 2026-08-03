@@ -159,15 +159,8 @@ ImapSet::ImapSet()
 ImapSet::ImapSet(Id id)
     : d(new ImapSetPrivate)
 {
-    add(QVector<Id>() << id);
+    add(QList<Id>() << id);
 }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-ImapSet::ImapSet(const QVector<qint64> &ids)
-    : d(new ImapSetPrivate)
-{
-    add(ids);
-}
-#endif
 ImapSet::ImapSet(const QList<qint64> &ids)
     : d(new ImapSetPrivate)
 {
@@ -209,12 +202,7 @@ bool ImapSet::operator==(const ImapSet &other) const
 {
     return d->intervals == other.d->intervals;
 }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void ImapSet::add(const QVector<Id> &values)
-{
-    d->add(values);
-}
-#endif
+
 void ImapSet::add(const QList<Id> &values)
 {
     d->add(values);
@@ -222,7 +210,7 @@ void ImapSet::add(const QList<Id> &values)
 
 void ImapSet::add(const QSet<Id> &values)
 {
-    QVector<Id> v;
+    QList<Id> v;
     v.reserve(values.size());
     for (QSet<Id>::ConstIterator iter = values.constBegin(); iter != values.constEnd(); ++iter) {
         v.push_back(*iter);
@@ -257,6 +245,37 @@ ImapInterval::List ImapSet::intervals() const
 bool ImapSet::isEmpty() const
 {
     return d->intervals.isEmpty() || (d->intervals.size() == 1 && d->intervals.at(0).size() == 0);
+}
+
+void ImapSet::optimize()
+{
+    // There's nothing to optimize if we have fewer than 2 intervals
+    if (d->intervals.size() < 2) {
+        return;
+    }
+
+    // Sort the intervals in ascending order by their beginning value
+    std::sort(d->intervals.begin(), d->intervals.end(), [](const ImapInterval &lhs, const ImapInterval &rhs) {
+        return lhs.begin() < rhs.begin();
+    });
+
+    auto it = d->intervals.begin();
+    while (it != d->intervals.end() && it != std::prev(d->intervals.end())) {
+        auto next = std::next(it);
+        // +1 so that we also merge neighbouring intervals, e.g. 1:2,3:4 -> 1:4
+        if (it->hasDefinedEnd() && it->end() + 1 >= next->begin()) {
+            next->setBegin(it->begin());
+            if (next->hasDefinedEnd() && it->end() > next->end()) {
+                next->setEnd(it->end());
+            }
+            it = d->intervals.erase(it);
+        } else if (!it->hasDefinedEnd()) {
+            // We can eat up all the remaining intervals
+            it = d->intervals.erase(next, d->intervals.end());
+        } else {
+            ++it;
+        }
+    }
 }
 
 Protocol::DataStream &operator<<(Protocol::DataStream &stream, const Akonadi::ImapInterval &interval)

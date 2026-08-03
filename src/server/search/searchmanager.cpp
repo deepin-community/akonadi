@@ -20,7 +20,7 @@
 #include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
 
-#include <private/protocol_p.h>
+#include "private/protocol_p.h"
 
 #include <QDBusConnection>
 #include <QDir>
@@ -63,7 +63,7 @@ void SearchManager::init()
 
     mEngines.reserve(mEngineNames.size());
     for (const QString &engineName : std::as_const(mEngineNames)) {
-        if (engineName == QLatin1String("Agent")) {
+        if (engineName == QLatin1StringView("Agent")) {
             mEngines.append(new AgentSearchEngine);
         } else {
             qCCritical(AKONADISERVER_SEARCH_LOG) << "Unknown search engine type: " << engineName;
@@ -120,7 +120,7 @@ void SearchManager::unregisterInstance(const QString &id)
     mAgentSearchManager.unregisterInstance(id);
 }
 
-QVector<AbstractSearchPlugin *> SearchManager::searchPlugins() const
+QList<AbstractSearchPlugin *> SearchManager::searchPlugins() const
 {
     return mPlugins;
 }
@@ -135,7 +135,7 @@ void SearchManager::loadSearchPlugins()
 
     const QStringList dirs = QCoreApplication::libraryPaths();
     for (const QString &pluginDir : dirs) {
-        const QString path(pluginDir + QStringLiteral("/pim" QT_STRINGIFY(QT_VERSION_MAJOR)) + QStringLiteral("/akonadi"));
+        const QString path(pluginDir + QStringLiteral("/pim6/akonadi"));
         QDir dir(path);
         const QStringList fileNames = dir.entryList(QDir::Files);
         qCDebug(AKONADISERVER_SEARCH_LOG) << "SEARCH MANAGER: searching in " << path << ":" << fileNames;
@@ -143,7 +143,7 @@ void SearchManager::loadSearchPlugins()
             const QString filePath = path % QLatin1Char('/') % fileName;
             std::unique_ptr<QPluginLoader> loader(new QPluginLoader(filePath));
             const QVariantMap metadata = loader->metaData().value(QStringLiteral("MetaData")).toVariant().toMap();
-            if (metadata.value(QStringLiteral("X-Akonadi-PluginType")).toString() != QLatin1String("SearchPlugin")) {
+            if (metadata.value(QStringLiteral("X-Akonadi-PluginType")).toString() != QLatin1StringView("SearchPlugin")) {
                 continue;
             }
 
@@ -256,18 +256,18 @@ void SearchManager::updateSearchImpl(const Collection &collection)
     }
 
     const QStringList queryAttributes = collection.queryAttributes().split(QLatin1Char(' '));
-    const bool remoteSearch = queryAttributes.contains(QLatin1String(AKONADI_PARAM_REMOTE));
-    bool recursive = queryAttributes.contains(QLatin1String(AKONADI_PARAM_RECURSIVE));
+    const bool remoteSearch = queryAttributes.contains(QLatin1StringView(AKONADI_PARAM_REMOTE));
+    bool recursive = queryAttributes.contains(QLatin1StringView(AKONADI_PARAM_RECURSIVE));
 
     QStringList queryMimeTypes;
-    const QVector<MimeType> mimeTypes = collection.mimeTypes();
+    const QList<MimeType> mimeTypes = collection.mimeTypes();
     queryMimeTypes.reserve(mimeTypes.count());
 
     for (const MimeType &mt : mimeTypes) {
         queryMimeTypes << mt.name();
     }
 
-    QVector<qint64> queryAncestors;
+    QList<qint64> queryAncestors;
     if (collection.queryCollections().isEmpty()) {
         queryAncestors << 0;
         recursive = true;
@@ -280,7 +280,7 @@ void SearchManager::updateSearchImpl(const Collection &collection)
     }
 
     // Always query the given collections
-    QVector<qint64> queryCollections = queryAncestors;
+    QList<qint64> queryCollections = queryAncestors;
 
     if (recursive) {
         // Resolve subcollections if necessary
@@ -338,7 +338,7 @@ void SearchManager::updateSearchImpl(const Collection &collection)
             return;
         }
 
-        const QVector<PimItem> removedItems = qb.result();
+        const QList<PimItem> removedItems = qb.result();
         DataStore::self()->notificationCollector()->itemsUnlinked(removedItems, collection);
     }
 
@@ -381,19 +381,36 @@ void SearchManager::searchUpdateResultsAvailable(const QSet<qint64> &results)
 
     // First query all the IDs we got from search plugin/agent against the DB.
     // This will remove IDs that no longer exist in the DB.
+    constexpr int maximumParametersSize = 1000;
     QVariantList newMatchesVariant;
-    newMatchesVariant.reserve(newMatches.count());
+    newMatchesVariant.reserve(maximumParametersSize);
+    QList<PimItem> items;
+
     for (qint64 id : std::as_const(newMatches)) {
         newMatchesVariant << id;
+        if (newMatchesVariant.size() >= maximumParametersSize) {
+            SelectQueryBuilder<PimItem> qb;
+            qb.addValueCondition(PimItem::idFullColumnName(), Query::In, newMatchesVariant);
+            if (!qb.exec()) {
+                return;
+            }
+
+            items << qb.result();
+
+            newMatchesVariant.clear();
+        }
     }
 
-    SelectQueryBuilder<PimItem> qb;
-    qb.addValueCondition(PimItem::idFullColumnName(), Query::In, newMatchesVariant);
-    if (!qb.exec()) {
-        return;
+    if (!newMatchesVariant.isEmpty()) {
+        SelectQueryBuilder<PimItem> qb;
+        qb.addValueCondition(PimItem::idFullColumnName(), Query::In, newMatchesVariant);
+        if (!qb.exec()) {
+            return;
+        }
+
+        items << qb.result();
     }
 
-    const auto items = qb.result();
     if (items.count() != newMatches.count()) {
         qCDebug(AKONADISERVER_SEARCH_LOG) << "Search backend returned" << (newMatches.count() - items.count()) << "results that no longer exist in Akonadi.";
         qCDebug(AKONADISERVER_SEARCH_LOG) << "Please reindex collection" << collection.id();
@@ -420,3 +437,5 @@ void SearchManager::searchUpdateResultsAvailable(const QSet<qint64> &results)
 
     qCDebug(AKONADISERVER_SEARCH_LOG) << "Added results:" << items.count();
 }
+
+#include "moc_searchmanager.cpp"

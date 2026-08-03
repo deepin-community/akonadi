@@ -15,7 +15,6 @@
 namespace Akonadi
 {
 class Scope;
-class ImapSet;
 
 namespace Protocol
 {
@@ -25,8 +24,6 @@ class FetchCollectionsResponse;
 class TagFetchScope;
 class FetchTagsResponse;
 using FetchTagsResponsePtr = QSharedPointer<FetchTagsResponse>;
-class FetchRelationsResponse;
-using FetchRelationsResponsePtr = QSharedPointer<FetchRelationsResponse>;
 }
 
 namespace Server
@@ -82,13 +79,11 @@ public:
     /**
       Returns the protocol representation of a collection ancestor chain.
     */
-    static QVector<Protocol::Ancestor> ancestorsResponse(int ancestorDepth,
-                                                         const QStack<Collection> &ancestors,
-                                                         const QStack<CollectionAttribute::List> &_ancestorsAttributes = QStack<CollectionAttribute::List>());
+    static QList<Protocol::Ancestor> ancestorsResponse(int ancestorDepth,
+                                                       const QStack<Collection> &ancestors,
+                                                       const QStack<CollectionAttribute::List> &_ancestorsAttributes = QStack<CollectionAttribute::List>());
 
     static Protocol::FetchTagsResponse fetchTagsResponse(const Tag &tag, const Protocol::TagFetchScope &tagFetchScope, Connection *connection = nullptr);
-
-    static Protocol::FetchRelationsResponse fetchRelationsResponse(const Relation &relation);
 
     /**
       Converts a bytearray list of flag names into flag records.
@@ -100,7 +95,7 @@ public:
       Converts a imap set of tags into tag records.
       @throws HandlerException on errors during database operations
     */
-    static Tag::List resolveTagsByUID(const ImapSet &tags);
+    static Tag::List resolveTagsByUID(const QList<qint64> &tags);
 
     static Tag::List resolveTagsByGID(const QStringList &tagsGIDs);
 

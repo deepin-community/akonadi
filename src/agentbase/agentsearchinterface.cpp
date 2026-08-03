@@ -87,10 +87,10 @@ AgentSearchInterface::AgentSearchInterface()
 
 AgentSearchInterface::~AgentSearchInterface() = default;
 
-void AgentSearchInterface::searchFinished(const QVector<qint64> &result, ResultScope scope)
+void AgentSearchInterface::searchFinished(const QList<qint64> &result, ResultScope scope)
 {
     if (scope == Akonadi::AgentSearchInterface::Rid) {
-        QVector<QByteArray> rids;
+        QList<QByteArray> rids;
         rids.reserve(result.size());
         for (qint64 rid : result) {
             rids << QByteArray::number(rid);
@@ -107,7 +107,7 @@ void AgentSearchInterface::searchFinished(const QVector<qint64> &result, ResultS
 void AgentSearchInterface::searchFinished(const ImapSet &result, ResultScope scope)
 {
     if (scope == Akonadi::AgentSearchInterface::Rid) {
-        QVector<QByteArray> rids;
+        QList<QByteArray> rids;
         const ImapInterval::List lstInterval = result.intervals();
         for (const ImapInterval &interval : lstInterval) {
             const int endInterval(interval.end());
@@ -120,11 +120,22 @@ void AgentSearchInterface::searchFinished(const ImapSet &result, ResultScope sco
         return;
     }
 
+    QList<qint64> ids;
+    for (const auto &interval : result.intervals()) {
+        if (!interval.hasDefinedBegin() || !interval.hasDefinedEnd()) {
+            qCWarning(AKONADIAGENTBASE_LOG) << "Search results must not have an open interval! Results will be incomplete.";
+            continue;
+        }
+        for (int i = interval.begin(), end = interval.end(); i <= end; ++i) {
+            ids << i;
+        }
+    }
+
     auto resultJob = new SearchResultJob(d->mSearchId, Collection(d->mCollectionId), d.get());
-    resultJob->setResult(result);
+    resultJob->setResult(ids);
 }
 
-void AgentSearchInterface::searchFinished(const QVector<QByteArray> &result)
+void AgentSearchInterface::searchFinished(const QList<QByteArray> &result)
 {
     auto resultJob = new SearchResultJob(d->mSearchId, Collection(d->mCollectionId), d.get());
     resultJob->setResult(result);

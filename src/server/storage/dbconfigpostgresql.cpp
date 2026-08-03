@@ -8,10 +8,11 @@
 #include "akonadiserver_debug.h"
 #include "utils.h"
 
-#include <private/standarddirs_p.h>
-#include <shared/akranges.h>
+#include "private/standarddirs_p.h"
+#include "shared/akranges.h"
 
 #include <QDir>
+#include <QDirIterator>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -25,6 +26,7 @@
 #include <unistd.h>
 #endif
 #include <chrono>
+#include <filesystem>
 
 using namespace std::chrono_literals;
 
@@ -32,9 +34,15 @@ using namespace Akonadi;
 using namespace Akonadi::Server;
 using namespace AkRanges;
 
-DbConfigPostgresql::DbConfigPostgresql()
-    : mHostPort(0)
-    , mInternalServer(true)
+namespace
+{
+
+const QString s_initConnection = QStringLiteral("initConnectionPsql");
+
+} // namespace
+
+DbConfigPostgresql::DbConfigPostgresql(const QString &configFile)
+    : DbConfig(configFile)
 {
 }
 
@@ -46,6 +54,20 @@ QString DbConfigPostgresql::driverName() const
 QString DbConfigPostgresql::databaseName() const
 {
     return mDatabaseName;
+}
+
+QString DbConfigPostgresql::databasePath() const
+{
+    return mPgData;
+}
+
+void DbConfigPostgresql::setDatabasePath(const QString &path, QSettings &settings)
+{
+    mPgData = path;
+    settings.beginGroup(driverName());
+    settings.setValue(QStringLiteral("PgData"), mPgData);
+    settings.endGroup();
+    settings.sync();
 }
 
 namespace
@@ -120,7 +142,7 @@ QStringList DbConfigPostgresql::postgresSearchPaths(const QString &versionedPath
     return paths;
 }
 
-bool DbConfigPostgresql::init(QSettings &settings, bool storeSettings)
+bool DbConfigPostgresql::init(QSettings &settings, bool storeSettings, const QString &dbPathOverride)
 {
     // determine default settings depending on the driver
     QString defaultHostName;
@@ -130,7 +152,7 @@ bool DbConfigPostgresql::init(QSettings &settings, bool storeSettings)
     QString defaultPgUpgradePath;
     QString defaultPgData;
 
-#ifndef Q_WS_WIN // We assume that PostgreSQL is running as service on Windows
+#ifndef Q_OS_WINDOWS // We assume that PostgreSQL is running as service on Windows
     const bool defaultInternalServer = true;
 #else
     const bool defaultInternalServer = false;
@@ -144,7 +166,7 @@ bool DbConfigPostgresql::init(QSettings &settings, bool storeSettings)
         defaultInitDbPath = QStandardPaths::findExecutable(QStringLiteral("initdb"), paths);
         defaultHostName = Utils::preferredSocketDirectory(StandardDirs::saveDir("data", QStringLiteral("db_misc")));
         defaultPgUpgradePath = QStandardPaths::findExecutable(QStringLiteral("pg_upgrade"), paths);
-        defaultPgData = StandardDirs::saveDir("data", QStringLiteral("db_data"));
+        defaultPgData = dbPathOverride.isEmpty() ? StandardDirs::saveDir("data", QStringLiteral("db_data")) : dbPathOverride;
     }
 
     // read settings for current driver
@@ -195,6 +217,7 @@ bool DbConfigPostgresql::init(QSettings &settings, bool storeSettings)
         settings.setValue(QStringLiteral("ServerPath"), mServerPath);
         settings.setValue(QStringLiteral("InitDbPath"), mInitDbPath);
         settings.setValue(QStringLiteral("StartServer"), mInternalServer);
+        settings.setValue(QStringLiteral("PgData"), mPgData);
         settings.endGroup();
         settings.sync();
     }
@@ -296,7 +319,7 @@ bool DbConfigPostgresql::runInitDb(const QString &newDbPath)
     // It is recommended to disable CoW feature when running on Btrfs to improve
     // database performance. This only has effect when done on empty directory,
     // so we only call this before calling initdb
-    if (Utils::getDirectoryFileSystem(newDbPath) == QLatin1String("btrfs")) {
+    if (Utils::getDirectoryFileSystem(newDbPath) == QLatin1StringView("btrfs")) {
         Utils::disableCoW(newDbPath);
     }
 #endif
@@ -448,7 +471,7 @@ bool DbConfigPostgresql::startInternalServer()
     }
 
 // TODO Windows support
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WINDOWS
     // If postmaster.pid exists, check whether the postgres process still exists too,
     // because normally we shouldn't be able to get this far if Akonadi is already
     // running. If postgres is not running, then the pidfile was left after a system
@@ -490,7 +513,7 @@ bool DbConfigPostgresql::startInternalServer()
         // It is recommended to disable CoW feature when running on Btrfs to improve
         // database performance. This only has effect when done on an empty directory,
         // so we call this before calling initdb.
-        if (Utils::getDirectoryFileSystem(mPgData) == QLatin1String("btrfs")) {
+        if (Utils::getDirectoryFileSystem(mPgData) == QLatin1StringView("btrfs")) {
             Utils::disableCoW(mPgData);
         }
 #endif
@@ -529,9 +552,8 @@ bool DbConfigPostgresql::startInternalServer()
         return false;
     }
 
-    const QLatin1String initCon("initConnection");
     {
-        QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QPSQL"), initCon);
+        QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QPSQL"), s_initConnection);
         apply(db);
 
         // use the default database that is always available
@@ -584,7 +606,7 @@ bool DbConfigPostgresql::startInternalServer()
     // Make sure pg_ctl has returned
     pgCtl.waitForFinished();
 
-    QSqlDatabase::removeDatabase(initCon);
+    QSqlDatabase::removeDatabase(s_initConnection);
     return success;
 }
 
@@ -636,4 +658,33 @@ bool DbConfigPostgresql::checkServerIsRunning()
 
     // "pg_ctl status" exits with 0 when server is running and a non-zero code when not.
     return pgCtl.exitCode() == 0;
+}
+
+bool DbConfigPostgresql::disableConstraintChecks(const QSqlDatabase &db)
+{
+    for (const auto &table : db.tables()) {
+        qCDebug(AKONADISERVER_LOG) << "Disabling triggers on table" << table;
+        QSqlQuery query(db);
+        if (!query.exec(QStringLiteral("ALTER TABLE %1 DISABLE TRIGGER ALL").arg(table))) {
+            qCWarning(AKONADISERVER_LOG) << "Failed to disable triggers on table" << table << ":" << query.lastError().databaseText();
+            enableConstraintChecks(db);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool DbConfigPostgresql::enableConstraintChecks(const QSqlDatabase &db)
+{
+    for (const auto &table : db.tables()) {
+        qCDebug(AKONADISERVER_LOG) << "Enabling triggers on table" << table;
+        QSqlQuery query(db);
+        if (!query.exec(QStringLiteral("ALTER TABLE %1 ENABLE TRIGGER ALL").arg(table))) {
+            qCWarning(AKONADISERVER_LOG) << "Failed to enable triggers on table" << table << ":" << query.lastError().databaseText();
+            // continue
+        }
+    }
+
+    return true;
 }

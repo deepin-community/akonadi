@@ -25,7 +25,7 @@ public:
 
 public:
     AgentType();
-    Q_REQUIRED_RESULT bool load(const QString &fileName, AgentManager *manager);
+    [[nodiscard]] bool load(const QString &fileName, AgentManager *manager);
     void save(QSettings *config) const;
 
     QString identifier;
@@ -39,9 +39,9 @@ public:
     uint instanceCounter = 0;
     LaunchMethod launchMethod = Process;
 
-    static const QLatin1String CapabilityUnique;
-    static const QLatin1String CapabilityResource;
-    static const QLatin1String CapabilityAutostart;
-    static const QLatin1String CapabilityPreprocessor;
-    static const QLatin1String CapabilitySearch;
+    static const QLatin1StringView CapabilityUnique;
+    static const QLatin1StringView CapabilityResource;
+    static const QLatin1StringView CapabilityAutostart;
+    static const QLatin1StringView CapabilityPreprocessor;
+    static const QLatin1StringView CapabilitySearch;
 };

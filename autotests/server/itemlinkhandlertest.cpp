@@ -8,10 +8,9 @@
 
 #include "entities.h"
 #include "fakeakonadiserver.h"
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
-#include <private/imapset_p.h>
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 #include <QTest>
 
@@ -61,15 +60,15 @@ private Q_SLOTS:
         scenarios << FakeAkonadiServer::loginScenario()
                   << TestScenario::create(5,
                                           TestScenario::ClientCmd,
-                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Link, ImapInterval(1, 3), 3))
+                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Link, Scope{1, 2, 3}, 3))
                   << TestScenario::create(5, TestScenario::ServerCmd, createError(QStringLiteral("Can't link items to non-virtual collections")));
         QTest::newRow("non-virtual collection") << scenarios << Protocol::ItemChangeNotificationPtr::create() << true;
 
         auto notification = Protocol::ItemChangeNotificationPtr::create();
         notification->setOperation(Protocol::ItemChangeNotification::Link);
-        notification->setItems({itemResponse(1, QLatin1String("A"), QString(), QLatin1String("application/octet-stream")),
-                                itemResponse(2, QLatin1String("B"), QString(), QLatin1String("application/octet-stream")),
-                                itemResponse(3, QLatin1String("C"), QString(), QLatin1String("application/octet-stream"))});
+        notification->setItems({itemResponse(1, QLatin1StringView("A"), QString(), QLatin1StringView("application/octet-stream")),
+                                itemResponse(2, QLatin1StringView("B"), QString(), QLatin1StringView("application/octet-stream")),
+                                itemResponse(3, QLatin1StringView("C"), QString(), QLatin1StringView("application/octet-stream"))});
         notification->setParentCollection(6);
         notification->setResource("akonadi_fake_resource_with_virtual_collections_0");
         notification->setSessionId(FakeAkonadiServer::instanceName().toLatin1());
@@ -78,17 +77,17 @@ private Q_SLOTS:
         scenarios << FakeAkonadiServer::loginScenario()
                   << TestScenario::create(5,
                                           TestScenario::ClientCmd,
-                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Link, ImapInterval(1, 3), 6))
+                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Link, Scope{1, 2, 3}, 6))
                   << TestScenario::create(5, TestScenario::ServerCmd, Protocol::LinkItemsResponsePtr::create());
         QTest::newRow("normal") << scenarios << notification << false;
 
         notification = Protocol::ItemChangeNotificationPtr::create(*notification);
-        notification->setItems({itemResponse(4, QLatin1String("D"), QString(), QLatin1String("application/octet-stream"))});
+        notification->setItems({itemResponse(4, QLatin1StringView("D"), QString(), QLatin1StringView("application/octet-stream"))});
         scenarios.clear();
         scenarios << FakeAkonadiServer::loginScenario()
                   << TestScenario::create(5,
                                           TestScenario::ClientCmd,
-                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Link, QVector<qint64>{4, 123456}, 6))
+                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Link, Scope{4, 123456}, 6))
                   << TestScenario::create(5, TestScenario::ServerCmd, Protocol::LinkItemsResponsePtr::create());
         QTest::newRow("existent and non-existent item") << scenarios << notification << false;
 
@@ -103,33 +102,33 @@ private Q_SLOTS:
 
         // scenario.clear();
         // scenario << FakeAkonadiServer::defaultScenario()
-        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1String("Collection B"))
+        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1StringView("Collection B"))
         //          << "C: 3 UID LINK 6 RID (\"F\" \"G\")\n"
         //          << "S: 3 OK LINK complete";
         // notification.clearEntities();
         // notification.clearEntities();
-        // notification.addEntity(6, QLatin1String("F"), QString(), QLatin1String("application/octet-stream"));
-        // notification.addEntity(7, QLatin1String("G"), QString(), QLatin1String("application/octet-stream"));
+        // notification.addEntity(6, QLatin1StringView("F"), QString(), QLatin1StringView("application/octet-stream"));
+        // notification.addEntity(7, QLatin1StringView("G"), QString(), QLatin1StringView("application/octet-stream"));
         // QTest::newRow("RID items") << scenario << notification << false;
 
         // scenario.clear();
         // scenario << FakeAkonadiServer::defaultScenario()
-        //          << FakeAkonadiServer::selectResourceScenario(QLatin1String("akonadi_fake_resource_with_virtual_collections_0"))
+        //          << FakeAkonadiServer::selectResourceScenario(QLatin1StringView("akonadi_fake_resource_with_virtual_collections_0"))
         //          << "C: 4 HRID LINK ((-1, \"virtual2\") (-1, \"virtual\") (-1, \"\")) UID 5"
         //          << "S: 4 OK LINK complete";
         // notification.setParentCollection(7);
         // notification.clearEntities();
-        // notification.addEntity(5, QLatin1String("E"), QString(), QLatin1String("application/octet-stream"));
+        // notification.addEntity(5, QLatin1StringView("E"), QString(), QLatin1StringView("application/octet-stream"));
         // QTest::newRow("HRID collection") << scenario << notification << false;
 
         // scenario.clear();
         // scenario << FakeAkonadiServer::defaultScenario()
-        //          << FakeAkonadiServer::selectResourceScenario(QLatin1String("akonadi_fake_resource_with_virtual_collections_0"))
-        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1String("Collection B"))
+        //          << FakeAkonadiServer::selectResourceScenario(QLatin1StringView("akonadi_fake_resource_with_virtual_collections_0"))
+        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1StringView("Collection B"))
         //          << "C: 4 HRID LINK ((-1, \"virtual2\") (-1, \"virtual\") (-1, \"\")) RID \"H\""
         //          << "S: 4 OK LINK complete";
         // notification.clearEntities();
-        // notification.addEntity(8, QLatin1String("H"), QString(), QLatin1String("application/octet-stream"));
+        // notification.addEntity(8, QLatin1StringView("H"), QString(), QLatin1StringView("application/octet-stream"));
         // QTest::newRow("HRID collection, RID items") << scenario << notification << false;
     }
 
@@ -144,7 +143,7 @@ private Q_SLOTS:
 
         auto notificationSpy = mAkonadi.notificationSpy();
         if (notification->operation() != Protocol::ItemChangeNotification::InvalidOp) {
-            QCOMPARE(notificationSpy->count(), 1);
+            QTRY_COMPARE(notificationSpy->count(), 1);
             const Protocol::ChangeNotificationList notifications = notificationSpy->takeFirst().first().value<Protocol::ChangeNotificationList>();
             QCOMPARE(notifications.count(), 1);
             QCOMPARE(*notifications.first().staticCast<Protocol::ItemChangeNotification>(), *notification);
@@ -173,15 +172,15 @@ private Q_SLOTS:
         scenarios << FakeAkonadiServer::loginScenario()
                   << TestScenario::create(5,
                                           TestScenario::ClientCmd,
-                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Unlink, ImapInterval(1, 3), 3))
+                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Unlink, Scope{1, 2, 3}, 3))
                   << TestScenario::create(5, TestScenario::ServerCmd, createError(QStringLiteral("Can't link items to non-virtual collections")));
         QTest::newRow("non-virtual collection") << scenarios << Protocol::ItemChangeNotificationPtr::create() << true;
 
         auto notification = Protocol::ItemChangeNotificationPtr::create();
         notification->setOperation(Protocol::ItemChangeNotification::Unlink);
-        notification->setItems({itemResponse(1, QLatin1String("A"), QString(), QLatin1String("application/octet-stream")),
-                                itemResponse(2, QLatin1String("B"), QString(), QLatin1String("application/octet-stream")),
-                                itemResponse(3, QLatin1String("C"), QString(), QLatin1String("application/octet-stream"))});
+        notification->setItems({itemResponse(1, QLatin1StringView("A"), QString(), QLatin1StringView("application/octet-stream")),
+                                itemResponse(2, QLatin1StringView("B"), QString(), QLatin1StringView("application/octet-stream")),
+                                itemResponse(3, QLatin1StringView("C"), QString(), QLatin1StringView("application/octet-stream"))});
         notification->setParentCollection(6);
         notification->setResource("akonadi_fake_resource_with_virtual_collections_0");
         notification->setSessionId(FakeAkonadiServer::instanceName().toLatin1());
@@ -189,17 +188,17 @@ private Q_SLOTS:
         scenarios << FakeAkonadiServer::loginScenario()
                   << TestScenario::create(5,
                                           TestScenario::ClientCmd,
-                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Unlink, ImapInterval(1, 3), 6))
+                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Unlink, Scope{1, 2, 3}, 6))
                   << TestScenario::create(5, TestScenario::ServerCmd, Protocol::LinkItemsResponsePtr::create());
         QTest::newRow("normal") << scenarios << notification << false;
 
         notification = Protocol::ItemChangeNotificationPtr::create(*notification);
-        notification->setItems({itemResponse(4, QLatin1String("D"), QString(), QLatin1String("application/octet-stream"))});
+        notification->setItems({itemResponse(4, QLatin1StringView("D"), QString(), QLatin1StringView("application/octet-stream"))});
         scenarios.clear();
         scenarios << FakeAkonadiServer::loginScenario()
                   << TestScenario::create(5,
                                           TestScenario::ClientCmd,
-                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Unlink, QVector<qint64>{4, 2048}, 6))
+                                          Protocol::LinkItemsCommandPtr::create(Protocol::LinkItemsCommand::Unlink, Scope{4, 2048}, 6))
                   << TestScenario::create(5, TestScenario::ServerCmd, Protocol::LinkItemsResponsePtr::create());
         QTest::newRow("existent and non-existent item") << scenarios << notification << false;
 
@@ -214,33 +213,33 @@ private Q_SLOTS:
 
         // scenario.clear();
         // scenario << FakeAkonadiServer::defaultScenario()
-        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1String("Collection B"))
+        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1StringView("Collection B"))
         //          << "C: 4 UID UNLINK 6 RID (\"F\" \"G\")"
         //          << "S: 4 OK LINK complete";
         // notification.clearEntities();
         // notification.clearEntities();
-        // notification.addEntity(6, QLatin1String("F"), QString(), QLatin1String("application/octet-stream"));
-        // notification.addEntity(7, QLatin1String("G"), QString(), QLatin1String("application/octet-stream"));
+        // notification.addEntity(6, QLatin1StringView("F"), QString(), QLatin1StringView("application/octet-stream"));
+        // notification.addEntity(7, QLatin1StringView("G"), QString(), QLatin1StringView("application/octet-stream"));
         // QTest::newRow("RID items") << scenario << notification << false;
 
         // scenario.clear();
         // scenario << FakeAkonadiServer::defaultScenario()
-        //          << FakeAkonadiServer::selectResourceScenario(QLatin1String("akonadi_fake_resource_with_virtual_collections_0"))
+        //          << FakeAkonadiServer::selectResourceScenario(QLatin1StringView("akonadi_fake_resource_with_virtual_collections_0"))
         //          << "C: 4 HRID UNLINK ((-1, \"virtual2\") (-1, \"virtual\") (-1, \"\")) UID 5"
         //          << "S: 4 OK LINK complete";
         // notification.setParentCollection(7);
         // notification.clearEntities();
-        // notification.addEntity(5, QLatin1String("E"), QString(), QLatin1String("application/octet-stream"));
+        // notification.addEntity(5, QLatin1StringView("E"), QString(), QLatin1StringView("application/octet-stream"));
         // QTest::newRow("HRID collection") << scenario << notification << false;
 
         // scenario.clear();
         // scenario << FakeAkonadiServer::defaultScenario()
-        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1String("Collection B"))
-        //          << FakeAkonadiServer::selectResourceScenario(QLatin1String("akonadi_fake_resource_with_virtual_collections_0"))
+        //          << FakeAkonadiServer::selectCollectionScenario(QLatin1StringView("Collection B"))
+        //          << FakeAkonadiServer::selectResourceScenario(QLatin1StringView("akonadi_fake_resource_with_virtual_collections_0"))
         //          << "C: 4 HRID UNLINK ((-1, \"virtual2\") (-1, \"virtual\") (-1, \"\")) RID \"H\""
         //          << "S: 4 OK LINK complete";
         // notification.clearEntities();
-        // notification.addEntity(8, QLatin1String("H"), QString(), QLatin1String("application/octet-stream"));
+        // notification.addEntity(8, QLatin1StringView("H"), QString(), QLatin1StringView("application/octet-stream"));
         // QTest::newRow("HRID collection, RID items") << scenario << notification << false;
     }
 
@@ -255,7 +254,7 @@ private Q_SLOTS:
 
         auto notificationSpy = mAkonadi.notificationSpy();
         if (notification->operation() != Protocol::ItemChangeNotification::InvalidOp) {
-            QCOMPARE(notificationSpy->count(), 1);
+            QTRY_COMPARE(notificationSpy->count(), 1);
             const auto notifications = notificationSpy->takeFirst().first().value<Protocol::ChangeNotificationList>();
             QCOMPARE(notifications.count(), 1);
             QCOMPARE(*notifications.first().staticCast<Protocol::ItemChangeNotification>(), *notification);

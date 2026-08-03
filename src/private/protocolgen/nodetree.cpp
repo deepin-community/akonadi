@@ -8,6 +8,28 @@
 #include "cpphelper.h"
 #include "typehelper.h"
 
+namespace
+{
+
+QString qualifiedName(const Node *node)
+{
+    if (node->type() == Node::Class) {
+        return static_cast<const ClassNode *>(node)->className();
+    }
+    if (node->type() == Node::Enum) {
+        auto enumNode = static_cast<const EnumNode *>(node);
+        if (enumNode->enumType() == EnumNode::TypeFlag) {
+            return QStringLiteral("%1::%2").arg(qualifiedName(node->parent()), enumNode->flagsName());
+        }
+        return QStringLiteral("%1::%2").arg(qualifiedName(node->parent()), enumNode->name());
+    }
+
+    Q_ASSERT_X(false, "qualifiedName", "Invalid node type");
+    return {};
+}
+
+} // namespace
+
 Node::Node(NodeType type, Node *parent)
     : mParent(parent)
     , mType(type)
@@ -38,7 +60,7 @@ void Node::appendNode(Node *child)
     mChildren.push_back(child);
 }
 
-const QVector<Node const *> &Node::children() const
+const QList<Node const *> &Node::children() const
 {
     return mChildren;
 }
@@ -106,28 +128,24 @@ QString ClassNode::parentClassName() const
     Q_UNREACHABLE();
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-ClassNode::ClassType ClassNode::elementNameToType(const QStringRef &name)
-#else
 ClassNode::ClassType ClassNode::elementNameToType(QStringView name)
-#endif
 {
-    if (name == QLatin1String("class")) {
+    if (name == QLatin1StringView("class")) {
         return Class;
-    } else if (name == QLatin1String("command")) {
+    } else if (name == QLatin1StringView("command")) {
         return Command;
-    } else if (name == QLatin1String("response")) {
+    } else if (name == QLatin1StringView("response")) {
         return Response;
-    } else if (name == QLatin1String("notification")) {
+    } else if (name == QLatin1StringView("notification")) {
         return Notification;
     } else {
         return Invalid;
     }
 }
 
-QVector<PropertyNode const *> ClassNode::properties() const
+QList<PropertyNode const *> ClassNode::properties() const
 {
-    QVector<const PropertyNode *> rv;
+    QList<const PropertyNode *> rv;
     for (const auto node : std::as_const(mChildren)) {
         if (node->type() == Node::Property) {
             rv << static_cast<PropertyNode const *>(node);
@@ -137,7 +155,7 @@ QVector<PropertyNode const *> ClassNode::properties() const
     return rv;
 }
 
-CtorNode::CtorNode(const QVector<Argument> &args, ClassNode *parent)
+CtorNode::CtorNode(const QList<Argument> &args, ClassNode *parent)
     : Node(Ctor, parent)
     , mArgs(args)
 {
@@ -147,7 +165,7 @@ CtorNode::~CtorNode()
 {
 }
 
-QVector<CtorNode::Argument> CtorNode::arguments() const
+QList<CtorNode::Argument> CtorNode::arguments() const
 {
     return mArgs;
 }
@@ -178,15 +196,21 @@ EnumNode::EnumType EnumNode::enumType() const
 {
     return mEnumType;
 }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-EnumNode::EnumType EnumNode::elementNameToType(const QStringRef &name)
-#else
-EnumNode::EnumType EnumNode::elementNameToType(QStringView name)
-#endif
+
+QString EnumNode::flagsName() const
 {
-    if (name == QLatin1String("enum")) {
+    if (mEnumType == TypeFlag) {
+        return mName + QStringLiteral("s");
+    }
+
+    return {};
+}
+
+EnumNode::EnumType EnumNode::elementNameToType(QStringView name)
+{
+    if (name == QLatin1StringView("enum")) {
         return TypeEnum;
-    } else if (name == QLatin1String("flag")) {
+    } else if (name == QLatin1StringView("flag")) {
         return TypeFlag;
     } else {
         return TypeInvalid;
@@ -273,6 +297,21 @@ void PropertyNode::setAsReference(bool asReference)
 bool PropertyNode::isPointer() const
 {
     return TypeHelper::isPointerType(mType);
+}
+
+bool PropertyNode::isEnum() const
+{
+    auto parentClass = static_cast<ClassNode *>(parent());
+    for (const auto node : parentClass->children()) {
+        if (node->type() == Node::Enum) {
+            const auto enumNode = static_cast<const EnumNode *>(node);
+            if (qualifiedName(enumNode) == mType) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 QMultiMap<QString, QString> PropertyNode::dependencies() const

@@ -52,7 +52,7 @@ public:
     /**
      * Describes a list of agent instances.
      */
-    using List = QVector<AgentInstance>;
+    using List = QList<AgentInstance>;
 
     /**
      * Describes the status of the agent instance.
@@ -82,22 +82,22 @@ public:
     /**
      * Returns whether the agent instance object is valid.
      */
-    Q_REQUIRED_RESULT bool isValid() const;
+    [[nodiscard]] bool isValid() const;
 
     /**
      * Returns the agent type of this instance.
      */
-    Q_REQUIRED_RESULT AgentType type() const;
+    [[nodiscard]] AgentType type() const;
 
     /**
      * Returns the unique identifier of the agent instance.
      */
-    Q_REQUIRED_RESULT QString identifier() const;
+    [[nodiscard]] QString identifier() const;
 
     /**
      * Returns the user visible name of the agent instance.
      */
-    Q_REQUIRED_RESULT QString name() const;
+    [[nodiscard]] QString name() const;
 
     /**
      * Sets the user visible @p name of the agent instance.
@@ -107,23 +107,23 @@ public:
     /**
      * Returns the status of the agent instance.
      */
-    Q_REQUIRED_RESULT Status status() const;
+    [[nodiscard]] Status status() const;
 
     /**
      * Returns a textual presentation of the status of the agent instance.
      */
-    Q_REQUIRED_RESULT QString statusMessage() const;
+    [[nodiscard]] QString statusMessage() const;
 
     /**
      * Returns the progress of the agent instance in percent, or -1 if no
      * progress information are available.
      */
-    Q_REQUIRED_RESULT int progress() const;
+    [[nodiscard]] int progress() const;
 
     /**
      * Returns whether the agent instance is online currently.
      */
-    Q_REQUIRED_RESULT bool isOnline() const;
+    [[nodiscard]] bool isOnline() const;
 
     /**
      * Sets @p online status of the agent instance.
@@ -157,11 +157,6 @@ public:
     void synchronizeTags();
 
     /**
-     * Triggers a synchronization of relations by the given agent instance.
-     */
-    void synchronizeRelations();
-
-    /**
      * @internal
      * @param other other agent instance
      */
@@ -171,7 +166,7 @@ public:
      * @internal
      * @param other other agent instance
      */
-    Q_REQUIRED_RESULT bool operator==(const AgentInstance &other) const;
+    [[nodiscard]] bool operator==(const AgentInstance &other) const;
 
     /**
      * Tell the agent to abort its current operation.
@@ -189,6 +184,26 @@ public:
      */
     void restart() const;
 
+    /**
+     * Returns a list of activities of the agent instance.
+     */
+    [[nodiscard]] QStringList activities() const;
+
+    /**
+     * Sets list of activities of the agent instance
+     */
+    void setActivities(const QStringList &online);
+
+    /**
+     * Returns true if agent instance has activities support enabled.
+     */
+    [[nodiscard]] bool activitiesEnabled() const;
+
+    /**
+     * Sets activities support enabled
+     */
+    void setActivitiesEnabled(bool enabled);
+
 private:
     /// @cond PRIVATE
     QSharedDataPointer<AgentInstancePrivate> d;
@@ -197,6 +212,6 @@ private:
 
 }
 
-Q_DECLARE_TYPEINFO(Akonadi::AgentInstance, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::AgentInstance, Q_RELOCATABLE_TYPE);
 
 Q_DECLARE_METATYPE(Akonadi::AgentInstance)

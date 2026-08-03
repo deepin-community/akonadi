@@ -32,15 +32,15 @@ bool SearchHandler::parseStream()
         return failureResponse("No query specified");
     }
 
-    QVector<qint64> collectionIds;
+    QList<qint64> collectionIds;
     bool recursive = cmd.recursive();
 
-    if (cmd.collections().isEmpty() || cmd.collections() == QVector<qint64>{0LL}) {
+    if (cmd.collections().isEmpty() || cmd.collections() == QList<qint64>{0LL}) {
         collectionIds << 0;
         recursive = true;
     }
 
-    QVector<qint64> collections = collectionIds;
+    QList<qint64> collections = collectionIds;
     if (recursive) {
         collections += SearchHelper::matchSubcollectionsByMimeType(collectionIds, cmd.mimeTypes());
     }
@@ -64,7 +64,7 @@ bool SearchHandler::parseStream()
     request.setMimeTypes(cmd.mimeTypes());
     request.setQuery(cmd.query());
     request.setRemoteSearch(cmd.remote());
-    QObject::connect(&request, &SearchRequest::resultsAvailable, [this](const QSet<qint64> &results) {
+    QObject::connect(&request, &SearchRequest::resultsAvailable, &request, [this](const QSet<qint64> &results) {
         processResults(results);
     });
     request.exec();
@@ -85,11 +85,8 @@ void SearchHandler::processResults(const QSet<qint64> &results)
         return;
     }
 
-    ImapSet imapSet;
-    imapSet.add(newResults);
-
     Scope scope;
-    scope.setUidSet(imapSet);
+    scope.setUidSet({newResults.begin(), newResults.end()});
 
     ItemFetchHelper fetchHelper(connection(), scope, mItemFetchScope, mTagFetchScope, akonadi());
     fetchHelper.fetchItems();

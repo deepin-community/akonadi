@@ -8,6 +8,7 @@
 #pragma once
 
 #include <QDateTime>
+#include <QTimeZone>
 #include <QVariant>
 
 #include "storage/datastore.h"
@@ -24,9 +25,9 @@ namespace Utils
  */
 static inline QString variantToString(const QVariant &variant)
 {
-    if (variant.type() == QVariant::String) {
+    if (variant.typeId() == QMetaType::QString) {
         return variant.toString();
-    } else if (variant.type() == QVariant::ByteArray) {
+    } else if (variant.typeId() == QMetaType::QByteArray) {
         return QString::fromUtf8(variant.toByteArray());
     } else {
         qWarning("Unable to convert variant of type %s to QString", variant.typeName());
@@ -40,9 +41,9 @@ static inline QString variantToString(const QVariant &variant)
  */
 static inline QByteArray variantToByteArray(const QVariant &variant)
 {
-    if (variant.type() == QVariant::String) {
+    if (variant.typeId() == QMetaType::QString) {
         return variant.toString().toUtf8();
-    } else if (variant.type() == QVariant::ByteArray) {
+    } else if (variant.typeId() == QMetaType::QByteArray) {
         return variant.toByteArray();
     } else {
         qWarning("Unable to convert variant of type %s to QByteArray", variant.typeName());
@@ -51,31 +52,41 @@ static inline QByteArray variantToByteArray(const QVariant &variant)
     }
 }
 
-static inline QDateTime variantToDateTime(const QVariant &variant)
+/**
+ * Converts QDateTime to a QVariant suitable for storing in the database.
+ *
+ * It should come as no surprise that different database engines and their QtSql drivers have each a different
+ * approach to time and timezones.
+ * Here we make sure that whatever QDateTime we have, it will be stored in the database in a way
+ * that matches its (and its driver's) perception of timezones.
+ *
+ * Check the dbdatetimetest for more.
+ */
+static inline QVariant dateTimeToVariant(const QDateTime &dateTime, DataStore *dataStore)
 {
-    if (variant.canConvert(QVariant::DateTime)) {
-        // MySQL and SQLite backends read the datetime from the database and
-        // assume it's local time. We stored it as UTC though, so we just need
-        // to change the interpretation in QDateTime.
-        // PostgreSQL on the other hand reads the datetime and assumes it's
-        // UTC(?) and converts it to local time via QDateTime::toLocalTime(),
-        // so we need to convert it back to UTC manually.
-        switch (DbType::type(DataStore::self()->database())) {
-        case DbType::MySQL:
-        case DbType::Sqlite: {
-            QDateTime dt = variant.toDateTime();
-            dt.setTimeSpec(Qt::UTC);
-            return dt;
-        }
-        case DbType::PostgreSQL:
-            return variant.toDateTime().toUTC();
-        default:
-            Q_UNREACHABLE();
-        }
-    } else {
-        qWarning("Unable to convert variant of type %s to QDateTime", variant.typeName());
-        Q_ASSERT(false);
-        return QDateTime();
+    switch (DbType::type(dataStore->database())) {
+    case DbType::MySQL:
+        // The QMYSQL driver does not encode timezone information. The MySQL server, when given time
+        // without a timezones treats it as a local time. Thus, when we pass UTC time to QtSQL, it
+        // will get interpreted as local time by MySQL, converted to UTC (again) and stored.
+        // This causes two main problems:
+        //  1) The query fails if the time sent by the driver is not valid in the local timezone (DST change), and
+        //  2) It requires additional code when reading results from the database to re-interpret the returned
+        //     "local time" as being UTC
+        // So, instead we make sure we always pass real local time to MySQL, exactly as it expects it.
+        return dateTime.toLocalTime();
+    case DbType::Sqlite:
+        // The QSQLITE converts QDateTime to string using QDateTime::ISODateWithMs and SQLite stores it as TEXT
+        // (since it doesn't really have any dedicated date/time data type).
+        // To stay consistent with other drivers, we convertr the dateTime to UTC here so SQLite stores UTC.
+        return dateTime.toUTC();
+    case DbType::PostgreSQL:
+        // The QPSQL driver automatically converts the date time to UTC and forcibly stores it with UTC timezone
+        // information, so we are good here. At least someone gets it right...
+        return QVariant(dateTime);
+    default:
+        Q_UNREACHABLE();
+        return {};
     }
 }
 

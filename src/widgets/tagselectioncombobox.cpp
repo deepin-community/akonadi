@@ -135,7 +135,7 @@ public:
                 q->setEditText(getEditText(selection));
                 Q_EMIT q->selectionChanged(tagsFromSelection<Tag::List>(selection, TagModel::TagRole));
             });
-            q->connect(q, qOverload<int>(&QComboBox::activated), selectionModel.get(), [this](int i) {
+            q->connect(q, &QComboBox::activated, selectionModel.get(), [this](int i) {
                 if (q->view()->isVisible()) {
                     const auto index = tagModel->index(i, 0);
                     toggleItem(index);
@@ -182,7 +182,7 @@ TagSelectionComboBox::TagSelectionComboBox(QWidget *parent)
     , d(new TagSelectionComboBoxPrivate(this))
 {
     auto monitor = new Monitor(this);
-    monitor->setObjectName(QStringLiteral("TagSelectionComboBoxMonitor"));
+    monitor->setObjectName(QLatin1StringView("TagSelectionComboBoxMonitor"));
     monitor->setTypeMonitored(Monitor::Tags);
 
     d->tagModel = std::make_unique<TagModel>(monitor, this);
@@ -299,3 +299,5 @@ bool TagSelectionComboBox::eventFilter(QObject *receiver, QEvent *event)
     }
     return QComboBox::eventFilter(receiver, event);
 }
+
+#include "moc_tagselectioncombobox.cpp"

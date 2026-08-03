@@ -6,16 +6,14 @@
 
 #include "itemlinkhandler.h"
 
-#include "akonadiserver_debug.h"
 #include "connection.h"
 #include "handlerhelper.h"
-#include "storage/collectionqueryhelper.h"
 #include "storage/datastore.h"
 #include "storage/itemqueryhelper.h"
 #include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
 
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 using namespace Akonadi;
 using namespace Akonadi::Server;

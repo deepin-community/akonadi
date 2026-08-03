@@ -7,6 +7,7 @@
 #pragma once
 
 #include "akthread.h"
+#include "storage/dbconfig.h"
 
 #include <QDBusConnection>
 
@@ -16,6 +17,7 @@ namespace Server
 {
 class Collection;
 class AkonadiServer;
+class DataStore;
 
 /**
  * Various database checking/maintenance features.
@@ -25,8 +27,18 @@ class StorageJanitor : public AkThread
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Akonadi.Janitor")
 
+protected:
+    /**
+     * Use AkThread::create() to create and start a new StorageJanitor thread.
+     */
+    explicit StorageJanitor(AkonadiServer *mAkonadi, DbConfig *config = DbConfig::configuredDatabase());
+
 public:
-    explicit StorageJanitor(AkonadiServer &mAkonadi);
+    /**
+     * Use AkThread::create() to run StorageJanitor in a separate thread. Only use this constructor
+     * if you want to run StorageJanitor in the current thread.
+     */
+    explicit StorageJanitor(DbConfig *config);
     ~StorageJanitor() override;
 
 public Q_SLOTS:
@@ -45,6 +57,8 @@ protected:
     void quit() override;
 
 private:
+    void registerTasks();
+
     void inform(const char *msg);
     void inform(const QString &msg);
     /** Create a lost+found collection if necessary. */
@@ -61,9 +75,10 @@ private:
     void findOrphanedCollections();
 
     /**
-     * Verifies there is a path from @p col to the root of the collection tree
-     * and that everything along that path belongs to the same resource.
+     * Verifies that each collection in the collection tree has a path to the root
+     * and that all collections along that path belong to the same resource.
      */
+    void checkCollectionTreeConsistency();
     void checkPathToRoot(const Collection &col);
 
     /**
@@ -80,6 +95,31 @@ private:
      * Look for item flags belonging to non-existing items.
      */
     void findOrphanedPimItemFlags();
+
+    /**
+     * Look for duplicate item flags and fix them.
+     */
+    void findDuplicateFlags();
+
+    /**
+     * Look for duplicate mime type names and fix them.
+     */
+    void findDuplicateMimeTypes();
+
+    /**
+     * Look for duplicate part type names and fix them.
+     */
+    void findDuplicatePartTypes();
+
+    /**
+     * Look for duplicate tag names and fix them.
+     */
+    void findDuplicateTagTypes();
+
+    /**
+     * Look for duplicate relation type names and fix them.
+     */
+    void findDuplicateRelationTypes();
 
     /**
      * Look for parts referring to the same external file.
@@ -130,9 +170,23 @@ private:
      */
     void ensureSearchCollection();
 
+    /**
+     * Clear cache that holds pre-computed collection statistics.
+     * They will be re-computed on demand.
+     */
+    void expireCollectionStatisticsCache();
+
 private:
     qint64 m_lostFoundCollectionId;
-    AkonadiServer &m_akonadi;
+    AkonadiServer *m_akonadi = nullptr;
+    DbConfig *m_dbConfig = nullptr;
+    std::unique_ptr<DataStore> m_dataStore;
+
+    struct Task {
+        QString name;
+        void (StorageJanitor::*func)();
+    };
+    QList<Task> m_tasks;
 };
 
 } // namespace Server

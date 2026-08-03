@@ -6,13 +6,13 @@
 
 #include "akonadicore_debug.h"
 #include "pluginloader_p.h"
+#include "private/standarddirs_p.h"
 #include <KConfig>
 #include <KConfigGroup>
 #include <KLocalizedString>
 #include <QDir>
 #include <QPluginLoader>
 #include <QStandardPaths>
-#include <private/standarddirs_p.h>
 
 using namespace Akonadi;
 
@@ -69,7 +69,7 @@ QObject *PluginLoader::createForName(const QString &name)
     // First try to load it statically
     const auto instances = QPluginLoader::staticInstances();
     for (auto plugin : instances) {
-        if (QLatin1String(plugin->metaObject()->className()) == info.className) {
+        if (QLatin1StringView(plugin->metaObject()->className()) == info.className) {
             info.loaded = true;
             return plugin;
         }
@@ -113,8 +113,8 @@ void PluginLoader::scan()
         for (const QString &file : fileNames) {
             const QString entry = dir + QLatin1Char('/') + file;
             KConfig config(entry, KConfig::SimpleConfig);
-            if (config.hasGroup("Misc") && config.hasGroup("Plugin")) {
-                KConfigGroup group(&config, "Plugin");
+            if (config.hasGroup(QLatin1StringView("Misc")) && config.hasGroup(QLatin1StringView("Plugin"))) {
+                KConfigGroup group(&config, QStringLiteral("Plugin"));
 
                 const QString type = group.readEntry("Type").toLower();
                 if (type.isEmpty()) {
@@ -137,7 +137,7 @@ void PluginLoader::scan()
                     continue;
                 }
 
-                KConfigGroup group2(&config, "Misc");
+                KConfigGroup group2(&config, QStringLiteral("Misc"));
 
                 QString name = group2.readEntry("Name");
                 if (name.isEmpty()) {

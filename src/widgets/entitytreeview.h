@@ -1,7 +1,7 @@
 /*
     SPDX-FileCopyrightText: 2006-2007 Volker Krause <vkrause@kde.org>
     SPDX-FileCopyrightText: 2008 Stephen Kelly <steveire@gmail.com>
-    SPDX-FileCopyrightText: 2012-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2012-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -118,7 +118,7 @@ public:
      *
      * @since 4.5
      */
-    Q_REQUIRED_RESULT bool isDropActionMenuEnabled() const;
+    [[nodiscard]] bool isDropActionMenuEnabled() const;
 
     /**
      * Return true if we use an manual sorting
@@ -127,7 +127,7 @@ public:
      * When automatic no show dnd menu between two items.
      * @since 4.8.1
      */
-    Q_REQUIRED_RESULT bool isManualSortingActive() const;
+    [[nodiscard]] bool isManualSortingActive() const;
 
     /**
      * Set true if we automatic sorting

@@ -11,7 +11,6 @@
 #include "akonadifull-version.h"
 #include "collectiondeletejob.h"
 #include "collectionsync_p.h"
-#include "relationsync.h"
 #include "resourceadaptor.h"
 #include "resourcescheduler_p.h"
 #include "tagsync.h"
@@ -39,11 +38,12 @@
 
 #include "akonadiagentbase_debug.h"
 
+#include "shared/akranges.h"
 #include <cstdlib>
 #include <iterator>
-#include <shared/akranges.h>
 
 #include <KAboutData>
+#include <KCrash>
 #include <KLocalizedString>
 
 #include <QApplication>
@@ -67,7 +67,6 @@ public:
         , mItemMergeMode(ItemSync::RIDMerge)
         , mCollectionSyncer(nullptr)
         , mTagSyncer(nullptr)
-        , mRelationSyncer(nullptr)
         , mHierarchicalRid(false)
         , mUnemittedProgress(0)
         , mAutomaticProgressReporting(true)
@@ -133,7 +132,6 @@ public:
     void slotCollectionListForAttributesDone(KJob *job);
     void slotCollectionAttributesSyncDone(KJob *job);
     void slotSynchronizeTags();
-    void slotSynchronizeRelations();
     void slotAttributeRetrievalCollectionFetchDone(KJob *job);
 
     void slotItemSyncDone(KJob *job);
@@ -149,7 +147,7 @@ public:
     void slotPrepareItemRetrieval(const Akonadi::Item &item);
     void slotPrepareItemRetrievalResult(KJob *job);
 
-    void slotPrepareItemsRetrieval(const QVector<Akonadi::Item> &item);
+    void slotPrepareItemsRetrieval(const QList<Akonadi::Item> &item);
     void slotPrepareItemsRetrievalResult(KJob *job);
 
     void changeCommittedResult(KJob *job);
@@ -158,7 +156,6 @@ public:
     void slotRecursiveMoveReplayResult(KJob *job);
 
     void slotTagSyncDone(KJob *job);
-    void slotRelationSyncDone(KJob *job);
 
     void slotSessionReconnected()
     {
@@ -174,7 +171,7 @@ public:
                    "createItemSyncInstance",
                    "Calling items retrieval methods although no item retrieval is in progress");
         if (!mItemSyncer) {
-            mItemSyncer = new ItemSync(q->currentCollection());
+            mItemSyncer = new ItemSync(q->currentCollection(), mCollectionSyncTimestamp);
             mItemSyncer->setTransactionMode(mItemTransactionMode);
             mItemSyncer->setBatchSize(mItemSyncBatchSize);
             mItemSyncer->setMergeMode(mItemMergeMode);
@@ -428,7 +425,6 @@ public:
     ItemSync::MergeMode mItemMergeMode;
     CollectionSync *mCollectionSyncer = nullptr;
     TagSync *mTagSyncer = nullptr;
-    RelationSync *mRelationSyncer = nullptr;
     bool mHierarchicalRid;
     QTimer mProgressEmissionCompressor;
     int mUnemittedProgress;
@@ -440,6 +436,7 @@ public:
     QSet<QByteArray> mKeepLocalCollectionChanges;
     KJob *mCurrentCollectionFetchJob = nullptr;
     bool mScheduleAttributeSyncBeforeCollectionSync;
+    QDateTime mCollectionSyncTimestamp;
 };
 
 ResourceBase::ResourceBase(const QString &id)
@@ -465,7 +462,6 @@ ResourceBase::ResourceBase(const QString &id)
     connect(d->scheduler, &ResourceScheduler::executeCollectionSync, d, &ResourceBasePrivate::slotSynchronizeCollection);
     connect(d->scheduler, &ResourceScheduler::executeCollectionAttributesSync, d, &ResourceBasePrivate::slotSynchronizeCollectionAttributes);
     connect(d->scheduler, &ResourceScheduler::executeTagSync, d, &ResourceBasePrivate::slotSynchronizeTags);
-    connect(d->scheduler, &ResourceScheduler::executeRelationSync, d, &ResourceBasePrivate::slotSynchronizeRelations);
     connect(d->scheduler, &ResourceScheduler::executeItemFetch, d, &ResourceBasePrivate::slotPrepareItemRetrieval);
     connect(d->scheduler, &ResourceScheduler::executeItemsFetch, d, &ResourceBasePrivate::slotPrepareItemsRetrieval);
     connect(d->scheduler, &ResourceScheduler::executeResourceCollectionDeletion, d, &ResourceBasePrivate::slotDeleteResourceCollection);
@@ -510,6 +506,26 @@ QString ResourceBase::name() const
     return AgentBase::agentName();
 }
 
+void ResourceBase::setActivities(const QStringList &activities)
+{
+    AgentBase::setActivities(activities);
+}
+
+QStringList ResourceBase::activities() const
+{
+    return AgentBase::activities();
+}
+
+void ResourceBase::setActivitiesEnabled(bool enabled)
+{
+    AgentBase::setActivitiesEnabled(enabled);
+}
+
+bool ResourceBase::activitiesEnabled() const
+{
+    return AgentBase::activitiesEnabled();
+}
+
 QString ResourceBase::parseArguments(int argc, char **argv)
 {
     Q_UNUSED(argc)
@@ -550,8 +566,11 @@ QString ResourceBase::parseArguments(int argc, char **argv)
 
 int ResourceBase::init(ResourceBase &r)
 {
-    KLocalizedString::setApplicationDomain("libakonadi5");
+    KLocalizedString::setApplicationDomain(QByteArrayLiteral("libakonadi6"));
     KAboutData::setApplicationData(r.aboutData());
+
+    KCrash::initialize();
+
     return qApp->exec();
 }
 
@@ -722,7 +741,7 @@ void ResourceBase::changeCommitted(const Tag &tag)
     connect(job, &KJob::result, d, &ResourceBasePrivate::changeCommittedResult);
 }
 
-void ResourceBase::requestItemDelivery(const QVector<qint64> &uids, const QByteArrayList &parts)
+void ResourceBase::requestItemDelivery(const QList<qint64> &uids, const QByteArrayList &parts)
 {
     Q_D(ResourceBase);
     if (!isOnline()) {
@@ -845,19 +864,11 @@ namespace
 bool sortCollectionsForSync(const Collection &l, const Collection &r)
 {
     const auto lType = l.hasAttribute<SpecialCollectionAttribute>() ? l.attribute<SpecialCollectionAttribute>()->collectionType() : QByteArray();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool lInbox = (lType == "inbox") || (l.remoteId().midRef(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
-#else
-    const bool lInbox = (lType == "inbox") || (QStringView(l.remoteId()).mid(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
-#endif
+    const bool lInbox = (lType == "inbox") || (QStringView(l.remoteId()).mid(1).compare(QLatin1StringView("inbox"), Qt::CaseInsensitive) == 0);
     const bool lFav = l.hasAttribute<FavoriteCollectionAttribute>();
 
     const auto rType = r.hasAttribute<SpecialCollectionAttribute>() ? r.attribute<SpecialCollectionAttribute>()->collectionType() : QByteArray();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool rInbox = (rType == "inbox") || (r.remoteId().midRef(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
-#else
-    const bool rInbox = (rType == "inbox") || (QStringView(r.remoteId()).mid(1).compare(QLatin1String("inbox"), Qt::CaseInsensitive) == 0);
-#endif
+    const bool rInbox = (rType == "inbox") || (QStringView(r.remoteId()).mid(1).compare(QLatin1StringView("inbox"), Qt::CaseInsensitive) == 0);
     const bool rFav = r.hasAttribute<FavoriteCollectionAttribute>();
 
     // inbox is always first
@@ -945,6 +956,7 @@ void ResourceBasePrivate::slotItemRetrievalCollectionFetchDone(KJob *job)
         q->cancelTask(i18n("Failed to retrieve collection for sync."));
         return;
     }
+    mCollectionSyncTimestamp = QDateTime::currentDateTimeUtc();
     q->retrieveItems(collections.at(0));
 }
 
@@ -998,14 +1010,6 @@ void ResourceBasePrivate::slotSynchronizeTags()
     });
 }
 
-void ResourceBasePrivate::slotSynchronizeRelations()
-{
-    Q_Q(ResourceBase);
-    QMetaObject::invokeMethod(this, [q] {
-        q->retrieveRelations();
-    });
-}
-
 void ResourceBasePrivate::slotPrepareItemRetrieval(const Item &item)
 {
     Q_Q(ResourceBase);
@@ -1045,7 +1049,7 @@ void ResourceBasePrivate::slotPrepareItemRetrievalResult(KJob *job)
     }
 }
 
-void ResourceBasePrivate::slotPrepareItemsRetrieval(const QVector<Item> &items)
+void ResourceBasePrivate::slotPrepareItemsRetrieval(const QList<Item> &items)
 {
     Q_Q(ResourceBase);
     auto fetch = new ItemFetchJob(items, this);
@@ -1174,11 +1178,6 @@ void ResourceBase::synchronizeCollectionTree()
 void ResourceBase::synchronizeTags()
 {
     d_func()->scheduler->scheduleTagSync();
-}
-
-void ResourceBase::synchronizeRelations()
-{
-    d_func()->scheduler->scheduleRelationSync();
 }
 
 void ResourceBase::cancelTask()
@@ -1442,12 +1441,6 @@ void ResourceBase::retrieveTags()
     d->scheduler->taskDone();
 }
 
-void ResourceBase::retrieveRelations()
-{
-    Q_D(ResourceBase);
-    d->scheduler->taskDone();
-}
-
 bool ResourceBase::retrieveItem(const Akonadi::Item &item, const QSet<QByteArray> &parts)
 {
     Q_UNUSED(item)
@@ -1552,36 +1545,6 @@ void ResourceBasePrivate::slotTagSyncDone(KJob *job)
     if (job->error()) {
         if (job->error() != Job::UserCanceled) {
             qCWarning(AKONADIAGENTBASE_LOG) << "TagSync failed: " << job->errorString();
-            Q_EMIT q->error(job->errorString());
-        }
-    }
-
-    scheduler->taskDone();
-}
-
-void ResourceBase::relationsRetrieved(const Relation::List &relations)
-{
-    Q_D(ResourceBase);
-    Q_ASSERT_X(d->scheduler->currentTask().type == ResourceScheduler::SyncRelations || d->scheduler->currentTask().type == ResourceScheduler::SyncAll
-                   || d->scheduler->currentTask().type == ResourceScheduler::Custom,
-               "ResourceBase::relationsRetrieved()",
-               "Calling relationsRetrieved() although no relation retrieval is in progress");
-    if (!d->mRelationSyncer) {
-        d->mRelationSyncer = new RelationSync(this);
-        connect(d->mRelationSyncer, &KJob::percentChanged, d,
-                &ResourceBasePrivate::slotPercent); // NOLINT(google-runtime-int): ulong comes from KJob
-        connect(d->mRelationSyncer, &KJob::result, d, &ResourceBasePrivate::slotRelationSyncDone);
-    }
-    d->mRelationSyncer->setRemoteRelations(relations);
-}
-
-void ResourceBasePrivate::slotRelationSyncDone(KJob *job)
-{
-    Q_Q(ResourceBase);
-    mRelationSyncer = nullptr;
-    if (job->error()) {
-        if (job->error() != Job::UserCanceled) {
-            qCWarning(AKONADIAGENTBASE_LOG) << "RelationSync failed: " << job->errorString();
             Q_EMIT q->error(job->errorString());
         }
     }

@@ -18,7 +18,7 @@ class XmlDocumentTest : public QObject
 private Q_SLOTS:
     void testDocumentLoad()
     {
-        XmlDocument doc(QStringLiteral(KDESRCDIR "/knutdemo.xml"));
+        XmlDocument doc(QFINDTESTDATA("knutdemo.xml"), QFINDTESTDATA("../akonadi-xml.xsd"));
         QVERIFY(doc.isValid());
         QVERIFY(doc.lastError().isEmpty());
         QCOMPARE(doc.collections().count(), 9);

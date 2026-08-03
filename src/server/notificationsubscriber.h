@@ -12,7 +12,7 @@
 #include <QObject>
 
 #include "entities.h"
-#include <private/protocol_p.h>
+#include "private/protocol_p.h"
 
 class QLocalSocket;
 
@@ -30,12 +30,12 @@ public:
     explicit NotificationSubscriber(NotificationManager *manager, quintptr socketDescriptor);
     ~NotificationSubscriber() override;
 
-    Q_REQUIRED_RESULT inline QByteArray subscriber() const
+    [[nodiscard]] inline QByteArray subscriber() const
     {
         return mSubscriber;
     }
 
-    Q_REQUIRED_RESULT QLocalSocket *socket() const
+    [[nodiscard]] QLocalSocket *socket() const
     {
         return mSocket;
     }
@@ -61,7 +61,6 @@ private:
     bool acceptsItemNotification(const Protocol::ItemChangeNotification &notification) const;
     bool acceptsCollectionNotification(const Protocol::CollectionChangeNotification &notification) const;
     bool acceptsTagNotification(const Protocol::TagChangeNotification &notification) const;
-    bool acceptsRelationNotification(const Protocol::RelationChangeNotification &notification) const;
     bool acceptsSubscriptionNotification(const Protocol::SubscriptionChangeNotification &notification) const;
     bool acceptsDebugChangeNotification(const Protocol::DebugChangeNotification &notification) const;
 

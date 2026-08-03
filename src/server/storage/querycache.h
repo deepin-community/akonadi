@@ -10,6 +10,7 @@
 
 class QString;
 class QSqlQuery;
+class QSqlDatabase;
 
 namespace Akonadi
 {
@@ -21,14 +22,24 @@ namespace Server
  */
 namespace QueryCache
 {
-/// Returns the cached (and prepared) query for @p queryStatement
+
+/**
+ * Return a cached QSqlQuery for given @p queryStatement.
+ *
+ * If no query is cached for @p queryStatement, an empty optional is returned. Otherwise
+ * the cached query is removed from the cache and must be returned with insert()
+ * after use.
+ */
 std::optional<QSqlQuery> query(const QString &queryStatement);
 
 /// Insert @p query into the cache for @p queryStatement.
-void insert(const QString &queryStatement, const QSqlQuery &query);
+void insert(const QSqlDatabase &db, const QString &queryStatement, QSqlQuery query);
 
 /// Clears all queries from current thread
 void clear();
+
+/// Returns the per-thread capacityof the query cache
+size_t capacity();
 
 } // namespace QueryCache
 

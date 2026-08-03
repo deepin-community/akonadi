@@ -43,7 +43,8 @@ public Q_SLOTS:
 
     virtual void changeProcessed();
 
-    QString defaultReadyMessage() const
+public:
+    [[nodiscard]] QString defaultReadyMessage() const
     {
         if (mOnline) {
             return i18nc("@info:status Application ready for work", "Ready");
@@ -51,17 +52,17 @@ public Q_SLOTS:
         return i18nc("@info:status", "Offline");
     }
 
-    QString defaultSyncingMessage() const
+    [[nodiscard]] QString defaultSyncingMessage() const
     {
         return i18nc("@info:status", "Syncing...");
     }
 
-    QString defaultErrorMessage() const
+    [[nodiscard]] QString defaultErrorMessage() const
     {
         return i18nc("@info:status", "Error.");
     }
 
-    QString defaultUnconfiguredMessage() const
+    [[nodiscard]] QString defaultUnconfiguredMessage() const
     {
         return i18nc("@info:status", "Not configured");
     }
@@ -75,6 +76,7 @@ public:
     QString mId;
     QString mName;
     QString mResourceTypeName;
+    QStringList mActivities;
 
     int mStatusCode;
     QString mStatusMessage;
@@ -87,6 +89,7 @@ public:
     bool mDesiredOnlineState;
 
     bool mPendingQuit;
+    bool mActivitiesEnabled = false;
 
     QSettings *mSettings = nullptr;
 
@@ -100,9 +103,6 @@ public:
     QTimer *mTemporaryOfflineTimer = nullptr;
 
     QEventLoopLocker *mEventLoopLocker = nullptr;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QNetworkConfigurationManager *mNetworkManager = nullptr;
-#endif
 public Q_SLOTS:
     // Dump the contents of the current ChangeReplay
     Q_SCRIPTABLE QString dumpNotificationListToString() const;
@@ -134,11 +134,6 @@ public Q_SLOTS:
     virtual void tagChanged(const Akonadi::Tag &tag);
     virtual void tagRemoved(const Akonadi::Tag &tag);
     virtual void itemsTagsChanged(const Akonadi::Item::List &items, const QSet<Akonadi::Tag> &addedTags, const QSet<Akonadi::Tag> &removedTags);
-
-    virtual void relationAdded(const Akonadi::Relation &relation);
-    virtual void relationRemoved(const Akonadi::Relation &relation);
-    virtual void
-    itemsRelationsChanged(const Akonadi::Item::List &items, const Akonadi::Relation::List &addedRelations, const Akonadi::Relation::List &removedRelations);
 };
 
 }

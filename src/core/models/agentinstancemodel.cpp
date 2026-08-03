@@ -100,10 +100,12 @@ AgentInstanceModel::~AgentInstanceModel() = default;
 QHash<int, QByteArray> AgentInstanceModel::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractItemModel::roleNames();
-    roles.insert(StatusRole, "status");
-    roles.insert(StatusMessageRole, "statusMessage");
-    roles.insert(ProgressRole, "progress");
-    roles.insert(OnlineRole, "online");
+    roles.insert(NameRole, QByteArrayLiteral("name"));
+    roles.insert(StatusRole, QByteArrayLiteral("status"));
+    roles.insert(StatusMessageRole, QByteArrayLiteral("statusMessage"));
+    roles.insert(ProgressRole, QByteArrayLiteral("progress"));
+    roles.insert(OnlineRole, QByteArrayLiteral("online"));
+    roles.insert(IconNameRole, QByteArrayLiteral("iconName"));
     return roles;
 }
 
@@ -131,9 +133,12 @@ QVariant AgentInstanceModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole:
+    case NameRole:
         return instance.name();
     case Qt::DecorationRole:
         return instance.type().icon();
+    case IconNameRole:
+        return instance.type().icon().name();
     case InstanceRole: {
         QVariant var;
         var.setValue(instance);
@@ -151,6 +156,10 @@ QVariant AgentInstanceModel::data(const QModelIndex &index, int role) const
         return instance.progress();
     case OnlineRole:
         return instance.isOnline();
+    case ActivitiesRole:
+        return instance.activities();
+    case ActivitiesEnabledRole:
+        return instance.activitiesEnabled();
     case TypeRole: {
         QVariant var;
         var.setValue(instance.type());

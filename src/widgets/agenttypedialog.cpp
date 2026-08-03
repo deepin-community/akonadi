@@ -12,7 +12,7 @@
 #include <QVBoxLayout>
 
 #include <KConfigGroup>
-#include <KFilterProxySearchLine>
+#include <KLocalizedString>
 #include <KSharedConfig>
 #include <QLineEdit>
 
@@ -20,7 +20,10 @@
 #include <QPushButton>
 
 using namespace Akonadi;
-
+namespace
+{
+static const char myAgentTypeDialogGroupName[] = "AgentTypeDialog";
+}
 class Akonadi::AgentTypeDialogPrivate
 {
 public:
@@ -38,13 +41,13 @@ public:
 
 void AgentTypeDialogPrivate::writeConfig() const
 {
-    KConfigGroup group(KSharedConfig::openStateConfig(), "AgentTypeDialog");
+    KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(myAgentTypeDialogGroupName));
     group.writeEntry("Size", q->size());
 }
 
 void AgentTypeDialogPrivate::readConfig()
 {
-    KConfigGroup group(KSharedConfig::openStateConfig(), "AgentTypeDialog");
+    KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(myAgentTypeDialogGroupName));
     const QSize sizeDialog = group.readEntry("Size", QSize(460, 320));
     if (sizeDialog.isValid()) {
         q->resize(sizeDialog);
@@ -60,6 +63,7 @@ AgentTypeDialog::AgentTypeDialog(QWidget *parent)
     : QDialog(parent)
     , d(new AgentTypeDialogPrivate(this))
 {
+    setWindowTitle(i18nc("@title:window", "Configure Account"));
     auto layout = new QVBoxLayout(this);
 
     d->Widget = new Akonadi::AgentTypeWidget(this);
@@ -111,3 +115,5 @@ AgentFilterProxyModel *AgentTypeDialog::agentFilterProxyModel() const
 {
     return d->Widget->agentFilterProxyModel();
 }
+
+#include "moc_agenttypedialog.cpp"

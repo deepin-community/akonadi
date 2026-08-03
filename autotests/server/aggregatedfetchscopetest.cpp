@@ -7,7 +7,7 @@
 #include <QObject>
 
 #include "aggregatedfetchscope.h"
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
 #include <QTest>
 
@@ -104,7 +104,7 @@ private Q_SLOTS:
         scope.addSubscriber();
         Protocol::ItemFetchScope oldItemScope;
         Protocol::ItemFetchScope itemScopeA;
-        QVector<QByteArray> parts = {"FOO"};
+        QList<QByteArray> parts = {"FOO"};
         QSet<QByteArray> partsSet = {"FOO"};
         itemScopeA.setRequestedParts(parts);
         itemScopeA.setAncestorDepth(Protocol::ItemFetchScope::ParentAncestor);

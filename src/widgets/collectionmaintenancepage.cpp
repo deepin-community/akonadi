@@ -1,5 +1,5 @@
 /*
-   SPDX-FileCopyrightText: 2009-2022 Laurent Montel <montel@kde.org>
+   SPDX-FileCopyrightText: 2009-2024 Laurent Montel <montel@kde.org>
 
    SPDX-License-Identifier: GPL-2.0-or-later
 */
@@ -18,7 +18,7 @@
 #include <QDBusPendingCallWatcher>
 #include <QDBusPendingReply>
 
-#include <KIO/Global>
+#include <KFormat>
 
 #include <KLocalizedString>
 #include <QCheckBox>
@@ -54,7 +54,8 @@ public:
     {
         ui.itemsCountLbl->setText(QString::number(qMax(0LL, nbMail)));
         ui.unreadItemsCountLbl->setText(QString::number(qMax(0LL, nbUnreadMail)));
-        ui.folderSizeLbl->setText(KIO::convertSize(qMax(0LL, size)));
+        KFormat format;
+        ui.folderSizeLbl->setText(format.formatByteSize(qMax(0LL, size)));
     }
 
     Akonadi::Collection currentCollection;
@@ -67,7 +68,7 @@ CollectionMaintenancePage::CollectionMaintenancePage(QWidget *parent)
     : CollectionPropertiesPage(parent)
     , d(new CollectionMaintenancePagePrivate)
 {
-    setObjectName(QStringLiteral("Akonadi::CollectionMaintenancePage"));
+    setObjectName(QLatin1StringView("Akonadi::CollectionMaintenancePage"));
     setPageTitle(i18n("Maintenance"));
 }
 
@@ -79,7 +80,7 @@ void CollectionMaintenancePage::init(const Collection &col)
 
     d->currentCollection = col;
     d->monitor = new Monitor(this);
-    d->monitor->setObjectName(QStringLiteral("CollectionMaintenancePageMonitor"));
+    d->monitor->setObjectName(QLatin1StringView("CollectionMaintenancePageMonitor"));
     d->monitor->setCollectionMonitored(col, true);
     d->monitor->fetchCollectionStatistics(true);
     connect(d->monitor, &Monitor::collectionStatisticsChanged, this, [this](Collection::Id /*unused*/, const CollectionStatistics &stats) {
@@ -101,8 +102,8 @@ void CollectionMaintenancePage::init(const Collection &col)
     // Check if the resource caches full payloads or at least has local storage
     // (so that the indexer can retrieve the payloads on demand)
     const auto resource = Akonadi::AgentManager::self()->instance(col.resource()).type();
-    if (!col.cachePolicy().localParts().contains(QLatin1String("RFC822"))
-        && resource.customProperties().value(QStringLiteral("HasLocalStorage"), QString()) != QLatin1String("true")) {
+    if (!col.cachePolicy().localParts().contains(QLatin1StringView("RFC822"))
+        && resource.customProperties().value(QStringLiteral("HasLocalStorage"), QString()) != QLatin1StringView("true")) {
         d->ui.indexingLabel->hide();
         d->ui.enableIndexingChkBox->hide();
         d->ui.indexedCountLbl->hide();
@@ -154,3 +155,5 @@ void CollectionMaintenancePage::save(Collection &collection)
     auto attr = collection.attribute<Akonadi::IndexPolicyAttribute>(Akonadi::Collection::AddIfMissing);
     attr->setIndexingEnabled(d->ui.enableIndexingChkBox->isChecked());
 }
+
+#include "moc_collectionmaintenancepage.cpp"

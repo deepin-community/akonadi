@@ -12,8 +12,7 @@
 #include "../exception.h"
 #include "entities.h"
 
-#include <private/imapset_p.h>
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 #include <optional>
 
@@ -27,6 +26,7 @@ class Connection;
 class CommandContext;
 class ItemRetrievalManager;
 class ItemRetrievalRequest;
+class QueryBuilder;
 
 /**
   Helper class for retrieving missing items parts from remote resources.
@@ -44,13 +44,12 @@ public:
 
     Connection *connection() const;
 
-    void setRetrieveParts(const QVector<QByteArray> &parts);
-    QVector<QByteArray> retrieveParts() const;
+    void setRetrieveParts(const QList<QByteArray> &parts);
+    QList<QByteArray> retrieveParts() const;
     void setRetrieveFullPayload(bool fullPayload);
     void setChangedSince(const QDateTime &changedSince);
-    void setItemSet(const ImapSet &set, const Collection &collection = Collection());
-    void setItemSet(const ImapSet &set, bool isUid);
-    void setItem(Entity::Id id);
+    void setItemSet(const QList<PimItem::Id> &set, const Collection &collection = Collection());
+    void setItem(PimItem::Id id);
     /** Retrieve all items in the given collection. */
     void setCollection(const Collection &collection, bool recursive = true);
 
@@ -63,10 +62,10 @@ public:
     QByteArray lastError() const;
 
 Q_SIGNALS:
-    void itemsRetrieved(const QVector<qint64> &ids);
+    void itemsRetrieved(const QList<qint64> &ids);
 
 private:
-    QSqlQuery buildQuery() const;
+    QueryBuilder buildQuery() const;
 
     /**
      * Checks if external files are still present
@@ -78,17 +77,17 @@ private:
     bool runItemRetrievalRequests(std::list<ItemRetrievalRequest> requests);
     struct PreparedRequests {
         std::list<ItemRetrievalRequest> requests;
-        QVector<qint64> readyItems;
+        QList<qint64> readyItems;
     };
     std::optional<PreparedRequests> prepareRequests(QSqlQuery &query, const QByteArrayList &parts);
 
-    Akonadi::ImapSet mItemSet;
+    QList<PimItem::Id> mItemSet;
     Collection mCollection;
     Scope mScope;
     ItemRetrievalManager &mItemRetrievalManager;
     Connection *mConnection = nullptr;
     const CommandContext &mContext;
-    QVector<QByteArray> mParts;
+    QList<QByteArray> mParts;
     bool mFullPayload;
     bool mRecursive;
     QDateTime mChangedSince;

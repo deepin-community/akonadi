@@ -13,8 +13,8 @@
 
 #include <config-akonadi.h>
 
-#include <private/instance_p.h>
-#include <private/standarddirs_p.h>
+#include "private/instance_p.h"
+#include "private/standarddirs_p.h"
 
 #include <QProcess>
 #include <memory>
@@ -26,9 +26,13 @@ using namespace Akonadi::Server;
 static DbConfig *s_DbConfigInstance = nullptr;
 
 DbConfig::DbConfig()
+    : DbConfig(StandardDirs::serverConfigFile(StandardDirs::ReadWrite))
 {
-    const QString serverConfigFile = StandardDirs::serverConfigFile(StandardDirs::ReadWrite);
-    QSettings settings(serverConfigFile, QSettings::IniFormat);
+}
+
+DbConfig::DbConfig(const QString &configFile)
+{
+    QSettings settings(configFile, QSettings::IniFormat);
 
     mSizeThreshold = 4096;
     const QVariant value = settings.value(QStringLiteral("General/SizeThreshold"), mSizeThreshold);
@@ -56,15 +60,15 @@ QString DbConfig::defaultAvailableDatabaseBackend(QSettings &settings)
     QString driverName = QStringLiteral(AKONADI_DATABASE_BACKEND);
 
     std::unique_ptr<DbConfig> dbConfigFallbackTest;
-    if (driverName == QLatin1String("QMYSQL")) {
+    if (driverName == QLatin1StringView("QMYSQL")) {
         dbConfigFallbackTest = std::make_unique<DbConfigMysql>();
-    } else if (driverName == QLatin1String("QPSQL")) {
+    } else if (driverName == QLatin1StringView("QPSQL")) {
         dbConfigFallbackTest = std::make_unique<DbConfigPostgresql>();
     }
 
-    if (dbConfigFallbackTest && !dbConfigFallbackTest->isAvailable(settings) && DbConfigSqlite(DbConfigSqlite::Custom).isAvailable(settings)) {
-        qCWarning(AKONADISERVER_LOG) << driverName << " requirements not available. Falling back to using QSQLITE3.";
-        driverName = QStringLiteral("QSQLITE3");
+    if (dbConfigFallbackTest && !dbConfigFallbackTest->isAvailable(settings) && DbConfigSqlite().isAvailable(settings)) {
+        qCWarning(AKONADISERVER_LOG) << driverName << " requirements not available. Falling back to using QSQLITE.";
+        driverName = QStringLiteral("QSQLITE");
     }
 
     return driverName;
@@ -86,13 +90,13 @@ DbConfig *DbConfig::configuredDatabase()
             settings.sync();
         }
 
-        if (driverName == QLatin1String("QMYSQL")) {
+        if (driverName == QLatin1StringView("QMYSQL")) {
             s_DbConfigInstance = new DbConfigMysql;
-        } else if (driverName == QLatin1String("QSQLITE")) {
-            s_DbConfigInstance = new DbConfigSqlite(DbConfigSqlite::Default);
-        } else if (driverName == QLatin1String("QSQLITE3")) {
-            s_DbConfigInstance = new DbConfigSqlite(DbConfigSqlite::Custom);
-        } else if (driverName == QLatin1String("QPSQL")) {
+        } else if (driverName == QLatin1StringView("QSQLITE") || driverName == QLatin1StringView("QSQLITE3")) {
+            // QSQLITE3 is legacy name for the Akonadi fork of the upstream QSQLITE driver.
+            // It is kept here for backwards compatibility with old server config files.
+            s_DbConfigInstance = new DbConfigSqlite();
+        } else if (driverName == QLatin1StringView("QPSQL")) {
             s_DbConfigInstance = new DbConfigPostgresql;
         } else {
             qCCritical(AKONADISERVER_LOG) << "Unknown database driver: " << driverName;
@@ -107,6 +111,12 @@ DbConfig *DbConfig::configuredDatabase()
     }
 
     return s_DbConfigInstance;
+}
+
+void DbConfig::destroy()
+{
+    delete s_DbConfigInstance;
+    s_DbConfigInstance = nullptr;
 }
 
 bool DbConfig::startInternalServer()
@@ -136,7 +146,7 @@ QString DbConfig::defaultDatabaseName()
         return QStringLiteral("akonadi");
     }
     // dash is not allowed in PSQL
-    return QLatin1String("akonadi_") % Instance::identifier().replace(QLatin1Char('-'), QLatin1Char('_'));
+    return QLatin1StringView("akonadi_") % Instance::identifier().replace(QLatin1Char('-'), QLatin1Char('_'));
 }
 
 void DbConfig::initSession(const QSqlDatabase &database)

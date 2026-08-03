@@ -18,15 +18,16 @@ public:
     explicit TagPrivate() = default;
     TagPrivate(const TagPrivate &other)
         : QSharedData(other)
+        , id(other.id)
+        , gid(other.gid)
+        , remoteId(other.remoteId)
+        , type(other.type)
+        , mAttributeStorage(other.mAttributeStorage)
     {
-        id = other.id;
-        gid = other.gid;
-        remoteId = other.remoteId;
         if (other.parent) {
             parent.reset(new Tag(*other.parent));
         }
-        type = other.type;
-        mAttributeStorage = other.mAttributeStorage;
+        mAttributeStorage.detach();
     }
 
     ~TagPrivate() = default;

@@ -7,9 +7,9 @@
 #include <QObject>
 #include <QTest>
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
 using namespace Akonadi;
 
@@ -22,9 +22,9 @@ private Q_SLOTS:
     void testServiceName()
     {
         akTestSetInstanceIdentifier(QString());
-        QCOMPARE(DBus::serviceName(DBus::Server), QLatin1String("org.freedesktop.Akonadi"));
+        QCOMPARE(DBus::serviceName(DBus::Server), QLatin1StringView("org.freedesktop.Akonadi"));
         akTestSetInstanceIdentifier(QStringLiteral("foo"));
-        QCOMPARE(DBus::serviceName(DBus::Server), QLatin1String("org.freedesktop.Akonadi.foo"));
+        QCOMPARE(DBus::serviceName(DBus::Server), QLatin1StringView("org.freedesktop.Akonadi.foo"));
     }
 
     void testParseAgentServiceName_data()

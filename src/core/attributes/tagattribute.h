@@ -39,7 +39,7 @@ public:
      * Returns the name that should be used for display.
      * Users of this should fall back to Collection::name() if this is empty.
      */
-    QString displayName() const;
+    [[nodiscard]] QString displayName() const;
 
     /**
      * Sets the icon @p name for the default icon.
@@ -49,18 +49,18 @@ public:
     /**
      * Returns the icon name of the icon returned by icon().
      */
-    QString iconName() const;
+    [[nodiscard]] QString iconName() const;
 
     void setBackgroundColor(const QColor &color);
-    QColor backgroundColor() const;
+    [[nodiscard]] QColor backgroundColor() const;
     void setTextColor(const QColor &color);
-    QColor textColor() const;
+    [[nodiscard]] QColor textColor() const;
     void setFont(const QString &fontKey);
-    QString font() const;
+    [[nodiscard]] QString font() const;
     void setInToolbar(bool inToolbar);
-    bool inToolbar() const;
+    [[nodiscard]] bool inToolbar() const;
     void setShortcut(const QString &shortcut);
-    QString shortcut() const;
+    [[nodiscard]] QString shortcut() const;
 
     /**
      * Sets the priority of the tag.
@@ -74,12 +74,12 @@ public:
      * Returns the priority of the tag.
      * The default value is -1
      */
-    int priority() const;
+    [[nodiscard]] int priority() const;
 
     /* reimpl */
-    QByteArray type() const override;
+    [[nodiscard]] QByteArray type() const override;
     TagAttribute *clone() const override;
-    QByteArray serialized() const override;
+    [[nodiscard]] QByteArray serialized() const override;
     void deserialize(const QByteArray &data) override;
 
 private:

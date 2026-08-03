@@ -11,15 +11,11 @@
 #include "handler.h"
 #include "storage/collectionqueryhelper.h"
 #include "storage/collectionstatistics.h"
-#include "storage/countquerybuilder.h"
-#include "storage/datastore.h"
-#include "storage/queryhelper.h"
 #include "storage/selectquerybuilder.h"
 #include "utils.h"
 
-#include <private/imapset_p.h>
-#include <private/protocol_p.h>
-#include <private/scope_p.h>
+#include "private/protocol_p.h"
+#include "private/scope_p.h"
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
@@ -127,7 +123,7 @@ Protocol::FetchCollectionsResponse HandlerHelper::fetchCollectionsResponse(Akona
 
     if (!col.queryString().isEmpty()) {
         response.setSearchQuery(col.queryString());
-        QVector<qint64> searchCols;
+        QList<qint64> searchCols;
         const QStringList searchColIds = col.queryCollections().split(QLatin1Char(' '));
         searchCols.reserve(searchColIds.size());
         for (const QString &searchColId : searchColIds) {
@@ -140,7 +136,7 @@ Protocol::FetchCollectionsResponse HandlerHelper::fetchCollectionsResponse(Akona
     response.setCachePolicy(cachePolicy);
 
     if (ancestorDepth) {
-        QVector<Protocol::Ancestor> ancestorList = HandlerHelper::ancestorsResponse(ancestorDepth, ancestors, ancestorAttributes);
+        QList<Protocol::Ancestor> ancestorList = HandlerHelper::ancestorsResponse(ancestorDepth, ancestors, ancestorAttributes);
         response.setAncestors(ancestorList);
     }
 
@@ -158,10 +154,10 @@ Protocol::FetchCollectionsResponse HandlerHelper::fetchCollectionsResponse(Akona
     return response;
 }
 
-QVector<Protocol::Ancestor>
+QList<Protocol::Ancestor>
 HandlerHelper::ancestorsResponse(int ancestorDepth, const QStack<Collection> &_ancestors, const QStack<CollectionAttribute::List> &_ancestorsAttributes)
 {
-    QVector<Protocol::Ancestor> rv;
+    QList<Protocol::Ancestor> rv;
     if (ancestorDepth > 0) {
         QStack<Collection> ancestors(_ancestors);
         QStack<CollectionAttribute::List> ancestorAttributes(_ancestorsAttributes);
@@ -221,7 +217,7 @@ Protocol::FetchTagsResponse HandlerHelper::fetchTagsResponse(const Tag &tag, con
             if (!qb.exec()) {
                 throw HandlerException("Unable to query Tag Remote ID");
             }
-            QSqlQuery query = qb.query();
+            QSqlQuery &query = qb.query();
             // RID may not be available
             if (query.next()) {
                 response.setRemoteId(Utils::variantToByteArray(query.value(0)));
@@ -247,7 +243,7 @@ Protocol::FetchTagsResponse HandlerHelper::fetchTagsResponse(const Tag &tag, con
         if (!qb.exec()) {
             throw HandlerException("Unable to query Tag Attributes");
         }
-        QSqlQuery query = qb.query();
+        QSqlQuery &query = qb.query();
         Protocol::Attributes attributes;
         while (query.next()) {
             attributes.insert(Utils::variantToByteArray(query.value(0)), Utils::variantToByteArray(query.value(1)));
@@ -257,17 +253,6 @@ Protocol::FetchTagsResponse HandlerHelper::fetchTagsResponse(const Tag &tag, con
     }
 
     return response;
-}
-
-Protocol::FetchRelationsResponse HandlerHelper::fetchRelationsResponse(const Relation &relation)
-{
-    Protocol::FetchRelationsResponse resp;
-    resp.setLeft(relation.leftId());
-    resp.setLeftMimeType(relation.left().mimeType().name().toUtf8());
-    resp.setRight(relation.rightId());
-    resp.setRightMimeType(relation.right().mimeType().name().toUtf8());
-    resp.setType(relation.relationType().name().toUtf8());
-    return resp;
 }
 
 Flag::List HandlerHelper::resolveFlags(const QSet<QByteArray> &flagNames)
@@ -284,13 +269,13 @@ Flag::List HandlerHelper::resolveFlags(const QSet<QByteArray> &flagNames)
     return flagList;
 }
 
-Tag::List HandlerHelper::resolveTagsByUID(const ImapSet &tags)
+Tag::List HandlerHelper::resolveTagsByUID(const QList<qint64> &tags)
 {
     if (tags.isEmpty()) {
         return Tag::List();
     }
     SelectQueryBuilder<Tag> qb;
-    QueryHelper::setToQuery(tags, Tag::idFullColumnName(), qb);
+    qb.addValueCondition(Tag::idFullColumnName(), Query::In, tags);
     if (!qb.exec()) {
         throw HandlerException("Unable to resolve tags");
     }

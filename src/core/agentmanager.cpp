@@ -232,6 +232,16 @@ void AgentManagerPrivate::setOnline(const AgentInstance &instance, bool state)
     mManager->setAgentInstanceOnline(instance.identifier(), state);
 }
 
+void AgentManagerPrivate::setActivities(const AgentInstance &instance, const QStringList &activities)
+{
+    mManager->setAgentInstanceActivities(instance.identifier(), activities);
+}
+
+void AgentManagerPrivate::setActivitiesEnabled(const AgentInstance &instance, bool enabled)
+{
+    mManager->setAgentInstanceActivitiesEnabled(instance.identifier(), enabled);
+}
+
 void AgentManagerPrivate::configure(const AgentInstance &instance, QWidget *parent)
 {
     qlonglong winId = 0;
@@ -257,11 +267,6 @@ void AgentManagerPrivate::synchronizeTags(const AgentInstance &instance)
     mManager->agentInstanceSynchronizeTags(instance.identifier());
 }
 
-void AgentManagerPrivate::synchronizeRelations(const AgentInstance &instance)
-{
-    mManager->agentInstanceSynchronizeRelations(instance.identifier());
-}
-
 AgentInstance AgentManagerPrivate::fillAgentInstance(const QString &identifier) const
 {
     AgentInstance instance;
@@ -278,6 +283,8 @@ AgentInstance AgentManagerPrivate::fillAgentInstance(const QString &identifier) 
     instance.d->mStatusMessage = mManager->agentInstanceStatusMessage(identifier);
     instance.d->mProgress = mManager->agentInstanceProgress(identifier);
     instance.d->mIsOnline = mManager->agentInstanceOnline(identifier);
+    // instance.d->mActivities = mManager->agentInstanceActivities(identifier);
+    // instance.d->mActivitiesEnabled = mManager->agentInstanceActivitiesEnabled(identifier);
 
     return instance;
 }
@@ -405,3 +412,5 @@ void AgentManager::synchronizeCollection(const Collection &collection, bool recu
 }
 
 #include "moc_agentmanager.cpp"
+
+#include "moc_agentmanager_p.cpp"

@@ -180,7 +180,7 @@ void AgentInstance::errorHandler(const QDBusError &error)
 template<typename T>
 std::unique_ptr<T> AgentInstance::findInterface(Akonadi::DBus::AgentType agentType, const char *path)
 {
-    auto iface = std::make_unique<T>(Akonadi::DBus::agentServiceName(mIdentifier, agentType), QLatin1String(path), QDBusConnection::sessionBus(), this);
+    auto iface = std::make_unique<T>(Akonadi::DBus::agentServiceName(mIdentifier, agentType), QLatin1StringView(path), QDBusConnection::sessionBus(), this);
 
     if (!iface || !iface->isValid()) {
         qCCritical(AKONADICONTROL_LOG) << Q_FUNC_INFO << "Cannot connect to agent instance with identifier" << mIdentifier
@@ -189,3 +189,5 @@ std::unique_ptr<T> AgentInstance::findInterface(Akonadi::DBus::AgentType agentTy
     }
     return iface;
 }
+
+#include "moc_agentinstance.cpp"

@@ -8,7 +8,7 @@
 #include "agentserverinterface.h"
 #include "akonadicontrol_debug.h"
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
 using namespace Akonadi;
 
@@ -75,3 +75,5 @@ void Akonadi::AgentThreadInstance::configure(qlonglong windowId)
                                                        QDBusConnection::sessionBus());
     agentServer.agentInstanceConfigure(identifier(), windowId);
 }
+
+#include "moc_agentthreadinstance.cpp"

@@ -9,6 +9,7 @@
 #include "dbtype.h"
 
 #include <QHash>
+#include <QSqlDriver>
 #include <QSqlQuery>
 #include <QThreadStorage>
 #include <QTimer>
@@ -33,7 +34,7 @@ class Cache
 public:
     Cache()
     {
-        QObject::connect(&m_cleanupTimer, &QTimer::timeout, std::bind(&Cache::cleanup, this));
+        QObject::connect(&m_cleanupTimer, &QTimer::timeout, &m_cleanupTimer, std::bind(&Cache::cleanup, this));
         m_cleanupTimer.setSingleShot(true);
     }
 
@@ -42,25 +43,31 @@ public:
         m_cleanupTimer.start(CleanupTimeout);
         auto it = m_keys.find(queryStatement);
         if (it == m_keys.end()) {
-            return std::nullopt;
+            return {};
         }
 
-        auto node = **it;
-        m_queries.erase(*it);
-        m_queries.push_front(node);
-        *it = m_queries.begin();
-        return node.query;
+        auto query = std::move(it->second->query);
+        m_queries.erase(it->second);
+        m_keys.erase(it);
+
+        return query;
     }
 
-    void insert(const QString &queryStatement, const QSqlQuery &query)
+    void insert(const QString &queryStatement, QSqlQuery query)
     {
         if (m_queries.size() >= MaxCacheSize) {
-            m_keys.remove(m_queries.back().queryStatement);
+            // Get the last entry in m_queries
+            auto query_it = std::prev(m_queries.end());
+            // Find and erase corresponding entry in m_keys
+            std::erase_if(m_keys, [&](const auto &node) {
+                return node.second == query_it;
+            });
+            // Remove the last entry from m_queries, making room for a new one.
             m_queries.pop_back();
         }
 
-        m_queries.emplace_front(Node{queryStatement, query});
-        m_keys.insert(queryStatement, m_queries.begin());
+        m_queries.emplace_front(std::move(query));
+        m_keys.emplace(queryStatement, m_queries.begin());
     }
 
     void cleanup()
@@ -71,11 +78,10 @@ public:
 
 public: // public, this is just a helper class
     struct Node {
-        QString queryStatement;
         QSqlQuery query;
     };
     std::list<Node> m_queries;
-    QHash<QString, std::list<Node>::iterator> m_keys;
+    std::unordered_map<QString, std::list<Node>::iterator> m_keys;
     QTimer m_cleanupTimer;
 };
 
@@ -97,10 +103,10 @@ std::optional<QSqlQuery> QueryCache::query(const QString &queryStatement)
     return perThreadCache()->query(queryStatement);
 }
 
-void QueryCache::insert(const QString &queryStatement, const QSqlQuery &query)
+void QueryCache::insert(const QSqlDatabase &db, const QString &queryStatement, QSqlQuery query)
 {
-    if (DbType::type(DataStore::self()->database()) != DbType::Sqlite) {
-        perThreadCache()->insert(queryStatement, query);
+    if (DbType::type(db) != DbType::Sqlite) {
+        perThreadCache()->insert(queryStatement, std::move(query));
     }
 }
 
@@ -111,4 +117,9 @@ void QueryCache::clear()
     }
 
     g_queryCache.localData()->cleanup();
+}
+
+size_t QueryCache::capacity()
+{
+    return MaxCacheSize;
 }

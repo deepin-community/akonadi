@@ -12,7 +12,7 @@
 
 bool TypeHelper::isNumericType(const QString &name)
 {
-    const int metaTypeId = QMetaType::type(qPrintable(name));
+    const int metaTypeId = QMetaType::fromName(qPrintable(name)).id();
     if (metaTypeId == -1) {
         return false;
     }
@@ -36,7 +36,7 @@ bool TypeHelper::isNumericType(const QString &name)
 
 bool TypeHelper::isBoolType(const QString &name)
 {
-    const int metaTypeId = QMetaType::type(qPrintable(name));
+    const int metaTypeId = QMetaType::fromName(qPrintable(name)).id();
     if (metaTypeId == -1) {
         return false;
     }
@@ -52,8 +52,8 @@ bool TypeHelper::isBoolType(const QString &name)
 bool TypeHelper::isBuiltInType(const QString &type)
 {
     // TODO: should be smarter than this....
-    return !type.startsWith(QLatin1String("Akonadi::Protocol")) || type == QLatin1String("Akonadi::Protocol::Attributes") // typedef to QMap
-        || (type.startsWith(QLatin1String("Akonadi::Protocol")) // enums
+    return !type.startsWith(QLatin1StringView("Akonadi::Protocol")) || type == QLatin1StringView("Akonadi::Protocol::Attributes") // typedef to QMap
+        || (type.startsWith(QLatin1StringView("Akonadi::Protocol")) // enums
             && type.count(QStringLiteral("::")) > 2);
 }
 
@@ -79,5 +79,5 @@ QString TypeHelper::containerName(const QString &type)
 
 bool TypeHelper::isPointerType(const QString &type)
 {
-    return type.endsWith(QLatin1String("Ptr"));
+    return type.endsWith(QLatin1StringView("Ptr"));
 }

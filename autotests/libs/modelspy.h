@@ -7,6 +7,7 @@
 #pragma once
 
 #include "akonaditestfake_export.h"
+#include <QDebug>
 #include <QModelIndex>
 #include <QObject>
 #include <QVariantList>
@@ -103,20 +104,4 @@ private:
     QList<ExpectedSignal> m_expectedSignals;
 };
 
-#ifdef _MSC_VER
-// FIXME: This is a very lousy implementation to make MSVC happy. Apparently
-// MSVC insists on instantiating QSet<T> QList<T>::toSet() and complains about
-// not having qHash() overload for QVariant(List) in QSet
-//
-// FIXME: This is good enough for ModelSpy, but should never ever be used in
-// regular code.
-inline uint qHash(const QVariant &v)
-{
-    return v.userType() + v.toUInt();
-}
-
-inline uint qHash(const QVariantList &list)
-{
-    return qHashRange(list.cbegin(), list.cend());
-}
-#endif
+AKONADITESTFAKE_EXPORT QDebug operator<<(QDebug dbg, SignalType type);

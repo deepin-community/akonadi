@@ -8,7 +8,7 @@
 
 #include <QSet>
 
-#include <private/protocol_p.h>
+#include "private/protocol_p.h"
 
 #include <memory>
 
@@ -66,7 +66,6 @@ public:
     bool fetchRemoteId() const;
     bool fetchGID() const;
     bool fetchTags() const;
-    bool fetchRelations() const;
     bool fetchVirtualReferences() const;
 
     void addSubscriber();

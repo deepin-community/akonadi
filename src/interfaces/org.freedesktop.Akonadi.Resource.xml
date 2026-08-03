@@ -10,7 +10,7 @@
     </signal>
     <signal name="collectionTreeSynchronized"/>
     <method name="requestItemDelivery">
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVector&lt;qlonglong&gt;"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QList&lt;qlonglong&gt;"/>
       <arg name="uids" type="ax" direction="in"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QByteArrayList"/>
       <arg name="parts" type="aay" direction="in"/>
@@ -37,14 +37,23 @@
     <method name="synchronizeTags">
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
-    <method name="synchronizeRelations">
-      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-    </method>
     <method name="setName">
       <arg name="name" type="s" direction="in"/>
     </method>
     <method name="name">
       <arg type="s" direction="out"/>
+    </method>
+    <method name="setActivities">
+      <arg name="name" type="as" direction="in"/>
+    </method>
+    <method name="activities">
+      <arg type="as" direction="out"/>
+    </method>
+    <method name="setActivitiesEnabled">
+      <arg name="en" type="b" direction="in"/>
+    </method>
+    <method name="activitiesEnabled">
+      <arg type="b" direction="out"/>
     </method>
   </interface>
 </node>

@@ -24,7 +24,7 @@ using namespace Akonadi;
 class ErrorOverlayStatic
 {
 public:
-    QVector<QPair<QPointer<QWidget>, QPointer<QWidget>>> baseWidgets;
+    QList<QPair<QPointer<QWidget>, QPointer<QWidget>>> baseWidgets;
 };
 
 Q_GLOBAL_STATIC(ErrorOverlayStatic, sInstanceOverlay) // NOLINT(readability-redundant-member-init)
@@ -54,8 +54,7 @@ ErrorOverlay::ErrorOverlay(QWidget *baseWidget, QWidget *parent)
     mBaseWidgetIsParent = isParentOf(mBaseWidget, this);
 
     // check existing overlays to detect cascading
-    for (QVector<QPair<QPointer<QWidget>, QPointer<QWidget>>>::Iterator it = sInstanceOverlay->baseWidgets.begin();
-         it != sInstanceOverlay->baseWidgets.end();) {
+    for (QList<QPair<QPointer<QWidget>, QPointer<QWidget>>>::Iterator it = sInstanceOverlay->baseWidgets.begin(); it != sInstanceOverlay->baseWidgets.end();) {
         if ((*it).first == nullptr || (*it).second == nullptr) {
             // garbage collection
             it = sInstanceOverlay->baseWidgets.erase(it);
@@ -82,9 +81,9 @@ ErrorOverlay::ErrorOverlay(QWidget *baseWidget, QWidget *parent)
     mPreviousState = !mBaseWidget->testAttribute(Qt::WA_ForceDisabled);
 
     ui->setupUi(this);
-    ui->notRunningIcon->setPixmap(QIcon::fromTheme(QStringLiteral("akonadi")).pixmap(64));
+    ui->notRunningIcon->setPixmap(qApp->windowIcon().pixmap(64));
     ui->brokenIcon->setPixmap(QIcon::fromTheme(QStringLiteral("dialog-error")).pixmap(64));
-    ui->progressIcon->setPixmap(QIcon::fromTheme(QStringLiteral("akonadi")).pixmap(32));
+    ui->progressIcon->setPixmap(qApp->windowIcon().pixmap(32));
     ui->quitButton->setText(KStandardGuiItem::quit().text());
     ui->detailsQuitButton->setText(KStandardGuiItem::quit().text());
 
@@ -226,17 +225,17 @@ void ErrorOverlay::serverStateChanged(ServerManager::State state)
             }
             break;
         case ServerManager::Starting:
-            ui->progressPage->setToolTip(i18n("Personal information management service is starting..."));
+            ui->progressPage->setToolTip(i18nc("@info:tooltip", "Personal information management service is starting..."));
             ui->progressDescription->setText(i18n("Personal information management service is starting..."));
             ui->stackWidget->setCurrentWidget(ui->progressPage);
             break;
         case ServerManager::Stopping:
-            ui->progressPage->setToolTip(i18n("Personal information management service is shutting down..."));
+            ui->progressPage->setToolTip(i18nc("@info:tooltip", "Personal information management service is shutting down..."));
             ui->progressDescription->setText(i18n("Personal information management service is shutting down..."));
             ui->stackWidget->setCurrentWidget(ui->progressPage);
             break;
         case ServerManager::Upgrading:
-            ui->progressPage->setToolTip(i18n("Personal information management service is performing a database upgrade."));
+            ui->progressPage->setToolTip(i18nc("@info:tooltip", "Personal information management service is performing a database upgrade."));
             ui->progressDescription->setText(
                 i18n("Personal information management service is performing a database upgrade.\n"
                      "This happens after a software update and is necessary to optimize performance.\n"

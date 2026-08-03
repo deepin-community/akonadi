@@ -436,7 +436,7 @@ public:
     void addJob(ItemModifyJob *mjob)
     {
         modifyJobs.push_back(mjob);
-        QObject::connect(mjob, &KJob::result, [mjob, this]() {
+        QObject::connect(mjob, &KJob::result, mjob, [mjob, this]() {
             if (mjob->error()) {
                 errors.append(mjob->errorString());
             }
@@ -457,12 +457,12 @@ public:
                 QCOMPARE(mjob->error(), KJob::NoError);
             }
         }
-        QVERIFY2(errors.isEmpty(), qPrintable(errors.join(QLatin1String("; "))));
+        QVERIFY2(errors.isEmpty(), qPrintable(errors.join(QLatin1StringView("; "))));
     }
 
     const int numSessions;
     std::vector<Session *> sessions;
-    QVector<ItemModifyJob *> modifyJobs, doneJobs;
+    QList<ItemModifyJob *> modifyJobs, doneJobs;
     QStringList errors;
 };
 
@@ -502,3 +502,5 @@ void ItemStoreTest::testParallelJobsAddingAttributes()
     const Item fetchedItem = fetchJob->items().first();
     QCOMPARE(fetchedItem.attributes().count(), runner.numSessions);
 }
+
+#include "moc_itemstoretest.cpp"

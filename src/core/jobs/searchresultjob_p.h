@@ -12,7 +12,6 @@
 namespace Akonadi
 {
 class SearchResultJobPrivate;
-class ImapSet;
 class Collection;
 
 class AKONADICORE_EXPORT SearchResultJob : public Akonadi::Job
@@ -23,11 +22,10 @@ public:
     ~SearchResultJob() override;
 
     void setSearchId(const QByteArray &searchId);
-    Q_REQUIRED_RESULT QByteArray searchId() const;
+    [[nodiscard]] QByteArray searchId() const;
 
-    void setResult(const ImapSet &set);
-    void setResult(const QVector<QByteArray> &remoteIds);
-    void setResult(const QVector<qint64> &ids);
+    void setResult(const QList<QByteArray> &remoteIds);
+    void setResult(const QList<qint64> &ids);
 
 protected:
     void doStart() override;

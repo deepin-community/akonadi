@@ -16,7 +16,10 @@
 #include <KSharedConfig>
 
 using namespace Akonadi;
-
+namespace
+{
+static const char myTagSelectionDialogGroupName[] = "TagSelectionDialog";
+}
 class Akonadi::TagSelectionDialogPrivate
 {
 public:
@@ -34,13 +37,13 @@ public:
 
 void TagSelectionDialogPrivate::writeConfig() const
 {
-    KConfigGroup group(KSharedConfig::openStateConfig(), "TagSelectionDialog");
+    KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(myTagSelectionDialogGroupName));
     group.writeEntry("Size", q->size());
 }
 
 void TagSelectionDialogPrivate::readConfig() const
 {
-    KConfigGroup group(KSharedConfig::openStateConfig(), "TagSelectionDialog");
+    KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(myTagSelectionDialogGroupName));
     const QSize sizeDialog = group.readEntry("Size", QSize(500, 400));
     if (sizeDialog.isValid()) {
         q->resize(sizeDialog);
@@ -54,7 +57,7 @@ TagSelectionDialog::TagSelectionDialog(QWidget *parent)
     d->ui.setupUi(this);
 
     auto monitor = new Monitor(this);
-    monitor->setObjectName(QStringLiteral("TagSelectionDialogMonitor"));
+    monitor->setObjectName(QLatin1StringView("TagSelectionDialogMonitor"));
     monitor->setTypeMonitored(Monitor::Tags);
 
     d->ui.tagWidget->setModel(new TagModel(monitor, this));
@@ -98,3 +101,5 @@ void TagSelectionDialog::setSelection(const Tag::List &tags)
 {
     d->ui.tagWidget->setSelection(tags);
 }
+
+#include "moc_tagselectiondialog.cpp"

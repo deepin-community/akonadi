@@ -18,7 +18,10 @@
 #include <KSharedConfig>
 
 using namespace Akonadi;
-
+namespace
+{
+static const char myTagManagementDialogGroupName[] = "TagManagementDialog";
+}
 class Akonadi::TagManagementDialogPrivate
 {
 public:
@@ -37,13 +40,13 @@ public:
 
 void TagManagementDialogPrivate::writeConfig() const
 {
-    KConfigGroup group(KSharedConfig::openStateConfig(), "TagManagementDialog");
+    KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(myTagManagementDialogGroupName));
     group.writeEntry("Size", q->size());
 }
 
 void TagManagementDialogPrivate::readConfig() const
 {
-    KConfigGroup group(KSharedConfig::openStateConfig(), "TagManagementDialog");
+    KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(myTagManagementDialogGroupName));
     const QSize sizeDialog = group.readEntry("Size", QSize(500, 400));
     if (sizeDialog.isValid()) {
         q->resize(sizeDialog);
@@ -55,7 +58,7 @@ TagManagementDialog::TagManagementDialog(QWidget *parent)
     , d(new TagManagementDialogPrivate(this))
 {
     auto monitor = new Monitor(this);
-    monitor->setObjectName(QStringLiteral("TagManagementDialogMonitor"));
+    monitor->setObjectName(QLatin1StringView("TagManagementDialogMonitor"));
     monitor->setTypeMonitored(Monitor::Tags);
 
     d->ui.setupUi(this);
@@ -76,3 +79,5 @@ QDialogButtonBox *TagManagementDialog::buttons() const
 {
     return d->buttonBox;
 }
+
+#include "moc_tagmanagementdialog.cpp"

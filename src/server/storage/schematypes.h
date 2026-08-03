@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include <QList>
 #include <QMap>
 #include <QString>
 #include <QStringList>
-#include <QVector>
 
 namespace Akonadi
 {
@@ -22,8 +22,6 @@ namespace Server
 class ColumnDescription
 {
 public:
-    ColumnDescription();
-
     enum ReferentialAction {
         Cascade,
         Restrict,
@@ -32,18 +30,18 @@ public:
 
     QString name;
     QString type;
-    int size;
-    bool allowNull;
-    bool isAutoIncrement;
-    bool isPrimaryKey;
-    bool isUnique;
-    bool isEnum;
+    int size = -1;
+    bool allowNull = true;
+    bool isAutoIncrement = false;
+    bool isPrimaryKey = false;
+    bool isUnique = false;
+    bool isEnum = false;
     QString refTable;
     QString refColumn;
     QString defaultValue;
-    ReferentialAction onUpdate;
-    ReferentialAction onDelete;
-    bool noUpdate;
+    ReferentialAction onUpdate = Cascade;
+    ReferentialAction onDelete = Cascade;
+    bool noUpdate = false;
 
     QMap<QString, int> enumValueMap;
 };
@@ -54,11 +52,9 @@ public:
 class IndexDescription
 {
 public:
-    IndexDescription();
-
     QString name;
     QStringList columns;
-    bool isUnique;
+    bool isUnique = false;
     QString sort;
 };
 
@@ -68,8 +64,6 @@ public:
 class DataDescription
 {
 public:
-    DataDescription();
-
     /**
      * Key contains the column name, value the data.
      */
@@ -82,13 +76,12 @@ public:
 class TableDescription
 {
 public:
-    TableDescription();
     int primaryKeyColumnCount() const;
 
     QString name;
-    QVector<ColumnDescription> columns;
-    QVector<IndexDescription> indexes;
-    QVector<DataDescription> data;
+    QList<ColumnDescription> columns;
+    QList<IndexDescription> indexes;
+    QList<DataDescription> data;
 };
 
 /**
@@ -97,13 +90,11 @@ public:
 class RelationDescription
 {
 public:
-    RelationDescription();
-
     QString firstTable;
     QString firstColumn;
     QString secondTable;
     QString secondColumn;
-    QVector<IndexDescription> indexes;
+    QList<IndexDescription> indexes;
 };
 
 /**
@@ -118,9 +109,9 @@ public:
 } // namespace Server
 } // namespace Akonadi
 
-Q_DECLARE_TYPEINFO(Akonadi::Server::ColumnDescription, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Akonadi::Server::IndexDescription, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Akonadi::Server::DataDescription, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Akonadi::Server::TableDescription, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Akonadi::Server::RelationDescription, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(Akonadi::Server::RelationTableDescription, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Server::ColumnDescription, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Server::IndexDescription, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Server::DataDescription, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Server::TableDescription, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Server::RelationDescription, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Server::RelationTableDescription, Q_RELOCATABLE_TYPE);

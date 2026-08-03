@@ -12,13 +12,8 @@
 
 class QObject;
 class QString;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<typename T>
-class QVector;
-#else
 template<typename T>
 class QList;
-#endif
 
 namespace Akonadi
 {
@@ -56,7 +51,7 @@ AKONADICORE_EXPORT ItemSerializerPlugin *defaultPluginForMimeType(const QString 
  * Returns the item serializer plugin that matches the given
  * @p mimetype, and any of the classes described by @p metaTypeIds.
  */
-AKONADICORE_EXPORT ItemSerializerPlugin *pluginForMimeTypeAndClass(const QString &mimetype, const QVector<int> &metaTypeIds, Options options = NoOptions);
+AKONADICORE_EXPORT ItemSerializerPlugin *pluginForMimeTypeAndClass(const QString &mimetype, const QList<int> &metaTypeIds, Options options = NoOptions);
 
 /**
  * Returns the default type plugin object that matches the given @p mimetype.
@@ -67,7 +62,7 @@ AKONADICORE_EXPORT QObject *defaultObjectForMimeType(const QString &mimetype);
  * Returns the type plugin object that matches the given @p mimetype,
  * and any of the classes described by @p metaTypeIds.
  */
-AKONADICORE_EXPORT QObject *objectForMimeTypeAndClass(const QString &mimetype, const QVector<int> &metaTypeIds, Options options = NoOptions);
+AKONADICORE_EXPORT QObject *objectForMimeTypeAndClass(const QString &mimetype, const QList<int> &metaTypeIds, Options options = NoOptions);
 
 /**
  * Override the plugin-lookup with @p plugin.

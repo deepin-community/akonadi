@@ -27,20 +27,20 @@ class SearchQuery;
  * @code
  *
  * SearchQuery query;
- * query.addTerm( SearchTerm( "From", "user1@domain.example", SearchTerm::CondEqual ) );
- * query.addTerm( SearchTerm( "Date", QDateTime( QDate( 2014, 01, 27 ), QTime( 00, 00, 00 ) ), SearchTerm::CondGreaterThan );
+ * query.addTerm(SearchTerm("From", "user1@domain.example", SearchTerm::CondEqual));
+ * query.addTerm(SearchTerm("Date", QDateTime(QDate( 2014, 01, 27), QTime(00, 00, 00)), SearchTerm::CondGreaterThan);
  *
- * Akonadi::ItemSearchJob *job = new Akonadi::ItemSearchJob( query );
+ * auto job = new Akonadi::ItemSearchJob(query);
  * job->fetchScope().fetchFullPayload();
- * connect( job, SIGNAL(result(KJob*)), this, SLOT(searchResult(KJob*)) );
+ * connect(job, &Akonadi::ItemSearchJob::result, this, &MyClass::searchResult));
  *
  * ...
  *
- * MyClass::searchResult( KJob *job )
+ * MyClass::searchResult(KJob *job)
  * {
- *   Akonadi::ItemSearchJob *searchJob = qobject_cast<Akonadi::ItemSearchJob*>( job );
+ *   auto searchJob = qobject_cast<Akonadi::ItemSearchJob*>(job);
  *   const Akonadi::Item::List items = searchJob->items();
- *   for ( const Akonadi::Item &item : items ) {
+ *   for (const Akonadi::Item &item : items) {
  *     // extract the payload and do further stuff
  *   }
  * }
@@ -130,7 +130,7 @@ public:
     /**
      * Returns the items that matched the search query.
      */
-    Q_REQUIRED_RESULT Item::List items() const;
+    [[nodiscard]] Item::List items() const;
 
     /**
      * Search only for items of given mime types.
@@ -144,7 +144,7 @@ public:
      *
      * @since 4.13
      */
-    Q_REQUIRED_RESULT QStringList mimeTypes() const;
+    [[nodiscard]] QStringList mimeTypes() const;
 
     /**
      * Search only in given collections.
@@ -167,7 +167,7 @@ public:
      *
      * @since 4.13
      */
-    Q_REQUIRED_RESULT Collection::List searchCollections() const;
+    [[nodiscard]] Collection::List searchCollections() const;
 
     /**
      * Sets whether the search should recurse into collections
@@ -185,7 +185,7 @@ public:
      *
      * @since 4.13
      */
-    Q_REQUIRED_RESULT bool isRecursive() const;
+    [[nodiscard]] bool isRecursive() const;
 
     /**
      * Sets whether resources should be queried too.
@@ -218,7 +218,7 @@ public:
      *
      * @since 4.13
      */
-    Q_REQUIRED_RESULT bool isRemoteSearchEnabled() const;
+    [[nodiscard]] bool isRemoteSearchEnabled() const;
 
 Q_SIGNALS:
     /**

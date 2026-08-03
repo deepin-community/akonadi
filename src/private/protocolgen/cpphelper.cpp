@@ -30,19 +30,19 @@ size_t typeSize(const QString &typeName)
                                                        {"Tristate", sizeof(qint8)},
                                                        {"Akonadi::Protocol::Attributes", sizeof(QMap<int, Dummy>)},
                                                        {"QSet", sizeof(QSet<Dummy>)},
-                                                       {"QVector", sizeof(QVector<Dummy>)}};
+                                                       {"QList", sizeof(QList<Dummy>)}};
 
     QByteArray tn;
     // Don't you just loooove hacks?
     // TODO: Extract underlying type during XML parsing
-    if (typeName.startsWith(QLatin1String("Akonadi::Protocol")) && typeName.endsWith(QLatin1String("Ptr"))) {
+    if (typeName.startsWith(QLatin1StringView("Akonadi::Protocol")) && typeName.endsWith(QLatin1StringView("Ptr"))) {
         tn = "QSharedPointer";
     } else {
         tn = TypeHelper::isContainer(typeName) ? TypeHelper::containerName(typeName).toUtf8() : typeName.toUtf8();
     }
     auto it = typeSizeLookup.find(tn);
     if (it == typeSizeLookup.end()) {
-        const auto typeId = QMetaType::type(tn);
+        const auto typeId = QMetaType::fromName(tn).id();
         const int size = QMetaType(typeId).sizeOf();
         // for types of unknown size int
         it = typeSizeLookup.insert(tn, size ? size_t(size) : sizeof(int));
@@ -52,14 +52,14 @@ size_t typeSize(const QString &typeName)
 
 } // namespace
 
-void CppHelper::sortMembers(QVector<PropertyNode const *> &props)
+void CppHelper::sortMembers(QList<PropertyNode const *> &props)
 {
     std::sort(props.begin(), props.end(), [](PropertyNode const *lhs, PropertyNode const *rhs) {
         return typeSize(lhs->type()) > typeSize(rhs->type());
     });
 }
 
-void CppHelper::sortMembersForSerialization(QVector<PropertyNode const *> &props)
+void CppHelper::sortMembersForSerialization(QList<PropertyNode const *> &props)
 {
     std::sort(props.begin(), props.end(), [](PropertyNode const *lhs, PropertyNode const *rhs) {
         return lhs->dependencies().isEmpty() > rhs->dependencies().isEmpty();

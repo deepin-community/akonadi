@@ -1,6 +1,6 @@
 /*
     SPDX-FileCopyrightText: 2008 Thomas McGuire <thomas.mcguire@gmx.net>
-    SPDX-FileCopyrightText: 2012-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2012-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -9,7 +9,7 @@
 
 #include "akonadiwidgets_debug.h"
 #include <KColorScheme>
-#include <KIO/Global>
+#include <KFormat>
 
 #include <QAbstractItemView>
 #include <QPainter>
@@ -69,8 +69,8 @@ public:
 
     void updateColor()
     {
-        mSelectedUnreadColor = KColorScheme(QPalette::Active, KColorScheme::Selection).foreground(KColorScheme::LinkText).color();
-        mDeselectedUnreadColor = KColorScheme(QPalette::Active, KColorScheme::View).foreground(KColorScheme::LinkText).color();
+        mSelectedUnreadColor = KColorScheme(QPalette::Active, KColorScheme::Selection).foreground(KColorScheme::PositiveText).color();
+        mDeselectedUnreadColor = KColorScheme(QPalette::Active, KColorScheme::View).foreground(KColorScheme::PositiveText).color();
     }
 };
 
@@ -315,7 +315,8 @@ void CollectionStatisticsDelegate::paint(QPainter *painter, const QStyleOptionVi
 
     // total size
     if (index.column() == 3 && !expanded) {
-        painter->drawText(textRect, option4.displayAlignment | Qt::AlignVCenter, KIO::convertSize(totalSize));
+        KFormat format;
+        painter->drawText(textRect, option4.displayAlignment | Qt::AlignVCenter, format.formatByteSize(totalSize));
         return;
     }
 
@@ -327,3 +328,5 @@ void CollectionStatisticsDelegate::updatePalette()
     Q_D(CollectionStatisticsDelegate);
     d->updateColor();
 }
+
+#include "moc_collectionstatisticsdelegate.cpp"

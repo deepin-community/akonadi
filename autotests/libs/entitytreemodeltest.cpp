@@ -4,7 +4,7 @@
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
 
-#include <qtest_akonadi.h>
+#include "qtest_akonadi.h"
 
 #include "entitydisplayattribute.h"
 #include "entitytreemodel.h"
@@ -58,6 +58,12 @@ static const char serverContent1[] =
 class EntityTreeModelTest : public QObject
 {
     Q_OBJECT
+
+public:
+    EntityTreeModelTest()
+    {
+        QHashSeed::setDeterministicGlobalSeed();
+    }
 
 private Q_SLOTS:
     void initTestCase();
@@ -157,12 +163,12 @@ void EntityTreeModelTest::testInitialFetch()
                                                 {DataChanged, 0, 0, QVariantList{QStringLiteral("Col 4")}},
                                                 {DataChanged, 0, 0, QVariantList{QStringLiteral("Col 3")}},
                                                 // New collections are prepended
-                                                {RowsAboutToBeInserted, 0, 0, QStringLiteral("Collection 1")},
-                                                {RowsInserted, 0, 0, QStringLiteral("Collection 1"), QVariantList{QStringLiteral("Col 2")}},
-                                                {RowsAboutToBeInserted, 0, 0, QStringLiteral("Collection 1")},
-                                                {RowsInserted, 0, 0, QStringLiteral("Collection 1"), QVariantList{QStringLiteral("Col 6")}},
-                                                {RowsAboutToBeInserted, 0, 0, QStringLiteral("Collection 1")},
-                                                {RowsInserted, 0, 0, QStringLiteral("Collection 1"), QVariantList{QStringLiteral("Col 7")}},
+                                                {RowsAboutToBeInserted, 0, 0, QStringLiteral("Col 1")},
+                                                {RowsInserted, 0, 0, QStringLiteral("Col 1"), QVariantList{QStringLiteral("Col 2")}},
+                                                {RowsAboutToBeInserted, 0, 0, QStringLiteral("Col 1")},
+                                                {RowsInserted, 0, 0, QStringLiteral("Col 1"), QVariantList{QStringLiteral("Col 6")}},
+                                                {RowsAboutToBeInserted, 0, 0, QStringLiteral("Col 1")},
+                                                {RowsInserted, 0, 0, QStringLiteral("Col 1"), QVariantList{QStringLiteral("Col 7")}},
                                                 {DataChanged, 0, 0, QVariantList{QStringLiteral("Col 1")}},
                                                 // The items in the collections are appended.
                                                 {RowsAboutToBeInserted, 0, 3, QStringLiteral("Col 2")},
@@ -177,8 +183,8 @@ void EntityTreeModelTest::testInitialFetch()
                                                 {RowsInserted, 0, 1, QStringLiteral("Col 6")},
                                                 {RowsAboutToBeInserted, 0, 3, QStringLiteral("Col 7")},
                                                 {RowsInserted, 0, 3, QStringLiteral("Col 7")},
-                                                {DataChanged, 0, 0, QVariantList{QStringLiteral("Col 1")}},
                                                 {DataChanged, 3, 3, QVariantList{QStringLiteral("Col 3")}},
+                                                {DataChanged, 0, 0, QVariantList{QStringLiteral("Col 1")}},
                                                 {DataChanged, 0, 0, QVariantList{QStringLiteral("Col 5")}},
                                                 {DataChanged, 0, 0, QVariantList{QStringLiteral("Col 4")}},
                                                 {DataChanged, 2, 2, QVariantList{QStringLiteral("Col 2")}},

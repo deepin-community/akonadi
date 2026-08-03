@@ -8,7 +8,7 @@
 
 #include "entities.h"
 
-#include <private/protocol_p.h>
+#include "private/protocol_p.h"
 
 #include <QByteArray>
 #include <QList>
@@ -78,19 +78,10 @@ public:
      Notify about changed items tags
     **/
     void itemsTagsChanged(const PimItem::List &items,
-                          const QSet<qint64> &addedTags,
-                          const QSet<qint64> &removedTags,
+                          const QList<Tag> &addedTags,
+                          const QList<Tag> &removedTags,
                           const Collection &collection = Collection(),
                           const QByteArray &resource = QByteArray());
-
-    /**
-     Notify about changed items relations
-    **/
-    void itemsRelationsChanged(const PimItem::List &items,
-                               const Relation::List &addedRelations,
-                               const Relation::List &removedRelations,
-                               const Collection &collection = Collection(),
-                               const QByteArray &resource = QByteArray());
 
     /**
       Notify about moved items
@@ -175,16 +166,6 @@ public:
     void tagRemoved(const Tag &tag, const QByteArray &resource, const QString &remoteId);
 
     /**
-      Notify about an added relation.
-     */
-    void relationAdded(const Relation &relation);
-
-    /**
-      Notify about a removed relation.
-     */
-    void relationRemoved(const Relation &relation);
-
-    /**
       Trigger sending of collected notifications.
 
       @returns Returns true when any notifications were dispatched, false if there
@@ -201,10 +182,8 @@ private:
                           const QSet<QByteArray> &parts = QSet<QByteArray>(),
                           const QSet<QByteArray> &addedFlags = QSet<QByteArray>(),
                           const QSet<QByteArray> &removedFlags = QSet<QByteArray>(),
-                          const QSet<qint64> &addedTags = QSet<qint64>(),
-                          const QSet<qint64> &removedTags = QSet<qint64>(),
-                          const Relation::List &addedRelations = Relation::List(),
-                          const Relation::List &removedRelations = Relation::List());
+                          const QList<Tag> &addedTags = {},
+                          const QList<Tag> &removedTags = {});
     void itemNotification(Protocol::ItemChangeNotification::Operation op,
                           const PimItem &item,
                           const Collection &collection,
@@ -222,7 +201,6 @@ private:
                          const Tag &tag,
                          const QByteArray &resource = QByteArray(),
                          const QString &remoteId = QString());
-    void relationNotification(Protocol::RelationChangeNotification::Operation op, const Relation &relation);
     void dispatchNotification(const Protocol::ChangeNotificationPtr &msg);
     void clear();
 

@@ -45,7 +45,7 @@ class EntityTreeModelPrivate;
  * QModelIndex for the correct row, the Collection can be retrieved like this:
  *
  * @code
- * Collection col = index.data( EntityTreeModel::CollectionRole ).value<Collection>();
+ * Collection col = index.data(EntityTreeModel::CollectionRole).value<Collection>();
  * @endcode
  *
  * And similarly for Items. This works even if there is a proxy model between the calling code
@@ -72,22 +72,22 @@ class EntityTreeModelPrivate;
  *
  * @code
  *
- *   Monitor *monitor = new Monitor( this );
- *   monitor->setCollectionMonitored( Collection::root() );
- *   monitor->setMimeTypeMonitored( KContacts::Addressee::mimeType() );
- *   monitor->setSession( session );
+ *   auto monitor = new Monitor(this);
+ *   monitor->setCollectionMonitored(Collection::root());
+ *   monitor->setMimeTypeMonitored(KContacts::Addressee::mimeType());
+ *   monitor->setSession(session);
  *
- *   EntityTreeModel *model = new EntityTreeModel( monitor, this );
+ *   auto model = new EntityTreeModel(monitor, this);
  *
- *   EntityTreeView *view = new EntityTreeView( this );
- *   view->setModel( model );
+ *   auto view = new EntityTreeView(this);
+ *   view->setModel(model);
  *
  * @endcode
  *
  * The EntityTreeModel will show items of a different type by changing the line
  *
  * @code
- * monitor->setMimeTypeMonitored( KContacts::Addressee::mimeType() );
+ * monitor->setMimeTypeMonitored(KContacts::Addressee::mimeType());
  * @endcode
  *
  * to a different mimetype. KContacts::Addressee::mimeType() is an alias for "text/directory". If changed to KMime::Message::mimeType()
@@ -106,7 +106,7 @@ class EntityTreeModelPrivate;
  * The model can be configured to not fetch items into the model (ie, fetch collections only) by setting
  *
  * @code
- * entityTreeModel->setItemPopulationStrategy( EntityTreeModel::NoItemPopulation );
+ * entityTreeModel->setItemPopulationStrategy(EntityTreeModel::NoItemPopulation);
  * @endcode
  *
  * The items may be fetched lazily, i.e. not inserted into the model until request by the user for performance reasons.
@@ -114,10 +114,10 @@ class EntityTreeModelPrivate;
  * The Collection tree is always built immediately if Collections are to be fetched.
  *
  * @code
- * entityTreeModel->setItemPopulationStrategy( EntityTreeModel::LazyPopulation );
+ * entityTreeModel->setItemPopulationStrategy(EntityTreeModel::LazyPopulation);
  * @endcode
  *
- * This will typically be used with a EntityMimeTypeFilterModel in a configuration such as KMail4.5 or AkonadiConsole.
+ * This will typically be used with a EntityMimeTypeFilterModel in a configuration such as KMail or AkonadiConsole.
  *
  * The CollectionFetchStrategy determines how the model will be populated with Collections. That is, if FetchNoCollections is set,
  * no collections beyond the root of the model will be fetched. This can be used in combination with setting a particular Collection to monitor.
@@ -125,9 +125,9 @@ class EntityTreeModelPrivate;
  * @code
  * // Get an collection id from a config file.
  * Collection::Id id;
- * monitor->setCollectionMonitored( Collection( id ) );
+ * monitor->setCollectionMonitored(Collection(id));
  * // ... Other initialization code.
- * entityTree->setCollectionFetchStrategy( FetchNoCollections );
+ * entityTree->setCollectionFetchStrategy(FetchNoCollections);
  * @endcode
  *
  * This has the effect of creating a model of only a list of Items, and not collections. This is similar in behaviour and aims to the ItemModel.
@@ -141,15 +141,15 @@ class EntityTreeModelPrivate;
  * It is also possible to show the root Collection as part of the selectable model:
  *
  * @code
- * entityTree->setIncludeRootCollection( true );
+ * entityTree->setIncludeRootCollection(true);
  * @endcode
  *
  *
  * By default the displayed name of the root collection is '[*]', because it doesn't require i18n, and is generic. It can be changed too.
  *
  * @code
- * entityTree->setIncludeRootCollection( true );
- * entityTree->setRootCollectionDisplayName( i18nc( "Name of top level for all addressbooks in the application", "[All AddressBooks]" ) )
+ * entityTree->setIncludeRootCollection(true);
+ * entityTree->setRootCollectionDisplayName(i18nc("Name of top level for all addressbooks in the application", "[All AddressBooks]"))
  * @endcode
  *
  * This feature is used in KAddressBook.
@@ -171,30 +171,30 @@ class EntityTreeModelPrivate;
  * @code
  * // ... create an EntityTreeModel
  *
- * collectionTree = new EntityMimeTypeFilterModel( this );
- * collectionTree->setSourceModel( entityTreeModel );
+ * collectionTree = new EntityMimeTypeFilterModel(this);
+ * collectionTree->setSourceModel(entityTreeModel);
  *
  * // Include only collections in this proxy model.
- * collectionTree->addMimeTypeInclusionFilter( Collection::mimeType() );
- * collectionTree->setHeaderGroup( EntityTreeModel::CollectionTreeHeaders );
+ * collectionTree->addMimeTypeInclusionFilter(Collection::mimeType());
+ * collectionTree->setHeaderGroup(EntityTreeModel::CollectionTreeHeaders);
  *
  * treeview->setModel(collectionTree);
  *
  * // SelectionProxyModel can handle complex selections:
- * treeview->setSelectionMode( QAbstractItemView::ExtendedSelection );
+ * treeview->setSelectionMode(QAbstractItemView::ExtendedSelection);
  *
- * SelectionProxyModel *selProxy = new SelectionProxyModel( treeview->selectionModel(), this );
- * selProxy->setSourceModel( entityTreeModel );
+ * auto selProxy = new SelectionProxyModel(treeview->selectionModel(), this);
+ * selProxy->setSourceModel(entityTreeModel);
  *
- * itemList = new EntityMimeTypeFilterModel( this );
- * itemList->setSourceModel( selProxy );
+ * itemList = new EntityMimeTypeFilterModel(this);
+ * itemList->setSourceModel(selProxy);
  *
  * // Filter out collections. Show only items.
- * itemList->addMimeTypeExclusionFilter( Collection::mimeType() );
- * itemList->setHeaderGroup( EntityTreeModel::ItemListHeaders );
+ * itemList->addMimeTypeExclusionFilter(Collection::mimeType());
+ * itemList->setHeaderGroup(EntityTreeModel::ItemListHeaders);
  *
- * EntityTreeView *itemView = new EntityTreeView( splitter );
- * itemView->setModel( itemList );
+ * auto itemView = new EntityTreeView(splitter);
+ * itemView->setModel(itemList);
  * @endcode
  *
  * The SelectionProxyModel can handle complex selections.
@@ -211,30 +211,30 @@ class EntityTreeModelPrivate;
  * A KDescendantsProxyModel can be used to represent all descendants of a model as a flat list.
  * For example, to show all descendant items in a selected Collection in a list:
  * @code
- * collectionTree = new EntityMimeTypeFilterModel( this );
- * collectionTree->setSourceModel( entityTreeModel );
+ * auto collectionTree = new EntityMimeTypeFilterModel(this);
+ * collectionTree->setSourceModel(entityTreeModel);
  *
  * // Include only collections in this proxy model.
- * collectionTree->addMimeTypeInclusionFilter( Collection::mimeType() );
- * collectionTree->setHeaderGroup( EntityTreeModel::CollectionTreeHeaders );
+ * collectionTree->addMimeTypeInclusionFilter(Collection::mimeType());
+ * collectionTree->setHeaderGroup(EntityTreeModel::CollectionTreeHeaders);
  *
- * treeview->setModel( collectionTree );
+ * treeview->setModel(collectionTree);
  *
- * SelectionProxyModel *selProxy = new SelectionProxyModel( treeview->selectionModel(), this );
- * selProxy->setSourceModel( entityTreeModel );
+ * auto selProxy = new SelectionProxyModel(treeview->selectionModel(), this);
+ * selProxy->setSourceModel(entityTreeModel);
  *
- * descendedList = new KDescendantsProxyModel( this );
- * descendedList->setSourceModel( selProxy );
+ * auto descendedList = new KDescendantsProxyModel(this);
+ * descendedList->setSourceModel(selProxy);
  *
- * itemList = new EntityMimeTypeFilterModel( this );
- * itemList->setSourceModel( descendedList );
+ * auto itemList = new EntityMimeTypeFilterModel(this);
+ * itemList->setSourceModel(descendedList);
  *
  * // Exclude collections from the list view.
- * itemList->addMimeTypeExclusionFilter( Collection::mimeType() );
- * itemList->setHeaderGroup( EntityTreeModel::ItemListHeaders );
+ * itemList->addMimeTypeExclusionFilter(Collection::mimeType());
+ * itemList->setHeaderGroup(EntityTreeModel::ItemListHeaders);
  *
- * listView = new EntityTreeView( this );
- * listView->setModel( itemList );
+ * listView = new EntityTreeView(this);
+ * listView->setModel(itemList);
  * @endcode
  *
  *
@@ -265,17 +265,17 @@ class EntityTreeModelPrivate;
  * contacts or emails).
  *
  * The following protected virtual methods should be implemented in the subclass:
- * - int entityColumnCount( HeaderGroup headerGroup ) const;
+ * - `int entityColumnCount( HeaderGroup headerGroup ) const;`
  * -- Implement to return the number of columns for a HeaderGroup. If the HeaderGroup is CollectionTreeHeaders, return the number of columns to display for the
  *    Collection tree, and if it is ItemListHeaders, return the number of columns to display for the item. In the case of addressee, this could be for example,
  *    two (for given name and family name) or for emails it could be three (for subject, sender, date). This is a decision of the subclass implementor.
- * - QVariant entityHeaderData( int section, Qt::Orientation orientation, int role, HeaderGroup headerGroup ) const;
+ * - `QVariant entityHeaderData( int section, Qt::Orientation orientation, int role, HeaderGroup headerGroup ) const;`
  * -- Implement to return the data for each section for a HeaderGroup. For example, if the header group is CollectionTreeHeaders in a contacts model,
  *    the string "Address books" might be returned for column 0, whereas if the headerGroup is ItemListHeaders, the strings "Given Name", "Family Name",
  *    "Email Address" might be returned for the columns 0, 1, and 2.
- * - QVariant entityData( const Collection &collection, int column, int role = Qt::DisplayRole ) const;
+ * - `QVariant entityData( const Collection &collection, int column, int role = Qt::DisplayRole ) const;`
  * -- Implement to return data for a particular Collection. Typically this will be the name of the collection or the EntityDisplayAttribute.
- * - QVariant entityData( const Item &item, int column, int role = Qt::DisplayRole ) const;
+ * - `QVariant entityData(const Item &item, int column, int role = Qt::DisplayRole) const;`
  * -- Implement to return the data for a particular item and column. In the case of email for example, this would be the actual subject, sender and date of the
  * email.
  *
@@ -285,8 +285,8 @@ class EntityTreeModelPrivate;
  * That is the purpose of these lines in the above example
  *
  * @code
- * collectionTree->setHeaderGroup( EntityTreeModel::CollectionTreeHeaders );
- * itemList->setHeaderGroup( EntityTreeModel::ItemListHeaders );
+ * collectionTree->setHeaderGroup(EntityTreeModel::CollectionTreeHeaders);
+ * itemList->setHeaderGroup(EntityTreeModel::ItemListHeaders);
  * @endcode
  *
  * <h3>Progress reporting</h3>
@@ -337,6 +337,7 @@ public:
         FetchStateRole, ///< Returns the FetchState of a particular item. @since 4.5
         IsPopulatedRole, ///< Returns whether a Collection has been populated, i.e. whether its items have been fetched. @since 4.10
         OriginalCollectionNameRole, ///< Returns original name for collection @since 4.14
+        DisplayNameRole, ///< Returns the same as Qt::DisplayRole
         UserRole = Qt::UserRole + 500, ///< First role for user extensions.
         TerminalUserRole = 2000, ///< Last role for user extensions. Don't use a role beyond this or headerData will break.
         EndRole = 65535
@@ -361,6 +362,7 @@ public:
         FetchingState ///< There is a fetch of items in this collection in progress.
         // TODO: Change states for reporting of fetching payload parts of items.
     };
+    Q_ENUM(FetchState)
 
     /**
      * Describes what header information the model shall return.
@@ -408,14 +410,14 @@ public:
     /**
      * Returns @c true if internal system entities are shown, and @c false otherwise.
      */
-    Q_REQUIRED_RESULT bool systemEntitiesShown() const;
+    [[nodiscard]] bool systemEntitiesShown() const;
 
     /**
      * Returns the currently used listfilter.
      *
      * @since 4.14
      */
-    Q_REQUIRED_RESULT Akonadi::CollectionFetchScope::ListFilter listFilter() const;
+    [[nodiscard]] Akonadi::CollectionFetchScope::ListFilter listFilter() const;
 
     /**
      * Sets the currently used listfilter.
@@ -448,7 +450,7 @@ public:
     /**
      * Returns the item population strategy of the model.
      */
-    Q_REQUIRED_RESULT ItemPopulationStrategy itemPopulationStrategy() const;
+    [[nodiscard]] ItemPopulationStrategy itemPopulationStrategy() const;
 
     /**
      * Sets whether the root collection shall be provided by the model.
@@ -460,7 +462,7 @@ public:
     /**
      * Returns whether the root collection is provided by the model.
      */
-    Q_REQUIRED_RESULT bool includeRootCollection() const;
+    [[nodiscard]] bool includeRootCollection() const;
 
     /**
      * Sets the display @p name of the root collection of the model.
@@ -474,7 +476,7 @@ public:
     /**
      * Returns the display name of the root collection.
      */
-    Q_REQUIRED_RESULT QString rootCollectionDisplayName() const;
+    [[nodiscard]] QString rootCollectionDisplayName() const;
 
     /**
      * Describes what collections shall be fetched by and represent in the model.
@@ -495,31 +497,31 @@ public:
     /**
      * Returns the collection fetch strategy of the model.
      */
-    Q_REQUIRED_RESULT CollectionFetchStrategy collectionFetchStrategy() const;
+    [[nodiscard]] CollectionFetchStrategy collectionFetchStrategy() const;
 
-    Q_REQUIRED_RESULT QHash<int, QByteArray> roleNames() const override;
+    [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
-    Q_REQUIRED_RESULT int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    Q_REQUIRED_RESULT int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    [[nodiscard]] int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    [[nodiscard]] int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
-    Q_REQUIRED_RESULT QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    Q_REQUIRED_RESULT QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    [[nodiscard]] QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-    Q_REQUIRED_RESULT Qt::ItemFlags flags(const QModelIndex &index) const override;
-    Q_REQUIRED_RESULT QStringList mimeTypes() const override;
+    [[nodiscard]] Qt::ItemFlags flags(const QModelIndex &index) const override;
+    [[nodiscard]] QStringList mimeTypes() const override;
 
-    Q_REQUIRED_RESULT Qt::DropActions supportedDropActions() const override;
-    Q_REQUIRED_RESULT QMimeData *mimeData(const QModelIndexList &indexes) const override;
+    [[nodiscard]] Qt::DropActions supportedDropActions() const override;
+    [[nodiscard]] QMimeData *mimeData(const QModelIndexList &indexes) const override;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
-    Q_REQUIRED_RESULT QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    Q_REQUIRED_RESULT QModelIndex parent(const QModelIndex &index) const override;
+    [[nodiscard]] QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    [[nodiscard]] QModelIndex parent(const QModelIndex &index) const override;
 
     // TODO: Review the implementations of these. I think they could be better.
-    Q_REQUIRED_RESULT bool canFetchMore(const QModelIndex &parent) const override;
+    [[nodiscard]] bool canFetchMore(const QModelIndex &parent) const override;
     void fetchMore(const QModelIndex &parent) override;
-    Q_REQUIRED_RESULT bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
+    [[nodiscard]] bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
 
     /**
      * Returns whether the collection tree has been fetched at initialisation.
@@ -527,7 +529,7 @@ public:
      * @see collectionTreeFetched
      * @since 4.10
      */
-    Q_REQUIRED_RESULT bool isCollectionTreeFetched() const;
+    [[nodiscard]] bool isCollectionTreeFetched() const;
 
     /**
      * Returns whether the collection has been populated.
@@ -535,7 +537,7 @@ public:
      * @see collectionPopulated
      * @since 4.12
      */
-    Q_REQUIRED_RESULT bool isCollectionPopulated(Akonadi::Collection::Id) const;
+    [[nodiscard]] bool isCollectionPopulated(Akonadi::Collection::Id) const;
 
     /**
      * Returns whether the model is fully populated.
@@ -546,16 +548,16 @@ public:
      * @see isCollectionTreeFetched
      * @since 4.14
      */
-    Q_REQUIRED_RESULT bool isFullyPopulated() const;
+    [[nodiscard]] bool isFullyPopulated() const;
 
     /**
      * Reimplemented to handle the AmazingCompletionRole.
      */
-    Q_REQUIRED_RESULT QModelIndexList match(const QModelIndex &start,
-                                            int role,
-                                            const QVariant &value,
-                                            int hits = 1,
-                                            Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchStartsWith | Qt::MatchWrap)) const override;
+    [[nodiscard]] QModelIndexList match(const QModelIndex &start,
+                                        int role,
+                                        const QVariant &value,
+                                        int hits = 1,
+                                        Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchStartsWith | Qt::MatchWrap)) const override;
 
     /**
      * Returns a QModelIndex in @p model which points to @p collection.

@@ -28,7 +28,7 @@ public:
     /**
      * Returns whether Accounts integration is enabled.
      */
-    Q_REQUIRED_RESULT bool isEnabled() const;
+    [[nodiscard]] bool isEnabled() const;
 
     using AuthDataCallback = std::function<void(const QVariantMap &)>;
     using ErrorCallback = std::function<void(const QString &)>;
@@ -44,7 +44,7 @@ Q_SIGNALS:
 
 private:
     // For DBus adaptor which doesn't understand std::optional
-    quint32 getAccountId() const;
+    AKONADIAGENTBASE_NO_EXPORT quint32 getAccountId() const;
 
     std::optional<quint32> mAccountId;
 };

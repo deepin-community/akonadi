@@ -48,7 +48,6 @@ public:
         InvalideCacheForCollection,
         SyncAllDone,
         SyncCollectionTreeDone,
-        SyncRelations,
         Custom
     };
 
@@ -65,7 +64,7 @@ public:
         qint64 serial;
         TaskType type;
         Collection collection;
-        QVector<Item> items;
+        QList<Item> items;
         QSet<QByteArray> itemParts;
         QList<QDBusMessage> dbusMsgs;
         QObject *receiver = nullptr;
@@ -191,7 +190,7 @@ public:
     /**
        Print debug output showing the state of the scheduler.
     */
-    QString dumpToString() const;
+    [[nodiscard]] QString dumpToString() const;
 
     /**
        Clear the state of the scheduler. Warning: this is intended to be
@@ -241,7 +240,7 @@ Q_SIGNALS:
     void executeTagSync();
     void executeRelationSync();
     void executeItemFetch(const Akonadi::Item &item, const QSet<QByteArray> &parts);
-    void executeItemsFetch(const QVector<Akonadi::Item> &items, const QSet<QByteArray> &parts);
+    void executeItemsFetch(const QList<Akonadi::Item> &items, const QSet<QByteArray> &parts);
     void executeResourceCollectionDeletion();
     void executeCacheInvalidation(const Akonadi::Collection &collection);
     void executeChangeReplay();

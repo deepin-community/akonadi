@@ -42,16 +42,16 @@ ecm_qt_declare_logging_category(akonadiprivate_SRCS HEADER akonadiprivate_debug.
         DESCRIPTION "akonadi (Akonadi Private Library)"
         OLD_CATEGORY_NAMES akonadiprivate_log
         EXPORT AKONADI
-    )
+   )
 
-add_library(KF5AkonadiPrivate SHARED ${akonadiprivate_SRCS})
-if (COMPILE_WITH_UNITY_CMAKE_SUPPORT)
-    set_target_properties(KF5AkonadiPrivate PROPERTIES UNITY_BUILD ON)
+add_library(KPim6AkonadiPrivate SHARED ${akonadiprivate_SRCS})
+if(COMPILE_WITH_UNITY_CMAKE_SUPPORT)
+    set_target_properties(KPim6AkonadiPrivate PROPERTIES UNITY_BUILD ON)
 endif()
 
-add_library(KF5::AkonadiPrivate ALIAS KF5AkonadiPrivate)
-add_dependencies(KF5AkonadiPrivate generate_protocol)
-target_link_libraries(KF5AkonadiPrivate
+add_library(KPim6::AkonadiPrivate ALIAS KPim6AkonadiPrivate)
+add_dependencies(KPim6AkonadiPrivate generate_protocol)
+target_link_libraries(KPim6AkonadiPrivate
 PUBLIC
     Qt::Core
     Qt::DBus
@@ -59,21 +59,23 @@ PRIVATE
     Qt::Network
     LibLZMA::LibLZMA
 )
-generate_export_header(KF5AkonadiPrivate BASE_NAME akonadiprivate)
+generate_export_header(KPim6AkonadiPrivate BASE_NAME akonadiprivate)
 
-set_target_properties(KF5AkonadiPrivate PROPERTIES
+target_compile_definitions(KPim6AkonadiPrivate PRIVATE CONFIG_INSTALL_DIR=\"${KDE_INSTALL_FULL_CONFDIR}\")
+
+set_target_properties(KPim6AkonadiPrivate PROPERTIES
     VERSION ${AKONADI_VERSION}
     SOVERSION ${AKONADI_SOVERSION}
     EXPORT_NAME AkonadiPrivate
 )
 
-target_include_directories(KF5AkonadiPrivate INTERFACE "$<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR_KF}/Akonadi>")
+target_include_directories(KPim6AkonadiPrivate INTERFACE "$<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR}/KPim6/Akonadi>")
 
 
 install(TARGETS
-    KF5AkonadiPrivate
-    EXPORT KF5AkonadiTargets
-    ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
+    KPim6AkonadiPrivate
+    EXPORT KPim6AkonadiTargets
+    ${KDE_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
@@ -91,5 +93,5 @@ install(FILES
     scope_p.h
     tristate_p.h
     compressionstream_p.h
-    DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF}/Akonadi/akonadi/private
+    DESTINATION ${KDE_INSTALL_INCLUDEDIR}/KPim6/Akonadi/akonadi/private
 )

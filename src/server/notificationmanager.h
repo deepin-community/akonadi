@@ -8,7 +8,7 @@
 
 #include "akthread.h"
 
-#include <private/protocol_p.h>
+#include "private/protocol_p.h"
 
 #include <QPointer>
 class QTimer;
@@ -29,8 +29,13 @@ class NotificationManager : public AkThread
 {
     Q_OBJECT
 
-public:
+protected:
+    /**
+     * Use AkThread::create() to create and start a new NotificationManager thread.
+     */
     explicit NotificationManager(StartMode startMode = AutoStart);
+
+public:
     ~NotificationManager() override;
 
     void forgetSubscriber(NotificationSubscriber *subscriber);
@@ -59,14 +64,14 @@ protected:
     void init() override;
     void quit() override;
 
-    void emitDebugNotification(const Protocol::ChangeNotificationPtr &ntf, const QVector<QByteArray> &listeners);
+    void emitDebugNotification(const Protocol::ChangeNotificationPtr &ntf, const QList<QByteArray> &listeners);
 
 private:
     Protocol::ChangeNotificationList mNotifications;
     QTimer *mTimer = nullptr;
 
     QThreadPool *mNotifyThreadPool = nullptr;
-    QVector<QPointer<NotificationSubscriber>> mSubscribers;
+    QList<QPointer<NotificationSubscriber>> mSubscribers;
     int mDebugNotifications;
     AggregatedCollectionFetchScope *mCollectionFetchScope = nullptr;
     AggregatedItemFetchScope *mItemFetchScope = nullptr;

@@ -13,9 +13,9 @@
 #include "tagfetchscope.h"
 #include "tagmodel.h"
 #include "ui_tageditwidget.h"
-#include <kwidgetsaddons_version.h>
 
 #include <KCheckableProxyModel>
+#include <KLineEditEventHandler>
 #include <KLocalizedString>
 #include <KMessageBox>
 
@@ -164,12 +164,7 @@ void TagEditWidgetPrivate::deleteTag()
     const auto tag = m_deleteCandidate.data(Akonadi::TagModel::TagRole).value<Akonadi::Tag>();
     const QString text = xi18nc("@info", "Do you really want to remove the tag <resource>%1</resource>?", tag.name());
     const QString caption = i18nc("@title:window", "Delete Tag");
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
     if (KMessageBox::questionTwoActions(d, text, caption, KStandardGuiItem::del(), KStandardGuiItem::cancel()) == KMessageBox::ButtonCode::PrimaryAction) {
-#else
-    if (KMessageBox::questionYesNo(d, text, caption, KStandardGuiItem::del(), KStandardGuiItem::cancel()) == KMessageBox::Yes) {
-
-#endif
         new TagDeleteJob(tag, this);
     }
 }
@@ -179,6 +174,7 @@ TagEditWidget::TagEditWidget(QWidget *parent)
     , d(new TagEditWidgetPrivate(this))
 {
     d->ui.setupUi(this);
+    KLineEditEventHandler::catchReturnKey(d->ui.newTagEdit);
 
     d->ui.tagsView->installEventFilter(this);
     connect(d->ui.tagsView, &QAbstractItemView::entered, d.get(), &TagEditWidgetPrivate::slotItemEntered);
@@ -190,7 +186,7 @@ TagEditWidget::TagEditWidget(QWidget *parent)
     // create the delete button, which is shown when
     // hovering the items
     d->m_deleteButton = new QPushButton(d->ui.tagsView->viewport());
-    d->m_deleteButton->setObjectName(QStringLiteral("tagDeleteButton"));
+    d->m_deleteButton->setObjectName(QLatin1StringView("tagDeleteButton"));
     d->m_deleteButton->setIcon(QIcon::fromTheme(QStringLiteral("edit-delete")));
     d->m_deleteButton->setToolTip(i18nc("@info", "Delete tag"));
     d->m_deleteButton->hide();
@@ -287,3 +283,5 @@ bool TagEditWidget::eventFilter(QObject *watched, QEvent *event)
 }
 
 #include "tageditwidget.moc"
+
+#include "moc_tageditwidget.cpp"

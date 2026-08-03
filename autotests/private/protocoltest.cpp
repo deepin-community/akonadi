@@ -72,12 +72,6 @@ void ProtocolTest::testFactory_data()
     QTest::newRow("fetchTags resp") << Command::FetchTags << true << true;
     QTest::newRow("modifyTag cmd") << Command::ModifyTag << false << true;
     QTest::newRow("modifyTag resp") << Command::ModifyTag << true << true;
-    QTest::newRow("fetchRelations cmd") << Command::FetchRelations << false << true;
-    QTest::newRow("fetchRelations resp") << Command::FetchRelations << true << true;
-    QTest::newRow("modifyRelation cmd") << Command::ModifyRelation << false << true;
-    QTest::newRow("modifyRelation resp") << Command::ModifyRelation << true << true;
-    QTest::newRow("removeRelations cmd") << Command::RemoveRelations << false << true;
-    QTest::newRow("removeRelations resp") << Command::RemoveRelations << true << true;
     QTest::newRow("selectResource cmd") << Command::SelectResource << false << true;
     QTest::newRow("selectResource resp") << Command::SelectResource << true << true;
     QTest::newRow("streamPayload cmd") << Command::StreamPayload << false << true;
@@ -88,8 +82,6 @@ void ProtocolTest::testFactory_data()
     QTest::newRow("collectionChangeNotification resp") << Command::CollectionChangeNotification << true << false;
     QTest::newRow("tagChangeNotification cmd") << Command::TagChangeNotification << false << true;
     QTest::newRow("tagChangENotification resp") << Command::TagChangeNotification << true << false;
-    QTest::newRow("relationChangeNotification cmd") << Command::RelationChangeNotification << false << true;
-    QTest::newRow("relationChangeNotification resp") << Command::RelationChangeNotification << true << false;
     QTest::newRow("_responseBit cmd") << Command::_ResponseBit << false << false;
     QTest::newRow("_responseBit resp") << Command::_ResponseBit << true << false;
 }
@@ -182,25 +174,25 @@ void ProtocolTest::testAncestor()
 void ProtocolTest::testFetchScope_data()
 {
     QTest::addColumn<bool>("fullPayload");
-    QTest::addColumn<QVector<QByteArray>>("requestedParts");
-    QTest::addColumn<QVector<QByteArray>>("expectedParts");
-    QTest::addColumn<QVector<QByteArray>>("expectedPayloads");
-    QTest::newRow("full payload (via flag") << true << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR"}
-                                            << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"} << QVector<QByteArray>{"PLD:HEAD", "PLD:RFC822"};
-    QTest::newRow("full payload (via part name") << false << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"}
-                                                 << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"} << QVector<QByteArray>{"PLD:HEAD", "PLD:RFC822"};
-    QTest::newRow("full payload (via both") << true << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"}
-                                            << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"} << QVector<QByteArray>{"PLD:HEAD", "PLD:RFC822"};
-    QTest::newRow("without full payload") << false << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR"} << QVector<QByteArray>{"PLD:HEAD", "ATR:MYATR"}
-                                          << QVector<QByteArray>{"PLD:HEAD"};
+    QTest::addColumn<QList<QByteArray>>("requestedParts");
+    QTest::addColumn<QList<QByteArray>>("expectedParts");
+    QTest::addColumn<QList<QByteArray>>("expectedPayloads");
+    QTest::newRow("full payload (via flag") << true << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR"} << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"}
+                                            << QList<QByteArray>{"PLD:HEAD", "PLD:RFC822"};
+    QTest::newRow("full payload (via part name") << false << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"}
+                                                 << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"} << QList<QByteArray>{"PLD:HEAD", "PLD:RFC822"};
+    QTest::newRow("full payload (via both") << true << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"}
+                                            << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR", "PLD:RFC822"} << QList<QByteArray>{"PLD:HEAD", "PLD:RFC822"};
+    QTest::newRow("without full payload") << false << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR"} << QList<QByteArray>{"PLD:HEAD", "ATR:MYATR"}
+                                          << QList<QByteArray>{"PLD:HEAD"};
 }
 
 void ProtocolTest::testFetchScope()
 {
     QFETCH(bool, fullPayload);
-    QFETCH(QVector<QByteArray>, requestedParts);
-    QFETCH(QVector<QByteArray>, expectedParts);
-    QFETCH(QVector<QByteArray>, expectedPayloads);
+    QFETCH(QList<QByteArray>, requestedParts);
+    QFETCH(QList<QByteArray>, expectedParts);
+    QFETCH(QList<QByteArray>, expectedPayloads);
 
     ItemFetchScope in;
     for (unsigned i = ItemFetchScope::CacheOnly; i <= ItemFetchScope::VirtReferences; i = i << 1) {
@@ -209,7 +201,7 @@ void ProtocolTest::testFetchScope()
     QVERIFY(in.fetch(ItemFetchScope::None));
 
     in.setRequestedParts(requestedParts);
-    in.setChangedSince(QDateTime(QDate(2015, 8, 10), QTime(23, 52, 20), Qt::UTC));
+    in.setChangedSince(QDateTime(QDate(2015, 8, 10), QTime(23, 52, 20), QTimeZone::UTC));
     in.setAncestorDepth(ItemFetchScope::AllAncestors);
     in.setFetch(ItemFetchScope::CacheOnly);
     in.setFetch(ItemFetchScope::CheckCachedPayloadPartsOnly);
@@ -223,13 +215,12 @@ void ProtocolTest::testFetchScope()
     in.setFetch(ItemFetchScope::RemoteID);
     in.setFetch(ItemFetchScope::GID);
     in.setFetch(ItemFetchScope::Tags);
-    in.setFetch(ItemFetchScope::Relations);
     in.setFetch(ItemFetchScope::VirtReferences);
 
     const ItemFetchScope out = serializeAndDeserialize(in);
     QCOMPARE(out.requestedParts(), expectedParts);
     QCOMPARE(out.requestedPayloads(), expectedPayloads);
-    QCOMPARE(out.changedSince(), QDateTime(QDate(2015, 8, 10), QTime(23, 52, 20), Qt::UTC));
+    QCOMPARE(out.changedSince(), QDateTime(QDate(2015, 8, 10), QTime(23, 52, 20), QTimeZone::UTC));
     QCOMPARE(out.ancestorDepth(), ItemFetchScope::AllAncestors);
     QCOMPARE(out.fetch(ItemFetchScope::None), false);
     QCOMPARE(out.cacheOnly(), true);
@@ -243,7 +234,6 @@ void ProtocolTest::testFetchScope()
     QCOMPARE(out.fetchFlags(), true);
     QCOMPARE(out.fetchRemoteId(), true);
     QCOMPARE(out.fetchGID(), true);
-    QCOMPARE(out.fetchRelations(), true);
     QCOMPARE(out.fetchVirtualReferences(), true);
 }
 
@@ -541,8 +531,8 @@ void ProtocolTest::testTransactionResponse()
 
 void ProtocolTest::testCreateItemCommand()
 {
-    Scope addedTags(QVector<qint64>{3, 4});
-    Scope removedTags(QVector<qint64>{5, 6});
+    Scope addedTags(QList<qint64>{3, 4});
+    Scope removedTags(QList<qint64>{5, 6});
     Attributes attrs{{"ATTR1", "MyAttr"}, {"ATTR2", "Můj chlupaťoučký kůň"}};
     QSet<QByteArray> parts{"PLD:HEAD", "PLD:ENVELOPE"};
 
@@ -557,7 +547,7 @@ void ProtocolTest::testCreateItemCommand()
     in.setGid(QStringLiteral("GID"));
     in.setRemoteId(QStringLiteral("RID"));
     in.setRemoteRevision(QStringLiteral("RREV"));
-    in.setDateTime(QDateTime(QDate(2015, 8, 11), QTime(14, 32, 21), Qt::UTC));
+    in.setDateTime(QDateTime(QDate(2015, 8, 11), QTime(14, 32, 21), QTimeZone::UTC));
     in.setFlags({"\\SEEN", "FLAG"});
     in.setFlagsOverwritten(true);
     in.setAddedFlags({"FLAG2"});
@@ -578,7 +568,7 @@ void ProtocolTest::testCreateItemCommand()
     QCOMPARE(out->gid(), QStringLiteral("GID"));
     QCOMPARE(out->remoteId(), QStringLiteral("RID"));
     QCOMPARE(out->remoteRevision(), QStringLiteral("RREV"));
-    QCOMPARE(out->dateTime(), QDateTime(QDate(2015, 8, 11), QTime(14, 32, 21), Qt::UTC));
+    QCOMPARE(out->dateTime(), QDateTime(QDate(2015, 8, 11), QTime(14, 32, 21), QTimeZone::UTC));
     QCOMPARE(out->flags(),
              QSet<QByteArray>() << "\\SEEN"
                                 << "FLAG");
@@ -616,7 +606,7 @@ void ProtocolTest::testCreateItemResponse()
 
 void ProtocolTest::testCopyItemsCommand()
 {
-    const Scope items(QVector<qint64>{1, 2, 3, 10});
+    const Scope items(QList<qint64>{1, 2, 3, 10});
 
     CopyItemsCommand in;
     QVERIFY(in.isValid());
@@ -654,3 +644,5 @@ void ProtocolTest::testCopyItemsResponse()
 }
 
 QTEST_MAIN(ProtocolTest)
+
+#include "moc_protocoltest.cpp"

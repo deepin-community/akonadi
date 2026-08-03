@@ -6,9 +6,9 @@
 
 #pragma once
 
+#include <QList>
 #include <QString>
 #include <QVariant>
-#include <QVector>
 
 namespace Akonadi
 {
@@ -64,7 +64,7 @@ class Condition
 
 public:
     /** A list of conditions. */
-    using List = QVector<Condition>;
+    using List = QList<Condition>;
 
     /**
       Create an empty condition.
@@ -79,6 +79,33 @@ public:
       @param value The value @p column is compared to.
     */
     void addValueCondition(const QString &column, CompareOperator op, const QVariant &value);
+    /**
+     * Add a WHERE condition which compares a column with a given value.
+     *
+     * This is an overload specially for passing a list of IDs, which is a fairly common case in Akonadi.
+     *
+     * @param column The column that should be compared.
+     * @param op The operator used for comparison.
+     * @param value The value @p column is compared to.
+     */
+    void addValueCondition(const QString &column, CompareOperator op, const QList<qint64> &value)
+    {
+        addValueCondition(column, op, QVariant::fromValue(value));
+    }
+
+    /**
+     * Add a WHERE condition which compares a column with a given value.
+     *
+     * This is an overload specially for passing a list of IDs, which is a fairly common case in Akonadi.
+     *
+     * @param column The column that should be compared.
+     * @param op The operator used for comparison.
+     * @param value The value @p column is compared to.
+     */
+    void addValueCondition(const QString &column, CompareOperator op, const QSet<qint64> &value)
+    {
+        addValueCondition(column, op, QVariant::fromValue(value));
+    }
 
     /**
       Add a WHERE condition which compares a column with another column.
@@ -133,7 +160,7 @@ public:
     void setElse(const QString &elseBranch);
 
 private:
-    QVector<QPair<Condition, QString>> mWhenThen;
+    QList<QPair<Condition, QString>> mWhenThen;
     QString mElse;
 };
 
@@ -141,4 +168,4 @@ private:
 } // namespace Server
 } // namespace Akonadi
 
-Q_DECLARE_TYPEINFO(Akonadi::Server::Query::Condition, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Server::Query::Condition, Q_RELOCATABLE_TYPE);

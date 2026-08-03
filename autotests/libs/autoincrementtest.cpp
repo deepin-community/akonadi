@@ -14,7 +14,7 @@
 #include "itemcreatejob.h"
 #include "itemdeletejob.h"
 
-#include <qtest_akonadi.h>
+#include "qtest_akonadi.h"
 
 using namespace Akonadi;
 
@@ -112,3 +112,5 @@ void AutoIncrementTest::testCollectionAutoIncrement()
 
     QVERIFY(newCollection.id() > lastId);
 }
+
+#include "moc_autoincrementtest.cpp"

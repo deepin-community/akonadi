@@ -6,8 +6,8 @@
 #include "dbinitializer.h"
 #include "akonadiserver_debug.h"
 
-#include <storage/datastore.h>
-#include <storage/parttypehelper.h>
+#include "storage/datastore.h"
+#include "storage/parttypehelper.h"
 #include <storage/querybuilder.h>
 
 #include "shared/akranges.h"
@@ -25,7 +25,7 @@ Resource DbInitializer::createResource(const char *name)
 {
     Resource res;
     qint64 id = -1;
-    res.setName(QLatin1String(name));
+    res.setName(QLatin1StringView(name));
     const bool ret = res.insert(&id);
     Q_ASSERT(ret);
     Q_UNUSED(ret)
@@ -39,8 +39,8 @@ Collection DbInitializer::createCollection(const char *name, const Collection &p
     if (parent.isValid()) {
         col.setParent(parent);
     }
-    col.setName(QLatin1String(name));
-    col.setRemoteId(QLatin1String(name));
+    col.setName(QLatin1StringView(name));
+    col.setRemoteId(QLatin1StringView(name));
     col.setResource(mResource);
     const bool ret = col.insert();
     Q_ASSERT(ret);
@@ -60,7 +60,7 @@ PimItem DbInitializer::createItem(const char *name, const Collection &parent)
     }
     item.setMimeType(mimeType);
     item.setCollection(parent);
-    item.setRemoteId(QLatin1String(name));
+    item.setRemoteId(QLatin1StringView(name));
     const bool ret = item.insert();
     Q_ASSERT(ret);
     Q_UNUSED(ret)
@@ -120,10 +120,10 @@ DbInitializer::listResponse(const Collection &col, bool ancestors, bool mimetype
     resp->setIsVirtual(col.isVirtual());
     Akonadi::Protocol::CachePolicy cp;
     cp.setInherit(true);
-    cp.setLocalParts({QLatin1String("ALL")});
+    cp.setLocalParts({QLatin1StringView("ALL")});
     resp->setCachePolicy(cp);
     if (ancestors) {
-        QVector<Akonadi::Protocol::Ancestor> ancs;
+        QList<Akonadi::Protocol::Ancestor> ancs;
         Collection parent = col.parent();
         while (parent.isValid()) {
             Akonadi::Protocol::Ancestor anc;
@@ -176,7 +176,7 @@ Akonadi::Protocol::FetchItemsResponsePtr DbInitializer::fetchResponse(const PimI
     resp->setRemoteRevision(item.remoteRevision());
     resp->setGid(item.gid());
     const auto flags = item.flags();
-    QVector<QByteArray> flagNames;
+    QList<QByteArray> flagNames;
     for (const auto &flag : flags) {
         flagNames.push_back(flag.name().toUtf8());
     }
@@ -187,7 +187,7 @@ Akonadi::Protocol::FetchItemsResponsePtr DbInitializer::fetchResponse(const PimI
 
 Collection DbInitializer::collection(const char *name)
 {
-    return Collection::retrieveByName(QLatin1String(name));
+    return Collection::retrieveByName(QLatin1StringView(name));
 }
 
 void DbInitializer::cleanup()
@@ -201,10 +201,6 @@ void DbInitializer::cleanup()
     mResource.remove();
 
     if (DataStore::self()->database().isOpen()) {
-        {
-            QueryBuilder qb(Relation::tableName(), QueryBuilder::Delete);
-            qb.exec();
-        }
         {
             QueryBuilder qb(Tag::tableName(), QueryBuilder::Delete);
             qb.exec();

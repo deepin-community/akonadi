@@ -14,7 +14,6 @@
 namespace Akonadi
 {
 class AgentFilterProxyModelPrivate;
-
 /**
  * @short A proxy model for filtering AgentType or AgentInstance
  *

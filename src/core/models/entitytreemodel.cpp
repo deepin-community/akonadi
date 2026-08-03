@@ -114,19 +114,31 @@ void EntityTreeModel::clearAndReset()
 
 QHash<int, QByteArray> EntityTreeModel::roleNames() const
 {
-    return {{Qt::DecorationRole, "decoration"},
-            {Qt::DisplayRole, "display"},
+    return {
+        {Qt::DecorationRole, "decoration"},
+        {Qt::DisplayRole, "display"},
+        {EntityTreeModel::DisplayNameRole, "displayName"},
 
-            {EntityTreeModel::ItemIdRole, "itemId"},
-            {EntityTreeModel::CollectionIdRole, "collectionId"},
+        {EntityTreeModel::ItemIdRole, "itemId"},
+        {EntityTreeModel::ItemRole, "item"},
+        {EntityTreeModel::CollectionIdRole, "collectionId"},
+        {EntityTreeModel::CollectionRole, "collection"},
 
-            {EntityTreeModel::UnreadCountRole, "unreadCount"},
-            // TODO: expose when states for reporting of fetching payload parts of items is changed
-            // { EntityTreeModel::FetchStateRole, "fetchState" },
-            {EntityTreeModel::EntityUrlRole, "url"},
-            {EntityTreeModel::RemoteIdRole, "remoteId"},
-            {EntityTreeModel::IsPopulatedRole, "isPopulated"},
-            {EntityTreeModel::CollectionRole, "collection"}};
+        {EntityTreeModel::UnreadCountRole, "unreadCount"},
+        {EntityTreeModel::EntityUrlRole, "url"},
+        {EntityTreeModel::RemoteIdRole, "remoteId"},
+        {EntityTreeModel::IsPopulatedRole, "isPopulated"},
+        {EntityTreeModel::CollectionRole, "collection"},
+        {EntityTreeModel::MimeTypeRole, "mimeType"},
+        {EntityTreeModel::CollectionChildOrderRole, "collectionChildOrder"},
+        {EntityTreeModel::ParentCollectionRole, "parentCollection"},
+        {EntityTreeModel::SessionRole, "session"},
+        {EntityTreeModel::PendingCutRole, "pendingCut"},
+        {EntityTreeModel::LoadedPartsRole, "loadedParts"},
+        {EntityTreeModel::AvailablePartsRole, "availableParts"},
+        {EntityTreeModel::UnreadCountRole, "unreadCount"},
+        {EntityTreeModel::FetchStateRole, "fetchState"},
+    };
 }
 
 int EntityTreeModel::columnCount(const QModelIndex &parent) const
@@ -147,6 +159,7 @@ QVariant EntityTreeModel::entityData(const Item &item, int column, int role) con
         switch (role) {
         case Qt::DisplayRole:
         case Qt::EditRole:
+        case EntityTreeModel::DisplayNameRole:
             if (const auto *attr = item.attribute<EntityDisplayAttribute>(); attr && !attr->displayName().isEmpty()) {
                 return attr->displayName();
             } else if (!item.remoteId().isEmpty()) {
@@ -170,13 +183,13 @@ QVariant EntityTreeModel::entityData(const Collection &collection, int column, i
 {
     Q_D(const EntityTreeModel);
 
-    if (column > 0) {
+    if (column != 0) {
         return QString();
     }
 
     if (collection == Collection::root()) {
         // Only display the root collection. It may not be edited.
-        if (role == Qt::DisplayRole) {
+        if (role == Qt::DisplayRole || role == EntityTreeModel::DisplayNameRole) {
             return d->m_rootCollectionDisplayName;
         } else if (role == Qt::EditRole) {
             return QVariant();
@@ -186,6 +199,7 @@ QVariant EntityTreeModel::entityData(const Collection &collection, int column, i
     switch (role) {
     case Qt::DisplayRole:
     case Qt::EditRole:
+    case EntityTreeModel::DisplayNameRole:
         if (column == 0) {
             if (const QString displayName = collection.displayName(); !displayName.isEmpty()) {
                 return displayName;
@@ -273,7 +287,7 @@ QVariant EntityTreeModel::data(const QModelIndex &index, int role) const
             if (const auto *const attr = collection.attribute<EntityDisplayAttribute>(); attr && attr->backgroundColor().isValid()) {
                 return attr->backgroundColor();
             }
-            Q_FALLTHROUGH();
+            [[fallthrough]];
         default:
             return entityData(collection, index.column(), role);
         }
@@ -309,7 +323,7 @@ QVariant EntityTreeModel::data(const QModelIndex &index, int role) const
             if (const auto *const attr = item.attribute<EntityDisplayAttribute>(); attr && attr->backgroundColor().isValid()) {
                 return attr->backgroundColor();
             }
-            Q_FALLTHROUGH();
+            [[fallthrough]];
         default:
             return entityData(item, index.column(), role);
         }
@@ -650,7 +664,7 @@ QVariant EntityTreeModel::entityHeaderData(int section, Qt::Orientation orientat
     // Not needed in this model.
     Q_UNUSED(headerGroup)
 
-    if (section == 0 && orientation == Qt::Horizontal && role == Qt::DisplayRole) {
+    if (section == 0 && orientation == Qt::Horizontal && (role == Qt::DisplayRole || role == EntityTreeModel::DisplayNameRole)) {
         if (d->m_rootCollection == Collection::root()) {
             return i18nc("@title:column Name of a thing", "Name");
         }
@@ -672,7 +686,7 @@ QMimeData *EntityTreeModel::mimeData(const QModelIndexList &indexes) const
 {
     Q_D(const EntityTreeModel);
 
-    auto *data = new QMimeData();
+    auto data = new QMimeData();
     QList<QUrl> urls;
     for (const QModelIndex &index : indexes) {
         if (index.column() != 0) {
@@ -761,7 +775,7 @@ bool EntityTreeModel::setData(const QModelIndex &index, const QVariant &value, i
                 collection = value.value<Collection>();
             }
 
-            auto *job = new CollectionModifyJob(collection, d->m_session);
+            auto job = new CollectionModifyJob(collection, d->m_session);
             connect(job, SIGNAL(result(KJob *)), SLOT(updateJobDone(KJob *)));
 
             return false;
@@ -789,7 +803,7 @@ bool EntityTreeModel::setData(const QModelIndex &index, const QVariant &value, i
                 Q_ASSERT(item.id() == node->id);
             }
 
-            auto *itemModifyJob = new ItemModifyJob(item, d->m_session);
+            auto itemModifyJob = new ItemModifyJob(item, d->m_session);
             connect(itemModifyJob, SIGNAL(result(KJob *)), SLOT(updateJobDone(KJob *)));
 
             return false;

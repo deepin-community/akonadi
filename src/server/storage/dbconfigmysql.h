@@ -10,6 +10,8 @@
 #include <QObject>
 #include <QProcess>
 
+class QSqlDatabase;
+
 namespace Akonadi
 {
 namespace Server
@@ -19,7 +21,19 @@ class DbConfigMysql : public QObject, public DbConfig
     Q_OBJECT
 
 public:
-    DbConfigMysql();
+    /**
+     * Constructs a new DbConfig for MySQL reading configuration from the standard akonadiserverrc config file.
+     */
+    explicit DbConfigMysql() = default;
+    /**
+     * Constructs a new DbConfig for MySQL reading configuration from the @p configFile.
+     */
+    explicit DbConfigMysql(const QString &configFile);
+
+    /**
+     * Destructor.
+     */
+    ~DbConfigMysql() override;
 
     /**
      * Returns the name of the used driver.
@@ -32,13 +46,23 @@ public:
     QString databaseName() const override;
 
     /**
+     * Returns path to the database file or directory.
+     */
+    QString databasePath() const override;
+
+    /**
+     * Sets path to the database file or directory.
+     */
+    void setDatabasePath(const QString &path, QSettings &settings) override;
+
+    /**
      * This method is called whenever the Akonadi server is started
      * and before the initial database connection is set up.
      *
      * At this point the default settings should be determined, merged
      * with the given @p settings and written back if @p storeSettings is true.
      */
-    bool init(QSettings &settings, bool storeSettings = true) override;
+    bool init(QSettings &settings, bool storeSettings = true, const QString &dbPathOveride = {}) override;
 
     /**
      * This method checks if the requirements for this database connection are met
@@ -70,6 +94,12 @@ public:
     /// reimpl
     void initSession(const QSqlDatabase &database) override;
 
+    /// reimpl
+    bool disableConstraintChecks(const QSqlDatabase &db) override;
+
+    /// reimpl
+    bool enableConstraintChecks(const QSqlDatabase &db) override;
+
 private Q_SLOTS:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
@@ -85,12 +115,14 @@ private:
     QString mUserName;
     QString mPassword;
     QString mConnectionOptions;
+    QString mDataDir;
     QString mMysqldPath;
     QString mCleanServerShutdownCommand;
     QString mMysqlInstallDbPath;
     QString mMysqlCheckPath;
-    bool mInternalServer;
-    QProcess *mDatabaseProcess = nullptr;
+    QString mMysqlUpgradePath;
+    bool mInternalServer = true;
+    std::unique_ptr<QProcess> mDatabaseProcess;
 };
 
 } // namespace Server

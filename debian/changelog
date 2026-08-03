@@ -1,3 +1,99 @@
+akonadi (4:24.12.3-2~deb13u1) trixie; urgency=medium
+
+  * Backport for Trixie.
+
+ -- Sandro Knauß <hefee@debian.org>  Sat, 31 Jan 2026 10:14:45 +0100
+
+akonadi (4:24.12.3-2) unstable; urgency=medium
+
+  [ Patrick Franz ]
+  * Backport patch to show all folders in kmail (Closes: #1113998).
+
+ -- Patrick Franz <deltaone@debian.org>  Sun, 07 Sep 2025 12:52:29 +0200
+
+akonadi (4:24.12.3-1) unstable; urgency=medium
+
+  [ Patrick Franz ]
+  * New upstream release (24.12.3).
+  * Bump Standards-Version to 4.7.2 (No changes needed).
+
+ -- Patrick Franz <deltaone@debian.org>  Sat, 29 Mar 2025 18:47:17 +0100
+
+akonadi (4:24.12.2-1) unstable; urgency=medium
+
+  [ Patrick Franz ]
+  * New upstream release (24.12.2).
+  * Update build-deps and deps with the info from cmake.
+
+ -- Patrick Franz <deltaone@debian.org>  Sun, 23 Feb 2025 00:05:50 +0100
+
+akonadi (4:24.12.0-2) unstable; urgency=medium
+
+  [ Patrick Franz ]
+  * Upload to unstable.
+
+ -- Patrick Franz <deltaone@debian.org>  Wed, 18 Dec 2024 22:52:09 +0100
+
+akonadi (4:24.12.0-1) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * Add/update Heiko Becker in upstream signing keys.
+  * New upstream release (24.12.0).
+  * Update build-deps and deps with the info from cmake.
+
+ -- Patrick Franz <deltaone@debian.org>  Sat, 14 Dec 2024 15:37:16 +0100
+
+akonadi (4:24.08.2-1) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * New upstream release (24.08.2).
+  * Update build-deps and deps with the info from cmake.
+
+ -- Patrick Franz <deltaone@debian.org>  Sat, 12 Oct 2024 15:01:54 +0200
+
+akonadi (4:24.08.0-2) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * Disable optimizations on 32-bit arm architectures.
+
+ -- Patrick Franz <deltaone@debian.org>  Wed, 18 Sep 2024 00:48:38 +0200
+
+akonadi (4:24.08.0-1) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * New upstream release (24.08.0).
+  * Update build-deps and deps with the info from cmake and new binary
+    packages.
+  * Bump Standards-Version to 4.7.0 (no changes needed).
+  * Do not rely on dpkg_late_eval any more to set the ABI-version for
+    the virtual package.
+
+ -- Patrick Franz <deltaone@debian.org>  Sat, 24 Aug 2024 22:40:33 +0200
+
+akonadi (4:24.05.2-1) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * New upstream release (24.05.2).
+  * Remove redundant patches.
+  * Update build-deps and deps with the info from cmake and new binary
+    packages.
+  * Add missing Breaks+Replaces against old KF5-based packages.
+  * Mark akonadi-backend-sqlite as Arch:all as it is an empty package.
+  * Update d/copyright.
+
+  [ Sandro Knauß ]
+  * Prefer sqlite backend for new installations.
+
+ -- Patrick Franz <deltaone@debian.org>  Sun, 14 Jul 2024 13:03:14 +0200
+
+akonadi (4:22.12.3-2) unstable; urgency=medium
+
+  [ Patrick Franz ]
+  * Remove libkaccounts-dev as a build-dependency to facilitate the
+    kaccounts transition.
+
+ -- Patrick Franz <deltaone@debian.org>  Wed, 27 Nov 2024 23:42:15 +0100
+
 akonadi (4:22.12.3-1) unstable; urgency=medium
 
   [ Patrick Franz ]

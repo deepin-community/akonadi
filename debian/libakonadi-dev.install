@@ -1,0 +1,15 @@
+usr/bin/akonadi2xml
+usr/bin/akonaditest
+usr/include/KPim6/AkonadiAgentBase/
+usr/include/KPim6/AkonadiCore/
+usr/include/KPim6/AkonadiWidgets/
+usr/include/KPim6/AkonadiXml/
+usr/lib/*/cmake/KPim6Akonadi/
+usr/lib/*/libKPim6AkonadiAgentBase.so
+usr/lib/*/libKPim6AkonadiCore.so
+usr/lib/*/libKPim6AkonadiWidgets.so
+usr/lib/*/libKPim6AkonadiXml.so
+usr/lib/*/qt6/plugins/designer/akonadi6widgets.so
+usr/share/kdevappwizard/templates/akonadiresource.tar.bz2
+usr/share/kdevappwizard/templates/akonadiserializer.tar.bz2
+usr/share/kf6/akonadi/kcfg2dbus.xsl

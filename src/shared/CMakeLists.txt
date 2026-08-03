@@ -1,5 +1,5 @@
 # base install include dir
-set(AkonadiCore_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiCore")
+set(AkonadiCore_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR}/KPim6/AkonadiCore")
 
 add_library(akonadi_shared STATIC)
 target_sources(akonadi_shared PRIVATE
@@ -11,7 +11,7 @@ target_sources(akonadi_shared PRIVATE
     akremotelog.h
 )
 set_property(TARGET akonadi_shared PROPERTY POSITION_INDEPENDENT_CODE ON)
-if (COMPILE_WITH_UNITY_CMAKE_SUPPORT)
+if(COMPILE_WITH_UNITY_CMAKE_SUPPORT)
     set_target_properties(akonadi_shared PROPERTIES UNITY_BUILD ON)
 endif()
 
@@ -19,9 +19,10 @@ target_include_directories(akonadi_shared INTERFACE $<BUILD_INTERFACE:${CMAKE_CU
 
 target_link_libraries(akonadi_shared
 PUBLIC
-    KF5AkonadiPrivate
+    KPim6::AkonadiPrivate
     Qt::Core
-    KF5::Crash
+    KF6::Crash
+    KF6::I18n
 )
 
 ecm_generate_headers(shared_CC_HEADERS

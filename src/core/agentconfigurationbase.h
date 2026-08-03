@@ -128,6 +128,24 @@ public:
 
     virtual QDialogButtonBox::StandardButtons standardButtons() const;
 
+    struct ActivitySettings {
+        bool enabled = false;
+        QStringList activities;
+    };
+
+    /**
+     * @brief saveActivitiesSettings
+     * @param activities
+     * save activities settings
+     */
+    void saveActivitiesSettings(const ActivitySettings &activities) const;
+
+    /**
+     * @brief restoreActivitiesSettings
+     * @return activities settings
+     */
+    [[nodiscard]] ActivitySettings restoreActivitiesSettings() const;
+
 protected:
     QWidget *parentWidget() const;
 
@@ -139,7 +157,7 @@ protected:
     /**
      * Returns identifier of the Akonadi agent instance currently being configured.
      */
-    Q_REQUIRED_RESULT QString identifier() const;
+    [[nodiscard]] QString identifier() const;
 
     /**
      * When KAboutData is provided the dialog will also contain KHelpMenu with

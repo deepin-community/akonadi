@@ -13,16 +13,16 @@
 #include <QLocalSocket>
 #include <QPointer>
 
-#include <private/datastream_p_p.h>
-#include <private/protocol_exception_p.h>
-#include <shared/akranges.h>
+#include "private/datastream_p_p.h"
+#include "private/protocol_exception_p.h"
+#include "shared/akranges.h"
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
 using namespace AkRanges;
 
 #define TRACE_NTF(x)
-//#define TRACE_NTF(x) qCDebug(AKONADISERVER_LOG) << mSubscriber << x
+// #define TRACE_NTF(x) qCDebug(AKONADISERVER_LOG) << mSubscriber << x
 
 NotificationSubscriber::NotificationSubscriber(NotificationManager *manager)
     : mManager(manager)
@@ -353,7 +353,7 @@ bool NotificationSubscriber::isMimeTypeMonitored(const QString &mimeType) const
     // Assumes mLock being locked by caller
 
     // KContacts::Addressee::mimeType() unfortunately uses an alias
-    if (mimeType == QLatin1String("text/directory")) {
+    if (mimeType == QLatin1StringView("text/directory")) {
         return mMonitoredMimeTypes.contains(QStringLiteral("text/vcard"));
     }
     return mMonitoredMimeTypes.contains(mimeType);
@@ -549,19 +549,6 @@ bool NotificationSubscriber::acceptsTagNotification(const Protocol::TagChangeNot
     return true;
 }
 
-bool NotificationSubscriber::acceptsRelationNotification(const Protocol::RelationChangeNotification &msg) const
-{
-    // Assumes mLock being locked by caller
-
-    Q_UNUSED(msg)
-
-    if (mAllMonitored) {
-        return true;
-    }
-
-    return !(!mMonitoredTypes.isEmpty() && !mMonitoredTypes.contains(Protocol::ModifySubscriptionCommand::RelationChanges));
-}
-
 bool NotificationSubscriber::acceptsSubscriptionNotification(const Protocol::SubscriptionChangeNotification &msg) const
 {
     // Assumes mLock being locked by caller
@@ -611,8 +598,6 @@ bool NotificationSubscriber::acceptsNotification(const Protocol::ChangeNotificat
         return acceptsCollectionNotification(static_cast<const Protocol::CollectionChangeNotification &>(msg));
     case Protocol::Command::TagChangeNotification:
         return acceptsTagNotification(static_cast<const Protocol::TagChangeNotification &>(msg));
-    case Protocol::Command::RelationChangeNotification:
-        return acceptsRelationNotification(static_cast<const Protocol::RelationChangeNotification &>(msg));
     case Protocol::Command::SubscriptionChangeNotification:
         return acceptsSubscriptionNotification(static_cast<const Protocol::SubscriptionChangeNotification &>(msg));
     case Protocol::Command::DebugChangeNotification:
@@ -666,3 +651,5 @@ void NotificationSubscriber::writeCommand(qint64 tag, const Protocol::CommandPtr
         qCWarning(AKONADISERVER_LOG) << "ProtocolException while writing into stream for subscriber" << mSubscriber << ":" << e.what();
     }
 }
+
+#include "moc_notificationsubscriber.cpp"

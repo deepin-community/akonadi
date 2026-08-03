@@ -11,7 +11,7 @@
 #include "differencesalgorithminterface.h"
 #include "typepluginloader_p.h"
 
-#include <shared/akranges.h>
+#include "shared/akranges.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -41,12 +41,12 @@ class HtmlDifferencesReporter : public AbstractDifferencesReporter
 public:
     HtmlDifferencesReporter() = default;
 
-    Q_REQUIRED_RESULT QString toHtml() const
+    [[nodiscard]] QString toHtml() const
     {
         return header() + mContent + footer();
     }
 
-    Q_REQUIRED_RESULT QString plainText() const
+    [[nodiscard]] QString plainText() const
     {
         return mTextContent;
     }
@@ -100,7 +100,7 @@ private:
         header += QStringLiteral("<body text=\"%1\" bgcolor=\"%2\">")
                       .arg(KColorScheme(QPalette::Active, KColorScheme::View).foreground().color().name(),
                            KColorScheme(QPalette::Active, KColorScheme::View).background().color().name());
-        header += QLatin1String("<center><table>");
+        header += QLatin1StringView("<center><table>");
         header += QStringLiteral("<tr><th align=\"center\">%1</th><th align=\"center\">%2</th><td>&nbsp;</td><th align=\"center\">%3</th></tr>")
                       .arg(mNameTitle, mLeftTitle, mRightTitle);
 
@@ -139,8 +139,8 @@ static void compareItems(AbstractDifferencesReporter *reporter, const Akonadi::I
         const auto otherFlags = otherItem.flags() | Views::transform(toQString) | Actions::toQList;
         reporter->addProperty(AbstractDifferencesReporter::ConflictMode,
                               i18n("Flags"),
-                              localFlags.join(QLatin1String(", ")),
-                              otherFlags.join(QLatin1String(", ")));
+                              localFlags.join(QLatin1StringView(", ")),
+                              otherFlags.join(QLatin1StringView(", ")));
     }
 
     const auto toPair = [](Attribute *attr) {
@@ -192,36 +192,37 @@ ConflictResolveDialog::ConflictResolveDialog(QWidget *parent)
     takeLeftButton->setText(i18nc("@action:button", "Take my version"));
     connect(takeLeftButton, &QPushButton::clicked, this, &ConflictResolveDialog::slotUseLocalItemChoosen);
     buttonLayout->addWidget(takeLeftButton);
-    takeLeftButton->setObjectName(QStringLiteral("takeLeftButton"));
+    takeLeftButton->setObjectName(QLatin1StringView("takeLeftButton"));
 
     auto takeRightButton = new QPushButton(this);
     takeRightButton->setText(i18nc("@action:button", "Take their version"));
-    takeRightButton->setObjectName(QStringLiteral("takeRightButton"));
+    takeRightButton->setObjectName(QLatin1StringView("takeRightButton"));
     connect(takeRightButton, &QPushButton::clicked, this, &ConflictResolveDialog::slotUseOtherItemChoosen);
     buttonLayout->addWidget(takeRightButton);
 
     auto keepBothButton = new QPushButton(this);
     keepBothButton->setText(i18nc("@action:button", "Keep both versions"));
-    keepBothButton->setObjectName(QStringLiteral("keepBothButton"));
+    keepBothButton->setObjectName(QLatin1StringView("keepBothButton"));
     buttonLayout->addWidget(keepBothButton);
     connect(keepBothButton, &QPushButton::clicked, this, &ConflictResolveDialog::slotUseBothItemsChoosen);
 
     keepBothButton->setDefault(true);
 
     mView = new QTextBrowser(this);
-    mView->setObjectName(QStringLiteral("view"));
+    mView->setObjectName(QLatin1StringView("view"));
     mView->setOpenLinks(false);
 
     auto docuLabel =
-        new QLabel(i18n("<qt>Your changes conflict with those made by someone else meanwhile.<br>"
-                        "Unless one version can just be thrown away, you will have to integrate those changes manually.<br>"
-                        "Click on <a href=\"opentexteditor\">\"Open text editor\"</a> to keep a copy of the texts, then select which version is most correct, "
-                        "then re-open it and modify it again to add what's missing."));
+        new QLabel(i18nc("@label:textbox",
+                         "<qt>Your changes conflict with those made by someone else meanwhile.<br>"
+                         "Unless one version can just be thrown away, you will have to integrate those changes manually.<br>"
+                         "Click on <a href=\"opentexteditor\">\"Open text editor\"</a> to keep a copy of the texts, then select which version is most correct, "
+                         "then re-open it and modify it again to add what's missing."));
     connect(docuLabel, &QLabel::linkActivated, this, &ConflictResolveDialog::slotOpenEditor);
     docuLabel->setContextMenuPolicy(Qt::NoContextMenu);
 
     docuLabel->setWordWrap(true);
-    docuLabel->setObjectName(QStringLiteral("doculabel"));
+    docuLabel->setObjectName(QLatin1StringView("doculabel"));
 
     mainLayout->addWidget(mView);
     mainLayout->addWidget(docuLabel);
@@ -231,13 +232,13 @@ ConflictResolveDialog::ConflictResolveDialog(QWidget *parent)
     create(); // ensure a window is created
     const QSize availableSize = windowHandle()->screen()->availableSize();
     windowHandle()->resize(static_cast<int>(availableSize.width() * 0.7), static_cast<int>(availableSize.height() * 0.5));
-    KWindowConfig::restoreWindowSize(windowHandle(), KSharedConfig::openConfig()->group("ConflictResolveDialog"));
+    KWindowConfig::restoreWindowSize(windowHandle(), KSharedConfig::openConfig()->group(QStringLiteral("ConflictResolveDialog")));
     resize(windowHandle()->size()); // workaround for QTBUG-40584
 }
 
 ConflictResolveDialog::~ConflictResolveDialog()
 {
-    KConfigGroup group(KSharedConfig::openConfig()->group("ConflictResolveDialog"));
+    KConfigGroup group(KSharedConfig::openConfig()->group(QStringLiteral("ConflictResolveDialog")));
     KWindowConfig::saveWindowSize(windowHandle(), group);
 }
 

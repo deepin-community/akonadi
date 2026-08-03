@@ -115,14 +115,14 @@ public:
      * @see setListFilter()
      * @since 4.14
      */
-    Q_REQUIRED_RESULT ListFilter listFilter() const;
+    [[nodiscard]] ListFilter listFilter() const;
 
     /**
      * Returns whether collection statistics should be included in the retrieved results.
      *
      * @see setIncludeStatistics()
      */
-    Q_REQUIRED_RESULT bool includeStatistics() const;
+    [[nodiscard]] bool includeStatistics() const;
 
     /**
      * Sets whether collection statistics should be included in the retrieved results.
@@ -136,7 +136,7 @@ public:
      *
      * @see setResource()
      */
-    Q_REQUIRED_RESULT QString resource() const;
+    [[nodiscard]] QString resource() const;
 
     /**
      * Sets a resource filter, that is only collections owned by the specified resource are
@@ -159,7 +159,7 @@ public:
      *
      * @see setContentMimeTypes()
      */
-    Q_REQUIRED_RESULT QStringList contentMimeTypes() const;
+    [[nodiscard]] QStringList contentMimeTypes() const;
 
     /**
      * Sets how many levels of ancestor collections should be included in the retrieval.
@@ -177,7 +177,7 @@ public:
      *
      * @see setAncestorRetrieval()
      */
-    Q_REQUIRED_RESULT AncestorRetrieval ancestorRetrieval() const;
+    [[nodiscard]] AncestorRetrieval ancestorRetrieval() const;
 
     /**
      * Sets the fetch scope for ancestor retrieval.
@@ -189,7 +189,7 @@ public:
     /**
      * Returns the fetch scope for ancestor retrieval.
      */
-    Q_REQUIRED_RESULT CollectionFetchScope ancestorFetchScope() const;
+    [[nodiscard]] CollectionFetchScope ancestorFetchScope() const;
 
     /**
      * Returns the fetch scope for ancestor retrieval.
@@ -201,7 +201,7 @@ public:
      *
      * @see fetchAttribute()
      */
-    Q_REQUIRED_RESULT QSet<QByteArray> attributes() const;
+    [[nodiscard]] QSet<QByteArray> attributes() const;
 
     /**
      * Sets whether the attribute of the given @p type should be fetched.
@@ -238,14 +238,14 @@ public:
      * @see tagFetchScope()
      * @since 4.15
      */
-    Q_REQUIRED_RESULT bool fetchIdOnly() const;
+    [[nodiscard]] bool fetchIdOnly() const;
 
     /**
      * Ignore retrieval errors while fetching collections, and always deliver what is available.
      *
      * This flag is useful to fetch a list of collections, where some might no longer be available.
      *
-     * @since KF5
+     * @since KF6
      */
     void setIgnoreRetrievalErrors(bool enabled);
 
@@ -253,14 +253,14 @@ public:
      * Returns whether retrieval errors should be ignored.
      *
      * @see setIgnoreRetrievalErrors()
-     * @since KF5
+     * @since KF6
      */
-    Q_REQUIRED_RESULT bool ignoreRetrievalErrors() const;
+    [[nodiscard]] bool ignoreRetrievalErrors() const;
 
     /**
      * Returns @c true if there is nothing to fetch.
      */
-    Q_REQUIRED_RESULT bool isEmpty() const;
+    [[nodiscard]] bool isEmpty() const;
 
 private:
     /// @cond PRIVATE

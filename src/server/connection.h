@@ -18,8 +18,8 @@
 #include "global.h"
 #include "tracer.h"
 
-#include <private/datastream_p_p.h>
-#include <private/protocol_p.h>
+#include "private/datastream_p_p.h"
+#include "private/protocol_p.h"
 
 #include <memory>
 
@@ -38,8 +38,13 @@ class Collection;
 class Connection : public AkThread
 {
     Q_OBJECT
-public:
+protected:
+    /**
+     * Use AkThread::create() to construct and start a new connection thread.
+     */
     explicit Connection(quintptr socketDescriptor, AkonadiServer &akonadi);
+
+public:
     ~Connection() override;
 
     virtual DataStore *storageBackend();
@@ -84,11 +89,11 @@ protected Q_SLOTS:
     void slotSocketDisconnected();
     void slotSendHello();
 
-protected:
-    Connection(AkonadiServer &akonadi); // used for testing
-
     void init() override;
     void quit() override;
+
+protected:
+    Connection(AkonadiServer &akonadi); // used for testing
 
     std::unique_ptr<Handler> findHandlerForCommand(Protocol::Command::Type cmd);
 
@@ -138,7 +143,7 @@ inline typename std::enable_if<std::is_base_of<Protocol::Command, T>::value>::ty
 template<typename T>
 inline typename std::enable_if<std::is_base_of<Protocol::Command, T>::value>::type Connection::sendResponse(qint64 tag, T &&response)
 {
-    if (m_akonadi.tracer().currentTracer() != QLatin1String("null")) {
+    if (m_akonadi.tracer().currentTracer() != QLatin1StringView("null")) {
         m_akonadi.tracer().connectionOutput(m_identifier, tag, response);
     }
     Protocol::DataStream stream(m_socket.get());

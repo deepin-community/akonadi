@@ -6,7 +6,7 @@
  */
 
 #include "qtest_akonadi.h"
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
 #include "monitor.h"
 #include "tag.h"
@@ -33,8 +33,8 @@ class TagWidgetTest : public QObject
 
     struct TestSetup {
         TestSetup()
+            : widget(std::make_unique<TagWidget>())
         {
-            widget = std::make_unique<TagWidget>();
             widget->show();
 
             monitor = widget->findChild<Monitor *>();

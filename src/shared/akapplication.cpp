@@ -8,8 +8,10 @@
 #include "akdebug.h"
 #include "akremotelog.h"
 
+#include "private/instance_p.h"
 #include <akonadifull-version.h>
-#include <private/instance_p.h>
+
+#include <KLocalizedString>
 
 #include <QCoreApplication>
 #include <QTimer>
@@ -65,7 +67,7 @@ void AkApplicationBase::setDescription(const QString &desc)
 void AkApplicationBase::parseCommandLine()
 {
     const QCommandLineOption instanceOption(QStringList() << QStringLiteral("instance"),
-                                            QStringLiteral("Namespace for starting multiple Akonadi instances in the same user session"),
+                                            i18n("Namespace for starting multiple Akonadi instances in the same user session"),
                                             QStringLiteral("name"));
     mCmdLineParser.addOption(instanceOption);
     const QCommandLineOption verboseOption(QStringLiteral("verbose"), QStringLiteral("Make Akonadi very chatty"));
@@ -114,3 +116,5 @@ QString akGetEnv(const char *name, const QString &defaultValue)
     const QString v = QString::fromLocal8Bit(qgetenv(name));
     return !v.isEmpty() ? v : defaultValue;
 }
+
+#include "moc_akapplication.cpp"

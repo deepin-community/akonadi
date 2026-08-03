@@ -13,18 +13,19 @@
 #include <QStringList>
 
 #include <KAboutData>
+#include <KLocalizedString>
 
-#include <shared/akapplication.h>
+#include "shared/akapplication.h"
 
 #include "akonadifull-version.h"
 #include "akonadistarter.h"
 #include "controlmanagerinterface.h"
 #include "janitorinterface.h"
 
-#include <private/dbus_p.h>
-#include <private/instance_p.h>
-#include <private/protocol_p.h>
-#include <private/standarddirs_p.h>
+#include "private/dbus_p.h"
+#include "private/instance_p.h"
+#include "private/protocol_p.h"
+#include "private/standarddirs_p.h"
 
 #include <chrono>
 #include <iostream>
@@ -86,12 +87,12 @@ static bool checkSearchSupportStatus()
     } else {
         const QStringList dirs = QCoreApplication::libraryPaths();
         for (const QString &pluginDir : dirs) {
-            const QDir dir(pluginDir + QLatin1String("/akonadi/"));
+            const QDir dir(pluginDir + QLatin1StringView("/akonadi/"));
             const QStringList pluginFiles = dir.entryList(QDir::Files);
             for (const QString &pluginFileName : pluginFiles) {
                 QPluginLoader loader(dir.absolutePath() + QLatin1Char('/') + pluginFileName);
                 const QVariantMap metadata = loader.metaData().value(QStringLiteral("MetaData")).toVariant().toMap();
-                if (metadata.value(QStringLiteral("X-Akonadi-PluginType")).toString() != QLatin1String("SearchPlugin")) {
+                if (metadata.value(QStringLiteral("X-Akonadi-PluginType")).toString() != QLatin1StringView("SearchPlugin")) {
                     continue;
                 }
                 if (!metadata.value(QStringLiteral("X-Akonadi-LoadByDefault"), true).toBool()) {
@@ -103,7 +104,7 @@ static bool checkSearchSupportStatus()
     }
 
     // There's always at least server-search available
-    std::cerr << "Akonadi Server Search Support: available (" << searchMethods.join(QLatin1String(", ")).toStdString() << ")" << std::endl;
+    std::cerr << "Akonadi Server Search Support: available (" << searchMethods.join(QLatin1StringView(", ")).toStdString() << ")" << std::endl;
     return true;
 }
 
@@ -129,7 +130,7 @@ static bool checkAvailableAgentTypes()
     if (types.isEmpty()) {
         std::cerr << "No agent types found!" << std::endl;
     } else {
-        std::cerr << types.join(QLatin1String(", ")).toStdString() << std::endl;
+        std::cerr << types.join(QLatin1StringView(", ")).toStdString() << std::endl;
     }
 
     return true;
@@ -151,7 +152,7 @@ static void listInstances()
         QString name;
         bool running;
     };
-    QVector<Instance> instances{{QStringLiteral("(default)"), instanceRunning()}};
+    QList<Instance> instances{{QStringLiteral("(default)"), instanceRunning()}};
 #ifdef Q_OS_WIN
     const QDir instanceDir(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + QStringLiteral("/akonadi/config/instance"));
 #else
@@ -192,10 +193,10 @@ static void runJanitor(const QString &operation)
     org::freedesktop::Akonadi::Janitor janitor(Akonadi::DBus::serviceName(Akonadi::DBus::StorageJanitor),
                                                QStringLiteral(AKONADI_DBUS_STORAGEJANITOR_PATH),
                                                QDBusConnection::sessionBus());
-    QObject::connect(&janitor, &org::freedesktop::Akonadi::Janitor::information, [](const QString &msg) {
+    QObject::connect(&janitor, &org::freedesktop::Akonadi::Janitor::information, &janitor, [](const QString &msg) {
         std::cout << msg.toStdString() << std::endl;
     });
-    QObject::connect(&janitor, &org::freedesktop::Akonadi::Janitor::done, []() {
+    QObject::connect(&janitor, &org::freedesktop::Akonadi::Janitor::done, &janitor, []() {
         qApp->exit();
     });
     janitor.asyncCall(operation);
@@ -207,17 +208,17 @@ int main(int argc, char **argv)
     AkCoreApplication app(argc, argv);
 
     app.setDescription(
-        QStringLiteral("Akonadi server manipulation tool\n\n"
-                       "Commands:\n"
-                       "  start          Starts the Akonadi server with all its processes\n"
-                       "  stop           Stops the Akonadi server and all its processes cleanly\n"
-                       "  restart        Restart Akonadi server with all its processes\n"
-                       "  status         Shows a status overview of the Akonadi server\n"
-                       "  instances      List all existing Akonadi instances\n"
-                       "  vacuum         Vacuum internal storage (WARNING: needs a lot of time and disk\n"
-                       "                 space!)\n"
-                       "  fsck           Check (and attempt to fix) consistency of the internal storage\n"
-                       "                 (can take some time)"));
+        i18n("Akonadi server manipulation tool\n\n"
+             "Commands:\n"
+             "  start          Starts the Akonadi server with all its processes\n"
+             "  stop           Stops the Akonadi server and all its processes cleanly\n"
+             "  restart        Restart Akonadi server with all its processes\n"
+             "  status         Shows a status overview of the Akonadi server\n"
+             "  instances      List all existing Akonadi instances\n"
+             "  vacuum         Vacuum internal storage (WARNING: needs a lot of time and disk\n"
+             "                 space!)\n"
+             "  fsck           Check (and attempt to fix) consistency of the internal storage\n"
+             "                 (can take some time)"));
 
     KAboutData aboutData(QStringLiteral("akonadictl"),
                          QStringLiteral("akonadictl"),
@@ -227,7 +228,7 @@ int main(int argc, char **argv)
     KAboutData::setApplicationData(aboutData);
 
     app.addPositionalCommandLineOption(QStringLiteral("command"),
-                                       QStringLiteral("Command to execute"),
+                                       i18n("Command to execute"),
                                        QStringLiteral("start|stop|restart|status|vacuum|fsck|instances"));
 
     app.parseCommandLine();
@@ -241,19 +242,19 @@ int main(int argc, char **argv)
     const bool verbose = cmdArgs.isSet(QStringLiteral("verbose"));
 
     const QString command = commands[0];
-    if (command == QLatin1String("start")) {
+    if (command == QLatin1StringView("start")) {
         if (!startServer(verbose)) {
             return 3;
         }
-    } else if (command == QLatin1String("stop")) {
+    } else if (command == QLatin1StringView("stop")) {
         if (!stopServer()) {
             return 4;
         }
-    } else if (command == QLatin1String("status")) {
+    } else if (command == QLatin1StringView("status")) {
         if (!statusServer()) {
             return 5;
         }
-    } else if (command == QLatin1String("restart")) {
+    } else if (command == QLatin1StringView("restart")) {
         if (!stopServer()) {
             return 4;
         } else {
@@ -264,11 +265,11 @@ int main(int argc, char **argv)
                 return 3;
             }
         }
-    } else if (command == QLatin1String("vacuum")) {
+    } else if (command == QLatin1StringView("vacuum")) {
         runJanitor(QStringLiteral("vacuum"));
-    } else if (command == QLatin1String("fsck")) {
+    } else if (command == QLatin1StringView("fsck")) {
         runJanitor(QStringLiteral("check"));
-    } else if (command == QLatin1String("instances")) {
+    } else if (command == QLatin1StringView("instances")) {
         listInstances();
     } else {
         app.printUsage();

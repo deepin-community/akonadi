@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <search/searchmanager.h>
+#include "search/searchmanager.h"
 
 namespace Akonadi
 {
@@ -30,7 +30,7 @@ public:
     void unregisterInstance(const QString &id) override;
     void updateSearch(const Collection &collection) override;
     void updateSearchAsync(const Collection &collection) override;
-    QVector<AbstractSearchPlugin *> searchPlugins() const override;
+    QList<AbstractSearchPlugin *> searchPlugins() const override;
 
     void scheduleSearchUpdate() override;
 };

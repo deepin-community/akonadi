@@ -83,7 +83,7 @@ public:
         if (mBase.isValid()) {
             return QStringLiteral("Collection Id %1").arg(mBase.id());
         } else if (CollectionUtils::hasValidHierarchicalRID(mBase)) {
-            // return QLatin1String("(") + ProtocolHelper::hierarchicalRidToScope(mBase).hridChain().join(QLatin1String(", ")) + QLatin1Char(')');
+            // return QLatin1StringView("(") + ProtocolHelper::hierarchicalRidToScope(mBase).hridChain().join(QLatin1StringView(", ")) + QLatin1Char(')');
             return QStringLiteral("HRID chain");
         } else {
             return QStringLiteral("Collection RemoteId %1").arg(mBase.remoteId());
@@ -306,7 +306,7 @@ static Collection::List filterDescendants(const Collection::List &list)
 {
     Collection::List result;
 
-    QVector<QList<Collection::Id>> ids;
+    QList<QList<Collection::Id>> ids;
     ids.reserve(list.count());
     for (const Collection &collection : list) {
         QList<Collection::Id> ancestors;

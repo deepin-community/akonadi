@@ -27,10 +27,10 @@
 #include <QStandardPaths>
 #include <QTest>
 
+#include "private/scope_p.h"
+#include "private/standarddirs_p.h"
+#include "shared/akapplication.h"
 #include <ctime>
-#include <private/scope_p.h>
-#include <private/standarddirs_p.h>
-#include <shared/akapplication.h>
 
 #include "aklocalserver.h"
 #include "preprocessormanager.h"
@@ -86,14 +86,14 @@ TestScenario TestScenario::create(qint64 tag, TestScenario::Action action, const
 FakeAkonadiServer::FakeAkonadiServer()
 {
     qputenv("AKONADI_INSTANCE", qPrintable(instanceName()));
-    qputenv("XDG_DATA_HOME", qPrintable(QString(basePath() + QLatin1String("/local"))));
-    qputenv("XDG_CONFIG_HOME", qPrintable(QString(basePath() + QLatin1String("/config"))));
+    qputenv("XDG_DATA_HOME", qPrintable(QString(basePath() + QLatin1StringView("/local"))));
+    qputenv("XDG_CONFIG_HOME", qPrintable(QString(basePath() + QLatin1StringView("/config"))));
     qputenv("HOME", qPrintable(basePath()));
-    qputenv("KDEHOME", qPrintable(basePath() + QLatin1String("/kdehome")));
+    qputenv("KDEHOME", qPrintable(basePath() + QLatin1StringView("/kdehome")));
 
     mClient = std::make_unique<FakeClient>();
 
-    DataStore::setFactory(std::make_unique<FakeDataStoreFactory>(*this));
+    DataStore::setFactory(std::make_unique<FakeDataStoreFactory>(this));
 }
 
 FakeAkonadiServer::~FakeAkonadiServer()
@@ -159,25 +159,25 @@ void FakeAkonadiServer::initFake()
 {
     qDebug() << "==== Fake Akonadi Server starting up ====";
 
-    qputenv("XDG_DATA_HOME", qPrintable(QString(basePath() + QLatin1String("/local"))));
-    qputenv("XDG_CONFIG_HOME", qPrintable(QString(basePath() + QLatin1String("/config"))));
+    qputenv("XDG_DATA_HOME", qPrintable(QString(basePath() + QLatin1StringView("/local"))));
+    qputenv("XDG_CONFIG_HOME", qPrintable(QString(basePath() + QLatin1StringView("/config"))));
     qputenv("AKONADI_INSTANCE", qPrintable(instanceName()));
     QSettings settings(StandardDirs::serverConfigFile(StandardDirs::WriteOnly), QSettings::IniFormat);
     settings.beginGroup(QStringLiteral("General"));
-    settings.setValue(QStringLiteral("Driver"), QLatin1String("QSQLITE3"));
+    settings.setValue(QStringLiteral("Driver"), QLatin1StringView("QSQLITE"));
     settings.endGroup();
 
-    settings.beginGroup(QStringLiteral("QSQLITE3"));
-    settings.setValue(QStringLiteral("Name"), QString(basePath() + QLatin1String("/local/share/akonadi/akonadi.db")));
+    settings.beginGroup(QStringLiteral("QSQLITE"));
+    settings.setValue(QStringLiteral("Name"), QString(basePath() + QLatin1StringView("/local/share/akonadi/akonadi.db")));
     settings.endGroup();
     settings.sync();
 
     DbConfig *dbConfig = DbConfig::configuredDatabase();
-    if (dbConfig->driverName() != QLatin1String("QSQLITE3")) {
-        throw FakeAkonadiServerException(QLatin1String("Unexpected driver specified. Expected QSQLITE3, got ") + dbConfig->driverName());
+    if (dbConfig->driverName() != QLatin1StringView("QSQLITE")) {
+        throw FakeAkonadiServerException(QLatin1StringView("Unexpected driver specified. Expected QSQLITE, got ") + dbConfig->driverName());
     }
 
-    const QLatin1String initCon("initConnection");
+    const QLatin1StringView initCon("initConnection");
     {
         QSqlDatabase db = QSqlDatabase::addDatabase(DbConfig::configuredDatabase()->driverName(), initCon);
         DbConfig::configuredDatabase()->apply(db);
@@ -199,6 +199,9 @@ void FakeAkonadiServer::initFake()
     dbConfig->setup();
 
     mDataStore = static_cast<FakeDataStore *>(FakeDataStore::self());
+    if (!mDataStore->database().isOpen()) {
+        throw FakeAkonadiServerException("Failed to open database");
+    }
     mDataStore->setPopulateDb(mPopulateDb);
     if (!mDataStore->init()) {
         throw FakeAkonadiServerException("Failed to initialize datastore");
@@ -206,19 +209,19 @@ void FakeAkonadiServer::initFake()
 
     mTracer = std::make_unique<Tracer>();
     mCollectionStats = std::make_unique<CollectionStatistics>();
-    mCacheCleaner = std::make_unique<CacheCleaner>();
+    mCacheCleaner = AkThread::create<CacheCleaner>();
     if (!mDisableItemRetrievalManager) {
-        mItemRetrieval = std::make_unique<FakeItemRetrievalManager>();
+        mItemRetrieval = AkThread::create<FakeItemRetrievalManager>();
     }
-    mAgentSearchManager = std::make_unique<SearchTaskManager>();
+    mAgentSearchManager = AkThread::create<SearchTaskManager>();
 
     mDebugInterface = std::make_unique<DebugInterface>(*mTracer);
     mResourceManager = std::make_unique<ResourceManager>(*mTracer);
     mPreprocessorManager = std::make_unique<PreprocessorManager>(*mTracer);
     mPreprocessorManager->setEnabled(false);
-    mIntervalCheck = std::make_unique<FakeIntervalCheck>(*mItemRetrieval);
-    mSearchManager = std::make_unique<FakeSearchManager>(*mAgentSearchManager);
-    mStorageJanitor = std::make_unique<StorageJanitor>(*this);
+    mIntervalCheck = AkThread::create<FakeIntervalCheck>(*mItemRetrieval);
+    mSearchManager = AkThread::create<FakeSearchManager>(*mAgentSearchManager);
+    mStorageJanitor = AkThread::create<StorageJanitor>(this);
 
     qDebug() << "==== Fake Akonadi Server started ====";
 }
@@ -270,19 +273,17 @@ void FakeAkonadiServer::setScenarios(const TestScenario::List &scenarios)
 
 void FakeAkonadiServer::newCmdConnection(quintptr socketDescriptor)
 {
-    mConnection = std::make_unique<FakeConnection>(socketDescriptor, *this);
+    mConnection = AkThread::create<FakeConnection>(socketDescriptor, *this);
+    mConnection->waitForInitialized();
 
-    // Connection is its own thread, so we have to make sure we get collector
-    // from DataStore of the Connection's thread, not ours
-    NotificationCollector *collector = nullptr;
-    QMetaObject::invokeMethod(mConnection.get(),
-                              "notificationCollector",
-                              Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(Akonadi::Server::NotificationCollector *, collector));
-    mNtfCollector = dynamic_cast<InspectableNotificationCollector *>(collector);
+    mNtfCollector = dynamic_cast<InspectableNotificationCollector *>(mConnection->notificationCollector());
     Q_ASSERT(mNtfCollector);
+
     mNotificationSpy.reset(new QSignalSpy(mNtfCollector, &Server::InspectableNotificationCollector::notifySignal));
     Q_ASSERT(mNotificationSpy->isValid());
+
+    // Now start replaying the scenario
+    mClient->startScenario();
 }
 
 void FakeAkonadiServer::runTest()
@@ -294,8 +295,7 @@ void FakeAkonadiServer::runTest()
     QEventLoop serverLoop;
     connect(mClient.get(), &QThread::finished, this, [this, &serverLoop]() { // clazy:exclude=lambda-in-connect
         disconnect(mClient.get(), &QThread::finished, this, nullptr);
-        // Flush any pending notifications and wait for them
-        // before shutting down the event loop
+        // Flush any pending notifications and wait for them before shutting down the event loop
         if (mNtfCollector->dispatchNotifications()) {
             mNotificationSpy->wait();
         }
@@ -303,14 +303,15 @@ void FakeAkonadiServer::runTest()
         serverLoop.quit();
     });
 
-    // Start the client: the client will connect to the server and will
-    // start playing the scenario
+    // Start the client: the client will connect to the server
     mClient->start();
 
     // Wait until the client disconnects, i.e. until the scenario is completed.
     serverLoop.exec();
 
     mCmdServer->close();
+
+    mConnection.reset();
 }
 
 QSharedPointer<QSignalSpy> FakeAkonadiServer::notificationSpy() const
@@ -322,3 +323,5 @@ void FakeAkonadiServer::setPopulateDb(bool populate)
 {
     mPopulateDb = populate;
 }
+
+#include "moc_fakeakonadiserver.cpp"

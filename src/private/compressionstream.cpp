@@ -76,12 +76,6 @@ std::error_condition make_error_condition(lzma_ret ret)
     return std::error_condition(static_cast<int>(ret), lzmaErrorCategory());
 }
 
-QDebug operator<<(QDebug dbg, const std::string &str)
-{
-    dbg << QString::fromStdString(str);
-    return dbg;
-}
-
 } // namespace std
 
 std::error_code make_error_code(lzma_ret e)
@@ -113,12 +107,12 @@ public:
         mStream.avail_out = maxSize;
     }
 
-    int inputBufferAvailable() const
+    size_t inputBufferAvailable() const
     {
         return mStream.avail_in;
     }
 
-    int outputBufferAvailable() const
+    size_t outputBufferAvailable() const
     {
         return mStream.avail_out;
     }
@@ -264,7 +258,7 @@ qint64 CompressionStream::writeData(const char *data, qint64 dataSize)
         mCompressor->setInputBuffer(data, dataSize);
     }
 
-    qint64 dataWritten = 0;
+    size_t dataWritten = 0;
 
     while (dataSize > 0 || finish) {
         mResult = mCompressor->deflate(finish);
@@ -323,3 +317,5 @@ bool CompressionStream::isCompressed(QIODevice *data)
 
     return memcmp(magic.data(), buf, sizeof(buf)) == 0;
 }
+
+#include "moc_compressionstream_p.cpp"

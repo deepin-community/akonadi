@@ -1,5 +1,5 @@
 /*
-  SPDX-FileCopyrightText: 2015-2022 Laurent Montel <montel@kde.org>
+  SPDX-FileCopyrightText: 2015-2024 Laurent Montel <montel@kde.org>
 
   SPDX-License-Identifier: LGPL-2.0-or-later
   */
@@ -29,14 +29,14 @@ TagSelectWidget::TagSelectWidget(QWidget *parent)
     auto mainLayout = new QHBoxLayout(this);
 
     auto monitor = new Monitor(this);
-    monitor->setObjectName(QStringLiteral("TagSelectWidgetMonitor"));
+    monitor->setObjectName(QLatin1StringView("TagSelectWidgetMonitor"));
     monitor->setTypeMonitored(Monitor::Tags);
 
     auto model = new TagModel(monitor, this);
     d->mTagEditWidget.reset(new TagEditWidget());
     d->mTagEditWidget->setModel(model);
     d->mTagEditWidget->setSelectionEnabled(true);
-    d->mTagEditWidget->setObjectName(QStringLiteral("tageditwidget"));
+    d->mTagEditWidget->setObjectName(QLatin1StringView("tageditwidget"));
 
     mainLayout->addWidget(d->mTagEditWidget.get());
 }
@@ -68,3 +68,5 @@ void TagSelectWidget::setSelectionFromStringList(const QStringList &lst)
                  })
                  | Actions::toQVector);
 }
+
+#include "moc_tagselectwidget.cpp"

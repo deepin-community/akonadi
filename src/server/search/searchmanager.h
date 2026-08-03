@@ -9,9 +9,9 @@
 
 #include "akthread.h"
 
+#include <QList>
 #include <QMutex>
 #include <QSet>
-#include <QVector>
 
 class QTimer;
 class QPluginLoader;
@@ -35,10 +35,15 @@ class SearchManager : public AkThread
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.Akonadi.SearchManager")
 
-public:
-    /** Create a new search manager with the given @p searchEngines. */
+protected:
+    /**
+     * Create a new search manager with the given @p searchEngines.
+     *
+     * Use AkThread::create() to create and start a new SearchManager thread.
+     **/
     explicit SearchManager(const QStringList &searchEngines, SearchTaskManager &agentSearchManager);
 
+public:
     ~SearchManager() override;
 
     /**
@@ -54,7 +59,7 @@ public:
     /**
      * Returns currently available search plugins.
      */
-    virtual QVector<AbstractSearchPlugin *> searchPlugins() const;
+    virtual QList<AbstractSearchPlugin *> searchPlugins() const;
 
 public Q_SLOTS:
     virtual void scheduleSearchUpdate();
@@ -93,9 +98,9 @@ private:
 
     SearchTaskManager &mAgentSearchManager;
     QStringList mEngineNames;
-    QVector<QPluginLoader *> mPluginLoaders;
-    QVector<AbstractSearchEngine *> mEngines;
-    QVector<AbstractSearchPlugin *> mPlugins;
+    QList<QPluginLoader *> mPluginLoaders;
+    QList<AbstractSearchEngine *> mEngines;
+    QList<AbstractSearchPlugin *> mPlugins;
 
     QTimer *mSearchUpdateTimer = nullptr;
 

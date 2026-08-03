@@ -14,7 +14,7 @@
 #include "resourceselectjob_p.h"
 #include "testattribute.h"
 
-#include <qtest_akonadi.h>
+#include "qtest_akonadi.h"
 
 using namespace Akonadi;
 
@@ -256,9 +256,11 @@ void ItemFetchTest::testAncestorRetrieval()
     QCOMPARE(item.remoteId(), QString::fromLatin1("A"));
     QCOMPARE(item.mimeType(), QString::fromLatin1("application/octet-stream"));
     const Collection c = item.parentCollection();
-    QCOMPARE(c.remoteId(), QLatin1String("10"));
+    QCOMPARE(c.remoteId(), QLatin1StringView("10"));
     const Collection c2 = c.parentCollection();
-    QCOMPARE(c2.remoteId(), QLatin1String("6"));
+    QCOMPARE(c2.remoteId(), QLatin1StringView("6"));
     const Collection c3 = c2.parentCollection();
     QCOMPARE(c3, Collection::root());
 }
+
+#include "moc_itemfetchtest.cpp"

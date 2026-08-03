@@ -27,10 +27,10 @@
 #include "tracer.h"
 #include "utils.h"
 
-#include <private/dbus_p.h>
-#include <private/instance_p.h>
-#include <private/protocol_p.h>
-#include <private/standarddirs_p.h>
+#include "private/dbus_p.h"
+#include "private/instance_p.h"
+#include "private/protocol_p.h"
+#include "private/standarddirs_p.h"
 
 #include <QSqlError>
 #include <QSqlQuery>
@@ -50,8 +50,8 @@ class AkonadiDataStore : public DataStore
 {
     Q_OBJECT
 public:
-    explicit AkonadiDataStore(AkonadiServer &server)
-        : DataStore(server)
+    explicit AkonadiDataStore(AkonadiServer *server)
+        : DataStore(server, DbConfig::configuredDatabase())
     {
     }
 };
@@ -59,7 +59,7 @@ public:
 class AkonadiDataStoreFactory : public DataStoreFactory
 {
 public:
-    explicit AkonadiDataStoreFactory(AkonadiServer &akonadi)
+    explicit AkonadiDataStoreFactory(AkonadiServer *akonadi)
         : m_akonadi(akonadi)
     {
     }
@@ -70,7 +70,7 @@ public:
     }
 
 private:
-    AkonadiServer &m_akonadi;
+    AkonadiServer *const m_akonadi;
 };
 
 } // namespace
@@ -83,7 +83,7 @@ AkonadiServer::AkonadiServer()
     qRegisterMetaType<Protocol::ChangeNotificationList>();
     qRegisterMetaType<quintptr>("quintptr");
 
-    DataStore::setFactory(std::make_unique<AkonadiDataStoreFactory>(*this));
+    DataStore::setFactory(std::make_unique<AkonadiDataStoreFactory>(this));
 }
 
 bool AkonadiServer::init()
@@ -100,7 +100,7 @@ bool AkonadiServer::init()
 
     const QByteArray dbusAddress = qgetenv("DBUS_SESSION_BUS_ADDRESS");
     if (!dbusAddress.isEmpty()) {
-        connectionSettings.setValue(QStringLiteral("DBUS/Address"), QLatin1String(dbusAddress));
+        connectionSettings.setValue(QStringLiteral("DBUS/Address"), QLatin1StringView(dbusAddress));
     }
 
     // Setup database
@@ -119,16 +119,16 @@ bool AkonadiServer::init()
 
     mTracer = std::make_unique<Tracer>();
     mCollectionStats = std::make_unique<CollectionStatistics>();
-    mCacheCleaner = std::make_unique<CacheCleaner>();
-    mItemRetrieval = std::make_unique<ItemRetrievalManager>();
-    mAgentSearchManager = std::make_unique<SearchTaskManager>();
+    mCacheCleaner = AkThread::create<CacheCleaner>();
+    mItemRetrieval = AkThread::create<ItemRetrievalManager>();
+    mAgentSearchManager = AkThread::create<SearchTaskManager>();
 
     mDebugInterface = std::make_unique<DebugInterface>(*mTracer);
     mResourceManager = std::make_unique<ResourceManager>(*mTracer);
     mPreprocessorManager = std::make_unique<PreprocessorManager>(*mTracer);
-    mIntervalCheck = std::make_unique<IntervalCheck>(*mItemRetrieval);
-    mSearchManager = std::make_unique<SearchManager>(searchManagers, *mAgentSearchManager);
-    mStorageJanitor = std::make_unique<StorageJanitor>(*this);
+    mIntervalCheck = AkThread::create<IntervalCheck>(*mItemRetrieval);
+    mSearchManager = AkThread::create<SearchManager>(searchManagers, *mAgentSearchManager);
+    mStorageJanitor = AkThread::create<StorageJanitor>(this);
 
     if (settings.value(QStringLiteral("General/DisablePreprocessing"), false).toBool()) {
         mPreprocessorManager->setEnabled(false);
@@ -140,7 +140,7 @@ bool AkonadiServer::init()
     mControlWatcher =
         std::make_unique<QDBusServiceWatcher>(DBus::serviceName(DBus::Control), QDBusConnection::sessionBus(), QDBusServiceWatcher::WatchForUnregistration);
     connect(mControlWatcher.get(), &QDBusServiceWatcher::serviceUnregistered, this, [this]() {
-        qCCritical(AKONADISERVER_LOG) << "Control process died, committing suicide!";
+        qCCritical(AKONADISERVER_LOG) << "Control process died, exiting!";
         quit();
     });
 
@@ -220,7 +220,7 @@ void AkonadiServer::newCmdConnection(quintptr socketDescriptor)
         return;
     }
 
-    auto connection = std::make_unique<Connection>(socketDescriptor, *this);
+    auto connection = AkThread::create<Connection>(socketDescriptor, *this);
     connect(connection.get(), &Connection::disconnected, this, &AkonadiServer::connectionDisconnected);
     mConnections.push_back(std::move(connection));
 }
@@ -230,8 +230,10 @@ void AkonadiServer::connectionDisconnected()
     auto it = std::find_if(mConnections.begin(), mConnections.end(), [this](const auto &ptr) {
         return ptr.get() == sender();
     });
-    Q_ASSERT(it != mConnections.end());
-    mConnections.erase(it);
+
+    if (it != mConnections.end()) {
+        mConnections.erase(it);
+    }
 }
 
 bool AkonadiServer::setupDatabase()
@@ -282,7 +284,7 @@ bool AkonadiServer::startDatabaseProcess()
 bool AkonadiServer::createDatabase()
 {
     bool success = true;
-    const QLatin1String initCon("initConnection");
+    const QLatin1StringView initCon("initConnection");
     QSqlDatabase db = QSqlDatabase::addDatabase(DbConfig::configuredDatabase()->driverName(), initCon);
     DbConfig::configuredDatabase()->apply(db);
     db.setDatabaseName(DbConfig::configuredDatabase()->databaseName());
@@ -336,7 +338,7 @@ bool AkonadiServer::createServers(QSettings &settings, QSettings &connectionSett
     mCmdServer = std::make_unique<AkLocalServer>(this);
     connect(mCmdServer.get(), qOverload<quintptr>(&AkLocalServer::newConnection), this, &AkonadiServer::newCmdConnection);
 
-    mNotificationManager = std::make_unique<NotificationManager>();
+    mNotificationManager = AkThread::create<NotificationManager>();
     mNtfServer = std::make_unique<AkLocalServer>(this);
     // Note: this is a queued connection, as NotificationManager lives in its
     // own thread
@@ -453,3 +455,5 @@ QString AkonadiServer::serverPath() const
 }
 
 #include "akonadi.moc"
+
+#include "moc_akonadi.cpp"

@@ -10,7 +10,7 @@
 
 #include "resourceinterface.h"
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
@@ -110,9 +110,9 @@ void ItemRetrievalManager::requestItemDelivery(ItemRetrievalRequest req)
     Q_EMIT requestAdded();
 }
 
-QVector<AbstractItemRetrievalJob *> ItemRetrievalManager::scheduleJobsForIdleResourcesLocked()
+QList<AbstractItemRetrievalJob *> ItemRetrievalManager::scheduleJobsForIdleResourcesLocked()
 {
-    QVector<AbstractItemRetrievalJob *> newJobs;
+    QList<AbstractItemRetrievalJob *> newJobs;
     for (auto it = mPendingRequests.begin(); it != mPendingRequests.end();) {
         if (it->second.empty()) {
             it = mPendingRequests.erase(it);
@@ -222,3 +222,5 @@ void ItemRetrievalManager::triggerCollectionTreeSync(const QString &resource)
         }
     });
 }
+
+#include "moc_itemretrievalmanager.cpp"

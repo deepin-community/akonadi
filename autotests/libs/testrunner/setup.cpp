@@ -9,10 +9,10 @@
 #include "akonaditest_debug.h"
 #include "config.h" //krazy:exclude=includes
 
-#include <agentinstance.h>
-#include <agentinstancecreatejob.h>
-#include <private/standarddirs_p.h>
-#include <resourcesynchronizationjob.h>
+#include "agentinstance.h"
+#include "agentinstancecreatejob.h"
+#include "private/standarddirs_p.h"
+#include "resourcesynchronizationjob.h"
 
 #include <KConfig>
 #include <KConfigGroup>
@@ -34,7 +34,7 @@ bool SetupTest::startAkonadiDaemon()
 
     if (!mAkonadiDaemonProcess) {
         mAkonadiDaemonProcess = std::make_unique<KProcess>();
-        connect(mAkonadiDaemonProcess.get(), qOverload<int, QProcess::ExitStatus>(&KProcess::finished), this, &SetupTest::slotAkonadiDaemonProcessFinished);
+        connect(mAkonadiDaemonProcess.get(), &KProcess::finished, this, &SetupTest::slotAkonadiDaemonProcessFinished);
     }
 
     mAkonadiDaemonProcess->setProgram(Akonadi::StandardDirs::findExecutable(QStringLiteral("akonadi_control")), {QStringLiteral("--instance"), instanceId()});
@@ -49,7 +49,7 @@ void SetupTest::stopAkonadiDaemon()
     if (!mAkonadiDaemonProcess) {
         return;
     }
-    disconnect(mAkonadiDaemonProcess.get(), qOverload<int, QProcess::ExitStatus>(&KProcess::finished), this, nullptr);
+    disconnect(mAkonadiDaemonProcess.get(), &KProcess::finished, this, nullptr);
     mAkonadiDaemonProcess->terminate();
     const bool finished = mAkonadiDaemonProcess->waitForFinished(5000);
     if (!finished) {
@@ -131,10 +131,10 @@ void SetupTest::copyXdgDirectory(const QString &src, const QString &dst)
     const auto entries = srcDir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
     for (const auto &fi : entries) {
         if (fi.isDir()) {
-            if (fi.fileName() == QLatin1String("akonadi")) {
+            if (fi.fileName() == QLatin1StringView("akonadi")) {
                 // namespace according to instance identifier
 #ifdef Q_OS_WIN
-                const bool isXdgConfig = src.contains(QLatin1String("/xdgconfig/"));
+                const bool isXdgConfig = src.contains(QLatin1StringView("/xdgconfig/"));
                 copyDirectory(fi.absoluteFilePath(),
                               dst + QStringLiteral("/akonadi/") + (isXdgConfig ? QStringLiteral("config/") : QStringLiteral("data/"))
                                   + QStringLiteral("instance/") + instanceId());
@@ -145,7 +145,7 @@ void SetupTest::copyXdgDirectory(const QString &src, const QString &dst)
                 copyDirectory(fi.absoluteFilePath(), dst + QLatin1Char('/') + fi.fileName());
             }
         } else {
-            if (fi.fileName().startsWith(QLatin1String("akonadi_")) && fi.fileName().endsWith(QLatin1String("rc"))) {
+            if (fi.fileName().startsWith(QLatin1StringView("akonadi_")) && fi.fileName().endsWith(QLatin1StringView("rc"))) {
                 // namespace according to instance identifier
                 const QString baseName = fi.fileName().left(fi.fileName().size() - 2);
                 const QString dstPath = dst + QLatin1Char('/') + Akonadi::ServerManager::addNamespace(baseName) + QStringLiteral("rc");
@@ -218,7 +218,7 @@ void SetupTest::createTempEnvironment()
 #endif
 
     QString backend;
-    if (Config::instance()->dbBackend() == QLatin1String("pgsql")) {
+    if (Config::instance()->dbBackend() == QLatin1StringView("pgsql")) {
         backend = QStringLiteral("postgresql");
     } else {
         backend = Config::instance()->dbBackend();
@@ -229,11 +229,11 @@ void SetupTest::createTempEnvironment()
 void SetupTest::writeAkonadiserverrc(const QString &path)
 {
     QString backend;
-    if (Config::instance()->dbBackend() == QLatin1String("sqlite")) {
-        backend = QStringLiteral("QSQLITE3");
-    } else if (Config::instance()->dbBackend() == QLatin1String("mysql")) {
+    if (Config::instance()->dbBackend() == QLatin1StringView("sqlite")) {
+        backend = QStringLiteral("QSQLITE");
+    } else if (Config::instance()->dbBackend() == QLatin1StringView("mysql")) {
         backend = QStringLiteral("QMYSQL");
-    } else if (Config::instance()->dbBackend() == QLatin1String("pgsql")) {
+    } else if (Config::instance()->dbBackend() == QLatin1StringView("pgsql")) {
         backend = QStringLiteral("QPSQL");
     } else {
         qCCritical(AKONADITEST_LOG, "Invalid backend name %s", qPrintable(backend));
@@ -284,8 +284,6 @@ SetupTest::SetupTest()
                                           "qt.* = false\n"
                                           "kf5.coreaddons.desktopparser.debug = false"));
 
-    // avoid KIO starting klauncher which can get the CI stuck
-    setEnvironmentVariable("KDE_FORK_SLAVES", QStringLiteral("yes"));
     setEnvironmentVariable("KIO_DISABLE_CACHE_CLEANER", QStringLiteral("yes"));
 
     QHashIterator<QString, QString> iter(Config::instance()->envVars());
@@ -297,7 +295,7 @@ SetupTest::SetupTest()
 
     // No kres-migrator please
     KConfig migratorConfig(basePath() + QStringLiteral("config/kres-migratorrc"));
-    KConfigGroup migrationCfg(&migratorConfig, "Migration");
+    KConfigGroup migrationCfg(&migratorConfig, QStringLiteral("Migration"));
     migrationCfg.writeEntry("Enabled", false);
 
     connect(Akonadi::ServerManager::self(), &Akonadi::ServerManager::stateChanged, this, &SetupTest::serverStateChanged);
@@ -350,7 +348,7 @@ void SetupTest::shutdownHarder()
 void SetupTest::restartAkonadiServer()
 {
     qCDebug(AKONADITEST_LOG) << "Restarting Akonadi";
-    disconnect(mAkonadiDaemonProcess.get(), qOverload<int, QProcess::ExitStatus>(&KProcess::finished), this, nullptr);
+    disconnect(mAkonadiDaemonProcess.get(), &KProcess::finished, this, nullptr);
     Akonadi::ServerManager::self()->stop();
     const bool shutdownResult = mAkonadiDaemonProcess->waitForFinished();
     if (!shutdownResult) {
@@ -361,7 +359,7 @@ void SetupTest::restartAkonadiServer()
     // it forcefully, if necessary, and know the pid
     startAkonadiDaemon();
     // from here on, the server exiting is an error again
-    connect(mAkonadiDaemonProcess.get(), qOverload<int, QProcess::ExitStatus>(&KProcess::finished), this, &SetupTest::slotAkonadiDaemonProcessFinished);
+    connect(mAkonadiDaemonProcess.get(), &KProcess::finished, this, &SetupTest::slotAkonadiDaemonProcessFinished);
 }
 
 QString SetupTest::basePath() const
@@ -439,7 +437,9 @@ void SetupTest::setEnvironmentVariable(const QByteArray &name, const QString &va
     qputenv(name.constData(), value.toLatin1());
 }
 
-QVector<SetupTest::EnvVar> SetupTest::environmentVariables() const
+QList<SetupTest::EnvVar> SetupTest::environmentVariables() const
 {
     return mEnvVars;
 }
+
+#include "moc_setup.cpp"

@@ -25,7 +25,7 @@ class TagPrivate;
 class AKONADICORE_EXPORT Tag
 {
 public:
-    using List = QVector<Tag>;
+    using List = QList<Tag>;
     using Id = qint64;
 
     /**
@@ -200,7 +200,7 @@ private:
     /// @endcond
 };
 
-AKONADICORE_EXPORT uint qHash(const Akonadi::Tag &);
+AKONADICORE_EXPORT size_t qHash(const Akonadi::Tag &, size_t sed = 0) noexcept;
 
 template<typename T>
 inline T *Tag::attribute(CreateOption option)
@@ -256,4 +256,4 @@ AKONADICORE_EXPORT QDebug operator<<(QDebug debug, const Akonadi::Tag &tag);
 Q_DECLARE_METATYPE(Akonadi::Tag)
 Q_DECLARE_METATYPE(Akonadi::Tag::List)
 Q_DECLARE_METATYPE(QSet<Akonadi::Tag>)
-Q_DECLARE_TYPEINFO(Akonadi::Tag, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Tag, Q_RELOCATABLE_TYPE);

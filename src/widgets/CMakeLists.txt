@@ -1,23 +1,13 @@
-if (BUILD_QCH)
-    ecm_install_qch_export(
-        TARGETS KF5AkonadiWidgets_QCH
-        FILE KF5AkonadiWidgetsQchTargets.cmake
-        DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
-        COMPONENT Devel
-    )
-    set(PACKAGE_INCLUDE_QCHTARGETS "include(\"\${CMAKE_CURRENT_LIST_DIR}/KF5AkonadiWidgetsQchTargets.cmake\")")
-endif()
-
 configure_file(akonadiwidgetstests_export.h.in "${CMAKE_CURRENT_BINARY_DIR}/akonadiwidgetstests_export.h")
 
 # base install include dir
-set(AkonadiWidgets_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiWidgets")
+set(AkonadiWidgets_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR}/KPim6/AkonadiWidgets")
 
-add_library(KF5AkonadiWidgets)
-add_library(KF5::AkonadiWidgets ALIAS KF5AkonadiWidgets)
+add_library(KPim6AkonadiWidgets)
+add_library(KPim6::AkonadiWidgets ALIAS KPim6AkonadiWidgets)
 
 
-target_sources(KF5AkonadiWidgets PRIVATE
+target_sources(KPim6AkonadiWidgets PRIVATE
     actionstatemanager.cpp
     agentactionmanager.cpp
     agentconfigurationdialog.cpp
@@ -92,18 +82,18 @@ target_sources(KF5AkonadiWidgets PRIVATE
     tagwidget.h
     tagselectwidget.h
 
-    clearcachejob.cpp
-    clearcachejob.h
+    clearcachefoldersjob.cpp
+    clearcachefoldersjob.h
 
     dbaccess.cpp
     dbaccess.h
-    )
+   )
 
-ecm_qt_declare_logging_category(KF5AkonadiWidgets HEADER akonadiwidgets_debug.h IDENTIFIER AKONADIWIDGETS_LOG CATEGORY_NAME org.kde.pim.akonadiwidgets
+ecm_qt_declare_logging_category(KPim6AkonadiWidgets HEADER akonadiwidgets_debug.h IDENTIFIER AKONADIWIDGETS_LOG CATEGORY_NAME org.kde.pim.akonadiwidgets
         DESCRIPTION "akonadi (Akonadi Widget Library)"
         OLD_CATEGORY_NAMES akonadiwidgets_log
         EXPORT AKONADI
-    )
+   )
 
 
 set(akonadiwidgets_UI
@@ -130,7 +120,7 @@ ecm_generate_headers(AkonadiWidgets_CC_HEADERS
     AgentInstanceWidget
     AgentTypeDialog
     AgentTypeWidget
-    ClearCacheJob
+    ClearCacheFoldersJob
     CollectionComboBox
     CollectionDialog
     CollectionPropertiesDialog
@@ -156,47 +146,40 @@ ecm_generate_headers(AkonadiWidgets_CC_HEADERS
     PREFIX Akonadi
 )
 
-ki18n_wrap_ui(KF5AkonadiWidgets ${akonadiwidgets_UI})
-if (COMPILE_WITH_UNITY_CMAKE_SUPPORT)
-    set_target_properties(KF5AkonadiWidgets PROPERTIES UNITY_BUILD ON)
+ki18n_wrap_ui(KPim6AkonadiWidgets ${akonadiwidgets_UI})
+if(COMPILE_WITH_UNITY_CMAKE_SUPPORT)
+    set_target_properties(KPim6AkonadiWidgets PROPERTIES UNITY_BUILD ON)
 endif()
 
-generate_export_header(KF5AkonadiWidgets BASE_NAME akonadiwidgets)
+generate_export_header(KPim6AkonadiWidgets BASE_NAME akonadiwidgets)
 
 
-target_include_directories(KF5AkonadiWidgets INTERFACE "$<INSTALL_INTERFACE:${AkonadiWidgets_INSTALL_INCLUDEDIR}>")
+target_include_directories(KPim6AkonadiWidgets INTERFACE "$<INSTALL_INTERFACE:${AkonadiWidgets_INSTALL_INCLUDEDIR}>")
 
-target_link_libraries(KF5AkonadiWidgets
+target_link_libraries(KPim6AkonadiWidgets
 PUBLIC
-    KF5::AkonadiCore
-    KF5::ItemModels
+    KPim6::AkonadiCore
+    KF6::ItemModels
     Qt::Widgets
-    KF5::ConfigWidgets
+    KF6::ConfigWidgets
 PRIVATE
-    KF5::KIOCore
-    KF5::I18n
-    KF5::IconThemes
-    KF5::XmlGui
-    KF5::ItemViews
+    KF6::I18n
+    KF6::IconThemes
+    KF6::IconWidgets
+    KF6::XmlGui
     Qt::Sql
-    KF5::AkonadiPrivate
-    KF5::WindowSystem
+    KPim6::AkonadiPrivate
 )
 
-set_target_properties(KF5AkonadiWidgets PROPERTIES
+set_target_properties(KPim6AkonadiWidgets PROPERTIES
     VERSION ${AKONADI_VERSION}
     SOVERSION ${AKONADI_SOVERSION}
     EXPORT_NAME AkonadiWidgets
 )
 
-ecm_generate_pri_file(BASE_NAME AkonadiWidgets
-    LIB_NAME KF5AkonadiWidgets
-    DEPS "AkonadiCore KItemModels" FILENAME_VAR PRI_FILENAME
-)
-
 install(TARGETS
-    KF5AkonadiWidgets
-    EXPORT KF5AkonadiTargets ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
+    KPim6AkonadiWidgets
+    EXPORT KPim6AkonadiTargets ${KDE_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
@@ -211,12 +194,6 @@ install(FILES
     COMPONENT Devel
 )
 
-install(FILES
-    ${PRI_FILENAME}
-    DESTINATION ${ECM_MKSPECS_INSTALL_DIR}
-)
-
-
 ######### Build and install QtDesigner plugin #############
 
 if(BUILD_DESIGNERPLUGIN)
@@ -226,47 +203,47 @@ if(BUILD_DESIGNERPLUGIN)
         TOOLTIP "Akonadi Agent Instance Settings (Akonadi)"
         WHATSTHIS "A widget to configure akonadi instance."
         GROUP "Input (KDE-PIM)"
-    )
+   )
     ecm_qtdesignerplugin_widget(Akonadi::EntityTreeView
 	    INCLUDE_FILE "Akonadi/EntityTreeView"
         TOOLTIP "A view to show an item/collection tree provided by an EntityTreeModel (Akonadi)"
         WHATSTHIS "A view to show an item/collection tree provided by an EntityTreeModel."
         GROUP "Input (KDE-PIM)"
-    )
+   )
     ecm_qtdesignerplugin_widget(Akonadi::TagSelectWidget
 	    INCLUDE_FILE "Akonadi/TagSelectWidget"
         TOOLTIP "A Widget to select tag (Akonadi)"
         WHATSTHIS "A Widget to select tag."
         GROUP "Input (KDE-PIM)"
-    )
+   )
     ecm_qtdesignerplugin_widget(Akonadi::ManageAccountWidget
 	    INCLUDE_FILE "Akonadi/ManageAccountWidget"
         TOOLTIP "A Widget to Manage Akonadi Account (KDE-PIM)"
         WHATSTHIS "A Widget to Manage Akonadi Account."
         GROUP "Input (KDE-PIM)"
-    )
+   )
 
     ecm_add_qtdesignerplugin(akonadiwidgets
         NAME AkonadiWidgets
-        OUTPUT_NAME akonadiwidgets
+        OUTPUT_NAME akonadi6widgets
         WIDGETS
         Akonadi::AgentInstanceWidget
         Akonadi::EntityTreeView
         Akonadi::TagSelectWidget
         Akonadi::ManageAccountWidget
         LINK_LIBRARIES
-        KF5::AkonadiCore
-        KF5::AkonadiWidgets
+        KPim6::AkonadiCore
+        KPim6::AkonadiWidgets
         INSTALL_DESTINATION "${KDE_INSTALL_QTPLUGINDIR}/designer"
         COMPONENT Devel
-    )
+   )
 endif()
 
-if (BUILD_QCH)
+if(BUILD_QCH)
     ecm_add_qch(
-        KF5AkonadiWidgets_QCH
-        NAME KF5AkonadiWidgets
-        BASE_NAME KF5AkonadiWidgets
+        KPim6AkonadiWidgets_QCH
+        NAME KPim6AkonadiWidgets
+        BASE_NAME KPim6AkonadiWidgets
         VERSION ${PIM_VERSION}
         ORG_DOMAIN org.kde
         SOURCES # using only public headers, to cover only public API
@@ -274,9 +251,9 @@ if (BUILD_QCH)
         #MD_MAINPAGE "${CMAKE_SOURCE_DIR}/README.md"
         #IMAGE_DIRS "${CMAKE_SOURCE_DIR}/docs/pics"
         LINK_QCHS
-            Qt5Core_QCH
-            Qt5Gui_QCH
-            Qt5Widgets_QCH
+            Qt6Core_QCH
+            Qt6Gui_QCH
+            Qt6Widgets_QCH
         INCLUDE_DIRS
             ${CMAKE_CURRENT_BINARY_DIR}
         BLANK_MACROS
@@ -284,5 +261,5 @@ if (BUILD_QCH)
         TAGFILE_INSTALL_DESTINATION ${KDE_INSTALL_QTQCHDIR}
         QCH_INSTALL_DESTINATION ${KDE_INSTALL_QTQCHDIR}
         COMPONENT Devel
-    )
+   )
 endif()

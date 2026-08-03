@@ -12,11 +12,21 @@
 #include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
 
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
 using namespace AkRanges;
+
+namespace
+{
+
+[[nodiscard]] bool isTopLevelCollection(const Scope &scope)
+{
+    return scope.scope() == Scope::Uid && scope.uidSet().size() == 1 && scope.uid() == 0;
+}
+
+} // namespace
 
 CollectionCreateHandler::CollectionCreateHandler(AkonadiServer &akonadi)
     : Handler(akonadi)
@@ -37,7 +47,7 @@ bool CollectionCreateHandler::parseStream()
     MimeType::List parentContentTypes;
 
     // Invalid or empty scope means we refer to root collection
-    if (cmd.parent().scope() != Scope::Invalid && !cmd.parent().isEmpty()) {
+    if (!isTopLevelCollection(cmd.parent())) {
         parent = HandlerHelper::collectionFromScope(cmd.parent(), connection()->context());
         if (!parent.isValid()) {
             return failureResponse(QStringLiteral("Invalid parent collection"));

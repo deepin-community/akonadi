@@ -9,8 +9,8 @@
 #include "storage/datastore.h"
 #include "storage/selectquerybuilder.h"
 
+#include "private/tristate_p.h"
 #include <chrono>
-#include <private/tristate_p.h>
 
 #include <QDateTime>
 #include <QTimer>
@@ -339,3 +339,5 @@ void CollectionScheduler::schedulerTimeout()
 }
 
 #include "collectionscheduler.moc"
+
+#include "moc_collectionscheduler.cpp"

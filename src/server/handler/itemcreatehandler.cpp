@@ -11,6 +11,7 @@
 #include "handlerhelper.h"
 #include "itemfetchhelper.h"
 #include "preprocessormanager.h"
+#include "private/externalpartstorage_p.h"
 #include "storage/datastore.h"
 #include "storage/dbconfig.h"
 #include "storage/itemretrievalmanager.h"
@@ -19,10 +20,10 @@
 #include "storage/parttypehelper.h"
 #include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
-#include <private/externalpartstorage_p.h>
 
 #include "shared/akranges.h"
-#include "shared/akscopeguard.h"
+
+#include <QScopeGuard>
 
 #include <numeric> //std::accumulate
 
@@ -65,7 +66,8 @@ bool ItemCreateHandler::buildPimItem(const Protocol::CreateItemCommand &cmd, Pim
     }
     item.setRemoteRevision(cmd.remoteRevision());
     item.setGid(cmd.gid());
-    item.setAtime(QDateTime::currentDateTimeUtc());
+
+    item.setAtime(cmd.modificationTime().isValid() ? cmd.modificationTime() : QDateTime::currentDateTimeUtc());
 
     return true;
 }
@@ -149,7 +151,18 @@ bool ItemCreateHandler::insertItem(const Protocol::CreateItemCommand &cmd, PimIt
 bool ItemCreateHandler::mergeItem(const Protocol::CreateItemCommand &cmd, PimItem &newItem, PimItem &currentItem, const Collection &parentCol)
 {
     bool needsUpdate = false;
+    bool ignoreFlagsChanges = false;
     QSet<QByteArray> changedParts;
+
+    if (currentItem.atime() > newItem.atime()) {
+        qCDebug(AKONADISERVER_LOG) << "Akoandi has newer atime of Item " << currentItem.id() << " than the resource (local atime =" << currentItem.atime()
+                                   << ", remote atime =" << newItem.atime() << "), ignoring flags changes.";
+        // This handles a race that is rather specific to IMAP: if I change flags in KMail while the folder is syncing, the flags from sync will
+        // overwrite my local changes.
+        // Without server-side change recording we don't have any way to know what has really changed locally, so we just assume it's flags and
+        // we will assume that the flags have not changed on the server as well (and if so, we will consider the local state superior to remote).
+        ignoreFlagsChanges = true;
+    }
 
     if (!newItem.remoteId().isEmpty() && currentItem.remoteId() != newItem.remoteId()) {
         currentItem.setRemoteId(newItem.remoteId());
@@ -192,11 +205,11 @@ bool ItemCreateHandler::mergeItem(const Protocol::CreateItemCommand &cmd, PimIte
             changedParts.insert(AKONADI_PARAM_FLAGS);
             needsUpdate = true;
         }
-    } else {
+    } else if (!ignoreFlagsChanges) {
         bool flagsChanged = false;
         QSet<QByteArray> flagNames = cmd.flags();
 
-        static QVector<QByteArray> localFlagsToPreserve = {"$ATTACHMENT", "$INVITATION", "$ENCRYPTED", "$SIGNED", "$WATCHED"};
+        static QList<QByteArray> localFlagsToPreserve = {"$ATTACHMENT", "$INVITATION", "$ENCRYPTED", "$SIGNED", "$WATCHED"};
 
         // Make sure we don't overwrite some local-only flags that can't come
         // through from Resource during ItemSync, like $ATTACHMENT, because the
@@ -307,12 +320,7 @@ bool ItemCreateHandler::sendResponse(const PimItem &item, Protocol::CreateItemCo
     fetchScope.setFetch(Protocol::ItemFetchScope::AllAttributes | Protocol::ItemFetchScope::FullPayload | Protocol::ItemFetchScope::CacheOnly
                         | Protocol::ItemFetchScope::Flags | Protocol::ItemFetchScope::GID | Protocol::ItemFetchScope::MTime | Protocol::ItemFetchScope::RemoteID
                         | Protocol::ItemFetchScope::RemoteRevision | Protocol::ItemFetchScope::Size | Protocol::ItemFetchScope::Tags);
-    ImapSet set;
-    set.add(QVector<qint64>() << item.id());
-    Scope scope;
-    scope.setUidSet(set);
-
-    ItemFetchHelper fetchHelper(connection(), scope, fetchScope, Protocol::TagFetchScope{}, akonadi());
+    ItemFetchHelper fetchHelper(connection(), Scope{item.id()}, fetchScope, Protocol::TagFetchScope{}, akonadi());
     if (!fetchHelper.fetchItems()) {
         return failureResponse("Failed to retrieve item");
     }
@@ -352,7 +360,7 @@ void ItemCreateHandler::recoverFromMultipleMergeCandidates(const PimItem::List &
         ++transactionDepth;
         storageBackend()->commitTransaction();
     }
-    const AkScopeGuard restoreTransaction([&]() {
+    const auto restoreTransaction = qScopeGuard([&]() {
         for (int i = 0; i < transactionDepth; ++i) {
             storageBackend()->beginTransaction(QStringLiteral("RestoredTransactionAfterMMCRecovery"));
         }
@@ -414,7 +422,7 @@ bool ItemCreateHandler::parseStream()
         return false;
     }
 
-    if (cmd.mergeModes() == Protocol::CreateItemCommand::None) {
+    if ((cmd.mergeModes() & ~Protocol::CreateItemCommand::Silent) == 0) {
         if (!insertItem(cmd, item, parentCol)) {
             return false;
         }
@@ -443,7 +451,7 @@ bool ItemCreateHandler::parseStream()
         if (cmd.mergeModes() & Protocol::CreateItemCommand::GID && !item.remoteId().isEmpty()) {
             mergeCondition = Query::Condition(Query::And);
             mergeCondition.addValueCondition(PimItem::remoteIdColumn(), Query::Equals, item.remoteId());
-            mergeCondition.addValueCondition(PimItem::gidColumn(), Query::Equals, QLatin1String(""));
+            mergeCondition.addValueCondition(PimItem::gidColumn(), Query::Equals, QLatin1StringView(""));
             rootCondition.addCondition(mergeCondition);
         }
         qb.addCondition(rootCondition);
@@ -452,7 +460,7 @@ bool ItemCreateHandler::parseStream()
             return failureResponse("Failed to query database for item");
         }
 
-        const QVector<PimItem> result = qb.result();
+        const QList<PimItem> result = qb.result();
         if (result.isEmpty()) {
             // No item with such GID/RID exists, so call ItemCreateHandler::insert() and behave
             // like if this was a new item

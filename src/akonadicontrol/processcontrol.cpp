@@ -7,10 +7,10 @@
 #include "processcontrol.h"
 #include "akonadicontrol_debug.h"
 
-#include <shared/akapplication.h>
+#include "shared/akapplication.h"
 
-#include <private/instance_p.h>
-#include <private/standarddirs_p.h>
+#include "private/instance_p.h"
+#include "private/standarddirs_p.h"
 
 #include <QTimer>
 
@@ -29,7 +29,7 @@ ProcessControl::ProcessControl(QObject *parent)
     , mShutdownTimeout(1s)
 {
     connect(&mProcess, &QProcess::errorOccurred, this, &ProcessControl::slotError);
-    connect(&mProcess, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, &ProcessControl::slotFinished);
+    connect(&mProcess, &QProcess::finished, this, &ProcessControl::slotFinished);
     mProcess.setProcessChannelMode(QProcess::ForwardedChannels);
 
     if (Akonadi::Instance::hasIdentifier()) {
@@ -168,7 +168,7 @@ void ProcessControl::start()
         mApplication = QString::fromLocal8Bit("valgrind");
 
         const QString valgrindSkin = akGetEnv("AKONADI_VALGRIND_SKIN", QString::fromLocal8Bit("memcheck"));
-        mArguments.prepend(QLatin1String("--tool=") + valgrindSkin);
+        mArguments.prepend(QLatin1StringView("--tool=") + valgrindSkin);
 
         const QString valgrindOptions = akGetEnv("AKONADI_VALGRIND_OPTIONS");
         if (!valgrindOptions.isEmpty()) {
@@ -259,3 +259,5 @@ void ProcessControl::setShutdownTimeout(std::chrono::milliseconds timeout)
 {
     mShutdownTimeout = timeout;
 }
+
+#include "moc_processcontrol.cpp"

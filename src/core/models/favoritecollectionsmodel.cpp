@@ -152,13 +152,6 @@ public:
         }
     }
 
-    void clearReferences()
-    {
-        for (const Collection::Id &collectionId : std::as_const(referencedCollections)) {
-            dereference(collectionId);
-        }
-    }
-
     /**
      * Adds a collection to the favorite collections
      */
@@ -457,7 +450,7 @@ bool FavoriteCollectionsModel::dropMimeData(const QMimeData *data, Qt::DropActio
 QStringList FavoriteCollectionsModel::mimeTypes() const
 {
     QStringList mts = KSelectionProxyModel::mimeTypes();
-    if (!mts.contains(QLatin1String("text/uri-list"))) {
+    if (!mts.contains(QLatin1StringView("text/uri-list"))) {
         mts.append(QStringLiteral("text/uri-list"));
     }
     return mts;

@@ -11,7 +11,7 @@
 
 #include "akonadiwidgets_export.h"
 // AkonadiCore
-#include <akonadi/tag.h>
+#include "akonadi/tag.h"
 
 #include <QLineEdit>
 
@@ -35,18 +35,16 @@ public:
     ~TagWidget() override;
 
     void setSelection(const Akonadi::Tag::List &tags);
-    Q_REQUIRED_RESULT Akonadi::Tag::List selection() const;
+    [[nodiscard]] Akonadi::Tag::List selection() const;
 
     void clearTags();
     void setReadOnly(bool readOnly);
 Q_SIGNALS:
     void selectionChanged(const Akonadi::Tag::List &tags);
 
-private Q_SLOTS:
-    void editTags();
-    void updateView();
-
 private:
+    void updateView();
+    void editTags();
     std::unique_ptr<TagWidgetPrivate> const d;
 };
 

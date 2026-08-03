@@ -11,7 +11,7 @@
 #include "entities.h"
 #include "storage/selectquerybuilder.h"
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
 #include <QDBusConnection>
 #include <QDeadlineTimer>
@@ -95,7 +95,7 @@ void SearchTaskManager::addTask(SearchTask *task)
         throw SearchException(qb.query().lastError().text());
     }
 
-    QSqlQuery query = qb.query();
+    auto &query = qb.query();
     if (!query.next()) {
         return;
     }
@@ -298,3 +298,5 @@ void SearchTaskManager::searchLoop()
         }
     }
 }
+
+#include "moc_searchtaskmanager.cpp"

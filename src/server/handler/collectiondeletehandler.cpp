@@ -8,13 +8,10 @@
 
 #include "connection.h"
 #include "handlerhelper.h"
-#include "search/searchmanager.h"
-#include "storage/collectionqueryhelper.h"
 #include "storage/datastore.h"
-#include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
 
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
@@ -47,7 +44,7 @@ bool CollectionDeleteHandler::parseStream()
     }
 
     // handle virtual folders
-    if (collection.resource().name() == QLatin1String(AKONADI_SEARCH_RESOURCE)) {
+    if (collection.resource().name() == QLatin1StringView(AKONADI_SEARCH_RESOURCE)) {
         // don't delete virtual root
         if (collection.parentId() == 0) {
             return failureResponse(QStringLiteral("Cannot delete virtual root collection"));

@@ -5,7 +5,7 @@
 */
 
 #include "notificationmessagetest.h"
-#include <private/protocol_p.h>
+#include "private/protocol_p.h"
 
 #include <QSet>
 #include <QTest>
@@ -88,3 +88,5 @@ void NotificationMessageTest::testPartModificationMerge()
              (QSet<QByteArray>() << "PART1"
                                  << "PART2"));
 }
+
+#include "moc_notificationmessagetest.cpp"
