@@ -7,9 +7,9 @@
 
 #include "fakeclient.h"
 
-#include <private/datastream_p_p.h>
-#include <private/protocol_exception_p.h>
-#include <private/protocol_p.h>
+#include "private/datastream_p_p.h"
+#include "private/protocol_exception_p.h"
+#include "private/protocol_p.h"
 
 #include <QBuffer>
 #include <QLocalSocket>
@@ -161,7 +161,18 @@ void FakeClient::writeClientPart()
     }
 }
 
-void FakeClient::run()
+void FakeClient::start()
+{
+    QThread::start();
+    QMetaObject::invokeMethod(this, &FakeClient::do_connectToServer, Qt::QueuedConnection);
+}
+
+void FakeClient::startScenario()
+{
+    QMetaObject::invokeMethod(this, &FakeClient::do_startScenario, Qt::QueuedConnection);
+}
+
+void FakeClient::do_connectToServer()
 {
     mSocket = new QLocalSocket();
     mSocket->connectToServer(FakeAkonadiServer::socketFile());
@@ -177,14 +188,17 @@ void FakeClient::run()
         return;
     }
     mStream.setDevice(mSocket);
+}
 
+void FakeClient::do_startScenario()
+{
     for (;;) {
         if (mSocket->state() != QLocalSocket::ConnectedState) {
             connectionLost();
             break;
         }
 
-        {
+        if (mSocket->bytesAvailable() == 0) {
             QEventLoop loop;
             connect(mSocket, &QLocalSocket::readyRead, &loop, &QEventLoop::quit);
             connect(mSocket, &QLocalSocket::disconnected, &loop, &QEventLoop::quit);
@@ -207,6 +221,9 @@ void FakeClient::run()
     mSocket->close();
     delete mSocket;
     mSocket = nullptr;
+
+    // Quit the thread
+    quit();
 }
 
 void FakeClient::connectionLost()
@@ -214,3 +231,5 @@ void FakeClient::connectionLost()
     // Otherwise this is an error on server-side, we expected more talking
     CLIENT_VERIFY(isScenarioDone());
 }
+
+#include "moc_fakeclient.cpp"

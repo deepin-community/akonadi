@@ -7,8 +7,8 @@
 #include "agentthread.h"
 #include "akonadiagentserver_debug.h"
 
+#include "shared/akdebug.h"
 #include <QMetaObject>
-#include <shared/akdebug.h>
 
 using namespace Akonadi;
 
@@ -40,3 +40,5 @@ void AgentThread::configure(qlonglong windowId)
 {
     QMetaObject::invokeMethod(m_instance, "configure", Qt::DirectConnection, Q_ARG(quintptr, (quintptr)windowId));
 }
+
+#include "moc_agentthread.cpp"

@@ -8,8 +8,8 @@
 
 #include <sys/types.h>
 
+#include "qtest_akonadi.h"
 #include "testattribute.h"
-#include <qtest_akonadi.h>
 
 #include "agentinstance.h"
 #include "agentmanager.h"
@@ -60,17 +60,6 @@ static void compareLists(const QList<T> &l1, const QList<T> &l2)
         QVERIFY(l2.contains(entry));
     }
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<class T>
-static void compareLists(const QVector<T> &l1, const QVector<T> &l2)
-{
-    QCOMPARE(l1.count(), l2.count());
-    for (const T &entry : l1) {
-        QVERIFY(l2.contains(entry));
-    }
-}
-#endif
 
 template<typename T>
 static T *extractAttribute(const QList<Attribute *> &attrs)
@@ -898,3 +887,5 @@ void CollectionJobTest::testListPreference()
 }
 
 #include "collectionjobtest.moc"
+
+#include "moc_collectionjobtest.cpp"

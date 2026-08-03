@@ -21,7 +21,7 @@
 
 #include "tracer.h"
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
@@ -206,3 +206,5 @@ void PreprocessorInstance::itemProcessed(qlonglong id)
     // Stay busy and process next item in the queue
     processHeadItem();
 }
+
+#include "moc_preprocessorinstance.cpp"

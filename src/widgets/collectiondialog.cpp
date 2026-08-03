@@ -1,6 +1,6 @@
 /*
     SPDX-FileCopyrightText: 2008 Ingo Klöcker <kloecker@kde.org>
-    SPDX-FileCopyrightText: 2010-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2010-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -27,6 +27,7 @@
 
 #include <KConfig>
 #include <KConfigGroup>
+#include <KLineEditEventHandler>
 #include <KLocalizedString>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -49,6 +50,7 @@ public:
         mTextLabel->hide();
 
         auto filterCollectionLineEdit = new QLineEdit(mParent);
+        KLineEditEventHandler::catchReturnKey(filterCollectionLineEdit);
         filterCollectionLineEdit->setClearButtonEnabled(true);
         filterCollectionLineEdit->setPlaceholderText(
             i18nc("@info Displayed grayed-out inside the "
@@ -61,7 +63,7 @@ public:
         mView->header()->hide();
         layout->addWidget(mView);
 
-        mUseByDefault = new QCheckBox(i18n("Use folder by default"), mParent);
+        mUseByDefault = new QCheckBox(i18nc("@option:check", "Use folder by default"), mParent);
         mUseByDefault->hide();
         layout->addWidget(mUseByDefault);
 
@@ -78,7 +80,7 @@ public:
             baseModel = customModel;
         } else {
             mMonitor = new Akonadi::Monitor(mParent);
-            mMonitor->setObjectName(QStringLiteral("CollectionDialogMonitor"));
+            mMonitor->setObjectName(QLatin1StringView("CollectionDialogMonitor"));
             mMonitor->fetchCollection(true);
             mMonitor->setCollectionMonitored(Akonadi::Collection::root());
 
@@ -221,9 +223,9 @@ void CollectionDialogPrivate::changeCollectionDialogOptions(CollectionDialog::Co
 {
     mAllowToCreateNewChildCollection = (options & CollectionDialog::AllowToCreateNewChildCollection);
     if (mAllowToCreateNewChildCollection) {
-        mNewSubfolderButton = mButtonBox->addButton(i18n("&New Subfolder..."), QDialogButtonBox::NoRole);
+        mNewSubfolderButton = mButtonBox->addButton(i18nc("@action:button", "&New Subfolder..."), QDialogButtonBox::NoRole);
         mNewSubfolderButton->setIcon(QIcon::fromTheme(QStringLiteral("folder-new")));
-        mNewSubfolderButton->setToolTip(i18n("Create a new subfolder under the currently selected folder"));
+        mNewSubfolderButton->setToolTip(i18nc("@info:tooltip", "Create a new subfolder under the currently selected folder"));
         mNewSubfolderButton->setEnabled(false);
         QObject::connect(mNewSubfolderButton, &QPushButton::clicked, mParent, [this]() {
             slotAddChildCollection();

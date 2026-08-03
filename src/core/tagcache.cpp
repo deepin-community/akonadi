@@ -34,7 +34,7 @@ TagCache::TagCache(QObject *parent)
     : QObject(parent)
     , d(new TagCachePrivate)
 {
-    d->mMonitor.setObjectName(QStringLiteral("TagCacheMonitor"));
+    d->mMonitor.setObjectName(QLatin1StringView("TagCacheMonitor"));
     d->mMonitor.setTypeMonitored(Akonadi::Monitor::Tags);
     d->mMonitor.tagFetchScope().fetchAttribute<Akonadi::TagAttribute>();
     connect(&d->mMonitor, &Akonadi::Monitor::tagAdded, this, [this](const Akonadi::Tag &tag) {
@@ -118,3 +118,5 @@ TagCache *TagCache::instance()
     static TagCache s_instance;
     return &s_instance;
 }
+
+#include "moc_tagcache.cpp"

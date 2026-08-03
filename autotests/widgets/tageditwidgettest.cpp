@@ -6,7 +6,7 @@
  */
 
 #include "qtest_akonadi.h"
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
 #include "monitor.h"
 #include "tag.h"
@@ -39,8 +39,8 @@ class TagEditWidgetTest : public QObject
 
     struct TestSetup {
         TestSetup()
+            : monitor(std::make_unique<Monitor>())
         {
-            monitor = std::make_unique<Monitor>();
             monitor->setTypeMonitored(Monitor::Tags);
 
             model = std::make_unique<TagModel>(monitor.get());
@@ -70,7 +70,7 @@ class TagEditWidgetTest : public QObject
         ~TestSetup()
         {
             if (!createdTags.empty()) {
-                auto *deleteJob = new TagDeleteJob(createdTags);
+                auto deleteJob = new TagDeleteJob(createdTags);
                 AKVERIFYEXEC(deleteJob);
             }
         }
@@ -80,7 +80,7 @@ class TagEditWidgetTest : public QObject
             const auto doCreateTags = [this, count]() {
                 QSignalSpy monitorSpy(monitor.get(), &Monitor::tagAdded);
                 for (int i = 0; i < count; ++i) {
-                    auto *job = new TagCreateJob(Tag(QStringLiteral("TestTag-%1").arg(i)));
+                    auto job = new TagCreateJob(Tag(QStringLiteral("TestTag-%1").arg(i)));
                     AKVERIFYEXEC(job);
                     createdTags.push_back(job->tag());
                 }
@@ -142,7 +142,7 @@ class TagEditWidgetTest : public QObject
             const auto windows = QApplication::topLevelWidgets();
             for (const auto *window : windows) {
                 // We are using KMessageBox, which is not a QMessageBox but rather a custom QDialog
-                if (window->objectName() == QLatin1String("questionYesNo")) {
+                if (window->objectName() == QLatin1StringView("questionYesNo")) {
                     const auto *const msgbox = qobject_cast<const QDialog *>(window);
                     AKVERIFY(msgbox);
 

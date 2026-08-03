@@ -17,9 +17,9 @@ using namespace Akonadi;
 const char Akonadi::Tag::PLAIN[] = "PLAIN";
 const char Akonadi::Tag::GENERIC[] = "GENERIC";
 
-uint Akonadi::qHash(const Tag &tag)
+size_t Akonadi::qHash(const Tag &tag, size_t seed) noexcept
 {
-    return ::qHash(tag.id());
+    return ::qHash(tag.id(), seed);
 }
 
 Tag::Tag()
@@ -70,7 +70,7 @@ bool Tag::operator!=(const Tag &other) const
 
 Tag Tag::fromUrl(const QUrl &url)
 {
-    if (url.scheme() != QLatin1String("akonadi")) {
+    if (url.scheme() != QLatin1StringView("akonadi")) {
         return Tag();
     }
 

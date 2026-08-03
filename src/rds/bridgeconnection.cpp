@@ -6,7 +6,7 @@
 
 #include "bridgeconnection.h"
 
-#include <private/standarddirs_p.h>
+#include "private/standarddirs_p.h"
 
 #include <QDebug>
 #include <QLocalSocket>
@@ -54,12 +54,12 @@ void AkonadiBridgeConnection::connectLocal()
 {
     const QSettings connectionSettings(Akonadi::StandardDirs::connectionConfigFile(), QSettings::IniFormat);
 #ifdef Q_OS_WIN // krazy:exclude=cpp
-    const QString namedPipe = connectionSettings.value(QLatin1String("Data/NamedPipe"), QLatin1String("Akonadi")).toString();
+    const QString namedPipe = connectionSettings.value(QLatin1StringView("Data/NamedPipe"), QLatin1StringView("Akonadi")).toString();
     (static_cast<QLocalSocket *>(m_localSocket))->connectToServer(namedPipe);
 #else
     const QString defaultSocketDir = Akonadi::StandardDirs::saveDir("data");
     const QString path =
-        connectionSettings.value(QStringLiteral("Data/UnixPath"), QString(defaultSocketDir + QLatin1String("/akonadiserver.socket"))).toString();
+        connectionSettings.value(QStringLiteral("Data/UnixPath"), QString(defaultSocketDir + QLatin1StringView("/akonadiserver.socket"))).toString();
     (static_cast<QLocalSocket *>(m_localSocket))->connectToServer(path);
 #endif
 }
@@ -109,3 +109,5 @@ void BridgeConnection::doConnects()
     connect(m_remoteSocket, &QIODevice::readyRead, this, &BridgeConnection::slotDataAvailable);
     connect(m_localSocket, &QLocalSocket::connected, this, &BridgeConnection::slotDataAvailable);
 }
+
+#include "moc_bridgeconnection.cpp"

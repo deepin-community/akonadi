@@ -9,7 +9,6 @@
 #include "akonadicore_export.h"
 #include "collection.h"
 #include "item.h"
-#include "relation.h"
 #include "tag.h"
 
 #include <QObject>
@@ -80,7 +79,6 @@ public:
         Collections = 1,
         Items,
         Tags,
-        Relations,
         /**
          * Listen to subscription changes of other Monitors connected to Akonadi.
          * This is only for debugging purposes and should not be used in real
@@ -201,7 +199,7 @@ public:
     void setAllMonitored(bool monitored = true);
 
     void setExclusive(bool exclusive = true);
-    Q_REQUIRED_RESULT bool exclusive() const;
+    [[nodiscard]] bool exclusive() const;
 
     /**
      * Ignores all change notifications caused by the given session. This
@@ -334,7 +332,7 @@ public:
      *
      * @since 4.3
      */
-    Q_REQUIRED_RESULT Collection::List collectionsMonitored() const;
+    [[nodiscard]] Collection::List collectionsMonitored() const;
 
     /**
      * Returns the set of items being monitored.
@@ -343,63 +341,63 @@ public:
      *
      * @since 4.6
      */
-    Q_REQUIRED_RESULT QVector<Item::Id> itemsMonitoredEx() const;
+    [[nodiscard]] QList<Item::Id> itemsMonitoredEx() const;
 
     /**
      * Returns the number of items being monitored.
      * Optimization.
      * @since 4.14.3
      */
-    Q_REQUIRED_RESULT int numItemsMonitored() const;
+    [[nodiscard]] int numItemsMonitored() const;
 
     /**
      * Returns the set of mimetypes being monitored.
      *
      * @since 4.3
      */
-    Q_REQUIRED_RESULT QStringList mimeTypesMonitored() const;
+    [[nodiscard]] QStringList mimeTypesMonitored() const;
 
     /**
      * Returns the number of mimetypes being monitored.
      * Optimization.
      * @since 4.14.3
      */
-    Q_REQUIRED_RESULT int numMimeTypesMonitored() const;
+    [[nodiscard]] int numMimeTypesMonitored() const;
 
     /**
      * Returns the set of tags being monitored.
      *
      * @since 4.13
      */
-    Q_REQUIRED_RESULT QVector<Tag::Id> tagsMonitored() const;
+    [[nodiscard]] QList<Tag::Id> tagsMonitored() const;
 
     /**
      * Returns the set of types being monitored.
      *
      * @since 4.13
      */
-    Q_REQUIRED_RESULT QVector<Type> typesMonitored() const;
+    [[nodiscard]] QList<Type> typesMonitored() const;
 
     /**
      * Returns the set of identifiers for resources being monitored.
      *
      * @since 4.3
      */
-    Q_REQUIRED_RESULT QList<QByteArray> resourcesMonitored() const;
+    [[nodiscard]] QList<QByteArray> resourcesMonitored() const;
 
     /**
      * Returns the number of resources being monitored.
      * Optimization.
      * @since 4.14.3
      */
-    Q_REQUIRED_RESULT int numResourcesMonitored() const;
+    [[nodiscard]] int numResourcesMonitored() const;
 
     /**
      * Returns true if everything is being monitored.
      *
      * @since 4.3
      */
-    Q_REQUIRED_RESULT bool isAllMonitored() const;
+    [[nodiscard]] bool isAllMonitored() const;
 
     /**
      * Sets the session used by the Monitor to communicate with the %Akonadi server.
@@ -414,7 +412,7 @@ public:
      *
      * @since 4.4
      */
-    Q_REQUIRED_RESULT Session *session() const;
+    [[nodiscard]] Session *session() const;
 
     /**
      * Allows to enable/disable collection move translation. If enabled (the default), move
@@ -453,17 +451,6 @@ Q_SIGNALS:
      * @since 4.13
      */
     void itemsTagsChanged(const Akonadi::Item::List &items, const QSet<Akonadi::Tag> &addedTags, const QSet<Akonadi::Tag> &removedTags);
-
-    /**
-     * This signal is emitted if relations of monitored items have changed.
-     *
-     * @param items Items that were changed
-     * @param addedRelations Relations that have been added to each item in @p items.
-     * @param removedRelations Relations that have been removed from each item in @p items
-     * @since 4.15
-     */
-    void
-    itemsRelationsChanged(const Akonadi::Item::List &items, const Akonadi::Relation::List &addedRelations, const Akonadi::Relation::List &removedRelations);
 
     /**
      * This signal is emitted if a monitored item has been moved between two collections
@@ -651,28 +638,6 @@ Q_SIGNALS:
      * @since 4.13
      */
     void tagRemoved(const Akonadi::Tag &tag);
-
-    /**
-     * This signal is emitted if a relation has been added to Akonadi storage.
-     *
-     * The monitor will also emit itemRelationsChanged() signal for all monitored items
-     * hat are affected by @p relation.
-     *
-     * @param relation The added relation
-     * @since 4.13
-     */
-    void relationAdded(const Akonadi::Relation &relation);
-
-    /**
-     * This signal is emitted if a monitored relation is removed from the server storage.
-     *
-     * The monitor will also emit itemRelationsChanged() signal for all monitored items
-     * that were affected by @p relation.
-     *
-     * @param relation The removed relation.
-     * @since 4.13
-     */
-    void relationRemoved(const Akonadi::Relation &relation);
 
     /**
      * This signal is emitted when Subscribers are monitored and a new subscriber

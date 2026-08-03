@@ -7,10 +7,10 @@
 #include "dbus_p.h"
 #include "instance_p.h"
 
+#include <QList>
 #include <QString>
 #include <QStringList>
 #include <QStringView>
-#include <QVector>
 
 #include <array>
 
@@ -56,19 +56,15 @@ std::optional<DBus::AgentService> DBus::parseAgentServiceName(const QString &ser
     if (!serviceName.startsWith(AKONADI_DBUS_SERVER_SERVICE ".")) {
         return std::nullopt;
     }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const auto parts = serviceName.midRef(QStringView(AKONADI_DBUS_SERVER_SERVICE ".").length()).split(QLatin1Char('.'));
-#else
     const auto parts = QStringView(serviceName).mid(QStringView(AKONADI_DBUS_SERVER_SERVICE ".").length()).split(QLatin1Char('.'));
-#endif
     if ((parts.size() == 2 && !Akonadi::Instance::hasIdentifier())
         || (parts.size() == 3 && Akonadi::Instance::hasIdentifier() && Akonadi::Instance::identifier() == parts.at(2))) {
         // switch on parts.at( 0 )
-        if (parts.at(0) == QLatin1String("Agent")) {
+        if (parts.at(0) == QLatin1StringView("Agent")) {
             return AgentService{parts.at(1).toString(), DBus::Agent};
-        } else if (parts.at(0) == QLatin1String("Resource")) {
+        } else if (parts.at(0) == QLatin1StringView("Resource")) {
             return AgentService{parts.at(1).toString(), DBus::Resource};
-        } else if (parts.at(0) == QLatin1String("Preprocessor")) {
+        } else if (parts.at(0) == QLatin1StringView("Preprocessor")) {
             return AgentService{parts.at(1).toString(), DBus::Preprocessor};
         } else {
             return std::nullopt;
@@ -85,13 +81,13 @@ QString DBus::agentServiceName(const QString &agentIdentifier, DBus::AgentType a
     QString serviceName = QStringLiteral(AKONADI_DBUS_SERVER_SERVICE ".");
     switch (agentType) {
     case Agent:
-        serviceName += QLatin1String("Agent.");
+        serviceName += QLatin1StringView("Agent.");
         break;
     case Resource:
-        serviceName += QLatin1String("Resource.");
+        serviceName += QLatin1StringView("Resource.");
         break;
     case Preprocessor:
-        serviceName += QLatin1String("Preprocessor.");
+        serviceName += QLatin1StringView("Preprocessor.");
         break;
     default:
         Q_ASSERT(!"WTF?");
@@ -120,11 +116,7 @@ std::optional<QString> DBus::parseInstanceIdentifier(const QString &serviceName)
     }
 
     if (serviceName.startsWith(QStringView{AKONADI_DBUS_SERVER_SERVICE})) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        const auto split = serviceName.splitRef(QLatin1Char('.'));
-#else
         const auto split = QStringView(serviceName).split(QLatin1Char('.'));
-#endif
         if (split.size() <= 3) {
             return std::nullopt;
         }

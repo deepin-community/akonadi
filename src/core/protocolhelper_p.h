@@ -15,10 +15,10 @@
 #include "sharedvaluepool_p.h"
 #include "tag.h"
 
-#include "private/imapparser_p.h"
 #include "private/protocol_p.h"
 #include "private/scope_p.h"
 #include "private/tristate_p.h"
+#include "shared/akranges.h"
 
 #include <QString>
 
@@ -28,11 +28,13 @@
 #include <set>
 #include <type_traits>
 
+using namespace AkRanges;
+
 namespace Akonadi
 {
 struct ProtocolHelperValuePool {
-    using FlagPool = Internal::SharedValuePool<QByteArray, QVector>;
-    using MimeTypePool = Internal::SharedValuePool<QString, QVector>;
+    using FlagPool = Internal::SharedValuePool<QByteArray, QList>;
+    using MimeTypePool = Internal::SharedValuePool<QString, QList>;
 
     FlagPool flagPool;
     MimeTypePool mimeTypePool;
@@ -72,12 +74,12 @@ public:
     /**
       Convert a ancestor chain from its protocol representation into an Item object.
     */
-    static void parseAncestors(const QVector<Protocol::Ancestor> &ancestors, Item *item);
+    static void parseAncestors(const QList<Protocol::Ancestor> &ancestors, Item *item);
 
     /**
       Convert a ancestor chain from its protocol representation into a Collection object.
     */
-    static void parseAncestors(const QVector<Protocol::Ancestor> &ancestors, Collection *collection);
+    static void parseAncestors(const QList<Protocol::Ancestor> &ancestors, Collection *collection);
 
     /**
       Convert a ancestor chain from its protocol representation into an Item object.
@@ -85,10 +87,8 @@ public:
       This method allows to pass a @p valuePool which acts as cache, so ancestor paths for the
       same @p parentCollection don't have to be parsed twice.
     */
-    static void parseAncestorsCached(const QVector<Protocol::Ancestor> &ancestors,
-                                     Item *item,
-                                     Collection::Id parentCollection,
-                                     ProtocolHelperValuePool *valuePool = nullptr);
+    static void
+    parseAncestorsCached(const QList<Protocol::Ancestor> &ancestors, Item *item, Collection::Id parentCollection, ProtocolHelperValuePool *valuePool = nullptr);
 
     /**
       Convert a ancestor chain from its protocol representation into an Collection object.
@@ -96,7 +96,7 @@ public:
       This method allows to pass a @p valuePool which acts as cache, so ancestor paths for the
       same @p parentCollection don't have to be parsed twice.
     */
-    static void parseAncestorsCached(const QVector<Protocol::Ancestor> &ancestors,
+    static void parseAncestorsCached(const QList<Protocol::Ancestor> &ancestors,
                                      Collection *collection,
                                      Collection::Id parentCollection,
                                      ProtocolHelperValuePool *valuePool = nullptr);
@@ -139,42 +139,32 @@ public:
       @throws A Akonadi::Exception if the item set contains items with missing/invalid identifiers.
     */
     template<typename T, template<typename> class Container>
-    static Scope entitySetToScope(const Container<T> &_objects)
+    static Scope entitySetToScope(const Container<T> &objects)
     {
-        if (_objects.isEmpty()) {
+        if (objects.isEmpty()) {
             throw Exception("No objects specified");
         }
 
-        Container<T> objects(_objects);
         using namespace std::placeholders;
-        std::sort(objects.begin(), objects.end(), [](const T &a, const T &b) -> bool {
-            return a.id() < b.id();
-        });
-        if (objects.at(0).isValid()) {
-            QVector<typename T::Id> uids;
-            uids.reserve(objects.size());
-            for (const T &object : objects) {
-                uids << object.id();
-            }
-            ImapSet set;
-            set.add(uids);
-            return Scope(set);
+
+        if (std::all_of(objects.cbegin(), objects.cend(), std::mem_fn(&T::isValid))) {
+            return Scope(objects | Views::transform(std::mem_fn(&T::id)) | Actions::toQList);
         }
 
-        if (entitySetHasGID(_objects)) {
-            return entitySetToGID(_objects);
+        if (entitySetHasGID(objects)) {
+            return entitySetToGID(objects);
         }
 
-        if (!entitySetHasRemoteIdentifier(_objects, std::mem_fn(&T::remoteId))) {
+        if (!entitySetHasRemoteIdentifier(objects, std::mem_fn(&T::remoteId))) {
             throw Exception("No remote identifier specified");
         }
 
         // check if we have RIDs or HRIDs
-        if (entitySetHasHRID(_objects)) {
+        if (entitySetHasHRID(objects)) {
             return hierarchicalRidToScope(objects.first());
         }
 
-        return entitySetToRemoteIdentifier(Scope::Rid, _objects, std::mem_fn(&T::remoteId));
+        return entitySetToRemoteIdentifier(Scope::Rid, objects, std::mem_fn(&T::remoteId));
     }
 
     static Protocol::ScopeContext commandContextToProtocol(const Akonadi::Collection &collection, const Akonadi::Tag &tag, const Item::List &requestedItems);
@@ -186,7 +176,7 @@ public:
     template<typename T>
     static Scope entityToScope(const T &object)
     {
-        return entitySetToScope(QVector<T>() << object);
+        return entitySetToScope(QList<T>() << object);
     }
 
     /**
@@ -226,7 +216,6 @@ public:
     static Item
     parseItemFetchResult(const Protocol::FetchItemsResponse &data, const ItemFetchScope *fetchScope = nullptr, ProtocolHelperValuePool *valuePool = nullptr);
     static Tag parseTagFetchResult(const Protocol::FetchTagsResponse &data);
-    static Relation parseRelationFetchResult(const Protocol::FetchRelationsResponse &data);
 
     static bool streamPayloadToFile(const QString &file, const QByteArray &data, QByteArray &error);
 
@@ -234,82 +223,58 @@ public:
 
 private:
     template<typename T, template<typename> class Container>
-    inline static typename std::enable_if<!std::is_same<T, Akonadi::Collection>::value, bool>::type entitySetHasGID(const Container<T> &objects)
+    static constexpr bool entitySetHasGID(const Container<T> &objects)
     {
-        return entitySetHasRemoteIdentifier(objects, std::mem_fn(&T::gid));
+        if constexpr (std::is_same_v<T, Akonadi::Collection>) {
+            Q_UNUSED(objects);
+            return false;
+        } else {
+            return entitySetHasRemoteIdentifier(objects, std::mem_fn(&T::gid));
+        }
     }
 
     template<typename T, template<typename> class Container>
-    inline static typename std::enable_if<std::is_same<T, Akonadi::Collection>::value, bool>::type entitySetHasGID(const Container<T> & /*objects*/,
-                                                                                                                   int * /*dummy*/ = nullptr)
+    inline static Scope entitySetToGID(const Container<T> &objects)
     {
-        return false;
-    }
-
-    template<typename T, template<typename> class Container>
-    inline static typename std::enable_if<!std::is_same<T, Akonadi::Collection>::value, Scope>::type entitySetToGID(const Container<T> &objects)
-    {
-        return entitySetToRemoteIdentifier(Scope::Gid, objects, std::mem_fn(&T::gid));
-    }
-
-    template<typename T, template<typename> class Container>
-    inline static typename std::enable_if<std::is_same<T, Akonadi::Collection>::value, Scope>::type entitySetToGID(const Container<T> & /*objects*/,
-                                                                                                                   int * /*dummy*/ = nullptr)
-    {
-        return Scope();
+        if constexpr (std::is_same_v<T, Akonadi::Collection>) {
+            Q_UNUSED(objects);
+            return Scope();
+        } else {
+            return entitySetToRemoteIdentifier(Scope::Gid, objects, std::mem_fn(&T::gid));
+        }
     }
 
     template<typename T, template<typename> class Container, typename RIDFunc>
     inline static bool entitySetHasRemoteIdentifier(const Container<T> &objects, const RIDFunc &ridFunc)
     {
-        return std::find_if(objects.constBegin(),
-                            objects.constEnd(),
-                            [=](const T &obj) {
-                                return ridFunc(obj).isEmpty();
-                            })
-            == objects.constEnd();
-    }
-
-    template<typename T, template<typename> class Container, typename RIDFunc>
-    inline static typename std::enable_if<std::is_same<QString, typename RIDFunc::result_type>::value, Scope>::type
-    entitySetToRemoteIdentifier(Scope::SelectionScope scope, const Container<T> &objects, const RIDFunc &ridFunc)
-    {
-        QStringList rids;
-        rids.reserve(objects.size());
-        std::transform(objects.cbegin(), objects.cend(), std::back_inserter(rids), [=](const T &obj) -> QString {
-            return ridFunc(obj);
+        return std::all_of(objects.constBegin(), objects.constEnd(), [&](const T &obj) {
+            return !ridFunc(obj).isEmpty();
         });
-        return Scope(scope, rids);
     }
 
     template<typename T, template<typename> class Container, typename RIDFunc>
-    inline static typename std::enable_if<std::is_same<QByteArray, typename RIDFunc::result_type>::value, Scope>::type
-    entitySetToRemoteIdentifier(Scope::SelectionScope scope, const Container<T> &objects, const RIDFunc &ridFunc, int * /*dummy*/ = nullptr)
+    inline static Scope entitySetToRemoteIdentifier(Scope::SelectionScope scope, const Container<T> &objects, RIDFunc &&ridFunc)
     {
         QStringList rids;
         rids.reserve(objects.size());
         std::transform(objects.cbegin(), objects.cend(), std::back_inserter(rids), [=](const T &obj) -> QString {
-            return QString::fromLatin1(ridFunc(obj));
+            if constexpr (std::is_same_v<QString, std::remove_cvref_t<std::invoke_result_t<RIDFunc, const T &>>>) {
+                return ridFunc(obj);
+            } else {
+                return QString::fromLatin1(ridFunc(obj));
+            }
         });
         return Scope(scope, rids);
     }
 
     template<typename T, template<typename> class Container>
-    inline static typename std::enable_if<!std::is_same<T, Tag>::value, bool>::type entitySetHasHRID(const Container<T> &objects)
+    constexpr static bool entitySetHasHRID(const Container<T> &objects)
     {
-        return objects.size() == 1
-            && std::find_if(objects.constBegin(),
-                            objects.constEnd(),
-                            [](const T &obj) -> bool {
-                                return !CollectionUtils::hasValidHierarchicalRID(obj);
-                            })
-            == objects.constEnd(); // ### HRID sets are not yet specified
-    }
-
-    template<typename T, template<typename> class Container>
-    inline static typename std::enable_if<std::is_same<T, Tag>::value, bool>::type entitySetHasHRID(const Container<T> & /*objects*/, int * /*dummy*/ = nullptr)
-    {
-        return false;
+        if constexpr (std::is_same_v<T, Tag>) {
+            return false;
+        } else {
+            return objects.size() == 1 && CollectionUtils::hasValidHierarchicalRID(objects.first());
+        }
     }
 };
 

@@ -14,9 +14,9 @@
 #include "accountsintegration.h"
 #endif
 
-#include <shared/akapplication.h>
+#include "shared/akapplication.h"
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
 #include <QDBusConnection>
 #include <QGuiApplication>
@@ -24,6 +24,7 @@
 
 #include <KAboutData>
 #include <KCrash>
+#include <KLocalizedString>
 
 #include <stdlib.h>
 #if HAVE_UNISTD_H
@@ -47,9 +48,9 @@ int main(int argc, char **argv)
     app.setDescription(QStringLiteral("Akonadi Control Process\nDo not run this manually, use 'akonadictl' instead to start/stop Akonadi."));
 
     KAboutData aboutData(QStringLiteral("akonadi_control"),
-                         QStringLiteral("Akonadi Control"),
+                         i18n("Akonadi Control"),
                          QStringLiteral(AKONADI_VERSION_STRING),
-                         QStringLiteral("Akonadi Control"),
+                         i18n("Akonadi Control"),
                          KAboutLicense::LGPL_V2);
     KAboutData::setApplicationData(aboutData);
 
@@ -69,15 +70,13 @@ int main(int argc, char **argv)
     AccountsIntegration accountsIntegration(agentManager);
 #endif
     KCrash::setEmergencySaveFunction(crashHandler);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QGuiApplication::setFallbackSessionManagementEnabled(false);
-#endif
     // akonadi_control is started on-demand, no need to auto restart by session.
     auto disableSessionManagement = [](QSessionManager &sm) {
+        Q_UNUSED(sm);
         sm.setRestartHint(QSessionManager::RestartNever);
     };
-    QObject::connect(qApp, &QGuiApplication::commitDataRequest, disableSessionManagement);
-    QObject::connect(qApp, &QGuiApplication::saveStateRequest, disableSessionManagement);
+    QObject::connect(qApp, &QGuiApplication::commitDataRequest, qApp, disableSessionManagement);
+    QObject::connect(qApp, &QGuiApplication::saveStateRequest, qApp, disableSessionManagement);
 
     return app.exec();
 }

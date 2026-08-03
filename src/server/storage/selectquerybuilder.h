@@ -4,9 +4,9 @@
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
 
-#ifndef AKONADI_SELECTQUERYBUILDER_H
-#define AKONADI_SELECTQUERYBUILDER_H
+#pragma once
 
+#include "storage/datastore.h"
 #include "storage/querybuilder.h"
 
 namespace Akonadi
@@ -16,14 +16,20 @@ namespace Server
 /**
   Helper class for creating and executing database SELECT queries.
 */
-template<typename T> class SelectQueryBuilder : public QueryBuilder
+template<typename T>
+class SelectQueryBuilder : public QueryBuilder
 {
 public:
     /**
       Creates a new query builder.
     */
     inline SelectQueryBuilder()
-        : QueryBuilder(T::tableName(), Select)
+        : SelectQueryBuilder(DataStore::self())
+    {
+    }
+
+    explicit inline SelectQueryBuilder(DataStore *store)
+        : QueryBuilder(store, T::tableName(), Select)
     {
         addColumns(T::fullColumnNames());
     }
@@ -31,13 +37,11 @@ public:
     /**
       Returns the result of this SELECT query.
     */
-    QVector<T> result()
+    QList<T> result()
     {
-        return T::extractResult(query());
+        return T::extractResult(dataStore(), query());
     }
 };
 
 } // namespace Server
 } // namespace Akonadi
-
-#endif

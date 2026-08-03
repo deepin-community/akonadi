@@ -25,9 +25,9 @@ using namespace Akonadi;
 
 Q_GLOBAL_STATIC(Akonadi::Collection, s_defaultParentCollection) // NOLINT(readability-redundant-member-init)
 
-uint Akonadi::qHash(const Akonadi::Item &item)
+size_t Akonadi::qHash(const Akonadi::Item &item, size_t seed) noexcept
 {
-    return ::qHash(item.id());
+    return ::qHash(item.id(), seed);
 }
 
 // Change to something != RFC822 as soon as the server supports it
@@ -280,11 +280,6 @@ Tag::List Item::tags() const
     return d_ptr->mTags;
 }
 
-Relation::List Item::relations() const
-{
-    return d_ptr->mRelations;
-}
-
 QSet<QByteArray> Item::loadedPayloadParts() const
 {
     return ItemSerializer::parts(*this);
@@ -390,7 +385,7 @@ QUrl Item::url(UrlType type) const
 
 Item Item::fromUrl(const QUrl &url)
 {
-    if (url.scheme() != QLatin1String("akonadi")) {
+    if (url.scheme() != QLatin1StringView("akonadi")) {
         return Item();
     }
 
@@ -443,28 +438,41 @@ bool Item::ensureMetaTypeId(int mtid) const
 
 static QString format_type(int spid, int mtid)
 {
-    return QStringLiteral("sp(%1)<%2>").arg(spid).arg(QLatin1String(QMetaType::typeName(mtid)));
+    return QStringLiteral("sp(%1)<%2>").arg(spid).arg(QLatin1StringView(QMetaType(mtid).name()));
 }
 
-static QString format_types(const PayloadContainer &c)
+static QString format_types(const PayloadContainer &container)
 {
     QStringList result;
-    result.reserve(c.size());
-    for (auto it = c.begin(), end = c.end(); it != end; ++it) {
+    result.reserve(container.size());
+    for (auto it = container.begin(), end = container.end(); it != end; ++it) {
         result.push_back(format_type(it->sharedPointerId, it->metaTypeId));
     }
-    return result.join(QLatin1String(", "));
+    return result.join(QLatin1StringView(", "));
+}
+
+static QString format_reason(bool valid, Item::Id id)
+{
+    if (valid) {
+        return QStringLiteral("itemId: %1").arg(id);
+    } else {
+        return QStringLiteral("Item is not valid");
+    }
 }
 
 void Item::throwPayloadException(int spid, int mtid) const
 {
+    const auto reason = format_reason(isValid(), id());
+
     if (d_ptr->mPayloads.empty()) {
-        qCDebug(AKONADICORE_LOG) << "Throwing PayloadException: No payload set";
-        throw PayloadException("No payload set");
+        qCDebug(AKONADICORE_LOG) << "Throwing PayloadException for Item" << id() << ": No payload set";
+        throw PayloadException(QStringLiteral("No Item payload set (%1)").arg(reason));
     } else {
-        qCDebug(AKONADICORE_LOG) << "Throwing PayloadException: Wrong payload type (requested:" << format_type(spid, mtid)
-                                 << "; present: " << format_types(d_ptr->mPayloads) << "), item mime type is" << mimeType();
-        throw PayloadException(QStringLiteral("Wrong payload type (requested: %1; present: %2)").arg(format_type(spid, mtid), format_types(d_ptr->mPayloads)));
+        const auto requestedType = format_type(spid, mtid);
+        const auto presentType = format_types(d_ptr->mPayloads);
+        qCDebug(AKONADICORE_LOG) << "Throwing PayloadException for Item" << id() << ": Wrong payload type (requested:" << requestedType
+                                 << "; present: " << presentType << "), item mime type is" << mimeType();
+        throw PayloadException(QStringLiteral("Wrong Item payload type (requested: %1; present: %2, %3)").arg(requestedType, presentType, reason));
     }
 }
 
@@ -493,9 +501,9 @@ QSet<QByteArray> Item::availablePayloadParts() const
     return ItemSerializer::availableParts(*this);
 }
 
-QVector<int> Item::availablePayloadMetaTypeIds() const
+QList<int> Item::availablePayloadMetaTypeIds() const
 {
-    QVector<int> result;
+    QList<int> result;
     result.reserve(d_ptr->mPayloads.size());
     // Stable Insertion Sort - N is typically _very_ low (1 or 2).
     for (auto it = d_ptr->mPayloads.begin(), end = d_ptr->mPayloads.end(); it != end; ++it) {

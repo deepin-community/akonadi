@@ -28,7 +28,7 @@ public:
 
     bool collectionAccepted(const QModelIndex &index, bool checkResourceVisibility = true);
 
-    QVector<QModelIndex> acceptedResources;
+    QList<QModelIndex> acceptedResources;
     CollectionFilterProxyModel *const mParent;
     MimeTypeChecker mimeChecker;
     bool mExcludeVirtualCollections = false;
@@ -160,3 +160,5 @@ Qt::ItemFlags CollectionFilterProxyModel::flags(const QModelIndex &index) const
         return QSortFilterProxyModel::flags(index) & ~(Qt::ItemIsSelectable);
     }
 }
+
+#include "moc_collectionfilterproxymodel.cpp"

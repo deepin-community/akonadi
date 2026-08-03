@@ -1,5 +1,5 @@
 /*
-  SPDX-FileCopyrightText: 2015-2022 Laurent Montel <montel@kde.org>
+  SPDX-FileCopyrightText: 2015-2024 Laurent Montel <montel@kde.org>
 
   SPDX-License-Identifier: LGPL-2.0-or-later
   */
@@ -8,7 +8,7 @@
 
 #include "akonadiwidgets_export.h"
 // AkonadiCore
-#include <akonadi/tag.h>
+#include "akonadi/tag.h"
 
 #include <QWidget>
 
@@ -32,13 +32,13 @@ public:
     ~TagSelectWidget() override;
 
     void setSelection(const Akonadi::Tag::List &tags);
-    Q_REQUIRED_RESULT Akonadi::Tag::List selection() const;
+    [[nodiscard]] Akonadi::Tag::List selection() const;
 
     /**
      * @brief tagToStringList
      * @return QStringList from selected tag (List of Url)
      */
-    Q_REQUIRED_RESULT QStringList tagToStringList() const;
+    [[nodiscard]] QStringList tagToStringList() const;
     /**
      * @brief setSelectionFromStringList, convert a QStringList to Tag (converted from url)
      */

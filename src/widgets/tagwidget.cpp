@@ -3,7 +3,7 @@
 
     SPDX-FileCopyrightText: 2010 Tobias Koenig <tokoe@kde.org>
     SPDX-FileCopyrightText: 2014 Christian Mollekopf <mollekopf@kolabsys.com>
-    SPDX-FileCopyrightText: 2016-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2016-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -45,9 +45,15 @@ public:
         menu.addAction(i18n("Clear"), this, &TagView::clearTags);
         menu.exec(event->globalPos());
     }
+    void mousePressEvent(QMouseEvent *event) override
+    {
+        Q_EMIT addTags();
+        QLineEdit::mousePressEvent(event);
+    }
 
 Q_SIGNALS:
     void clearTags();
+    void addTags();
 };
 
 } // namespace Akonadi
@@ -68,13 +74,14 @@ TagWidget::TagWidget(QWidget *parent)
     , d(new TagWidgetPrivate)
 {
     auto monitor = new Monitor(this);
-    monitor->setObjectName(QStringLiteral("TagWidgetMonitor"));
+    monitor->setObjectName(QLatin1StringView("TagWidgetMonitor"));
     monitor->setTypeMonitored(Monitor::Tags);
     d->mModel = new Akonadi::TagModel(monitor, this);
     connect(monitor, &Monitor::tagAdded, this, &TagWidget::updateView);
 
     d->ui.setupUi(this);
     connect(d->ui.tagView, &TagView::clearTags, this, &TagWidget::clearTags);
+    connect(d->ui.tagView, &TagView::addTags, this, &TagWidget::editTags);
 
     connect(d->ui.editButton, &QToolButton::clicked, this, &TagWidget::editTags);
     connect(d->mModel, &Akonadi::TagModel::populated, this, &TagWidget::updateView);
@@ -137,3 +144,5 @@ void TagWidget::updateView()
 }
 
 #include "tagwidget.moc"
+
+#include "moc_tagwidget.cpp"

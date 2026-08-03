@@ -1,5 +1,5 @@
 /*
-    SPDX-FileCopyrightText: 2011-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2011-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -18,7 +18,7 @@ class RenameFavoriteDialog : public QDialog
 public:
     explicit RenameFavoriteDialog(const QString &value, const QString &defaultName, QWidget *parent);
 
-    Q_REQUIRED_RESULT QString newName() const;
+    [[nodiscard]] QString newName() const;
 
 private:
     const QString m_defaultName;

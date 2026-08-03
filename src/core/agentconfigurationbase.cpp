@@ -8,6 +8,7 @@
 #include "akonadicore_debug.h"
 
 #include <KAboutData>
+#include <KConfigGroup>
 #include <QSize>
 
 namespace Akonadi
@@ -96,3 +97,21 @@ QDialogButtonBox::StandardButtons AgentConfigurationBase::standardButtons() cons
 {
     return QDialogButtonBox::Ok | QDialogButtonBox::Apply | QDialogButtonBox::Cancel;
 }
+
+void AgentConfigurationBase::saveActivitiesSettings(const ActivitySettings &activities) const
+{
+    KConfigGroup activitiesGroup = d->config->group(QStringLiteral("Agent"));
+    activitiesGroup.writeEntry(QStringLiteral("ActivitiesEnabled"), activities.enabled);
+    activitiesGroup.writeEntry(QStringLiteral("Activities"), activities.activities);
+}
+
+AgentConfigurationBase::ActivitySettings AgentConfigurationBase::restoreActivitiesSettings() const
+{
+    AgentConfigurationBase::ActivitySettings settings;
+    const KConfigGroup activitiesGroup = d->config->group(QStringLiteral("Agent"));
+    settings.enabled = activitiesGroup.readEntry(QStringLiteral("ActivitiesEnabled"), false);
+    settings.activities = activitiesGroup.readEntry(QStringLiteral("Activities"), QStringList());
+    return settings;
+}
+
+#include "moc_agentconfigurationbase.cpp"

@@ -5,24 +5,50 @@
 */
 
 #include "itemfetchscope.h"
+#include "tagfetchscope.h"
 
-#include "itemfetchscope_p.h"
+namespace Akonadi
+{
+/**
+ * @internal
+ */
+class ItemFetchScopePrivate : public QSharedData
+{
+public:
+    ItemFetchScopePrivate() = default;
+
+    ItemFetchScopePrivate(const ItemFetchScopePrivate &other) = default;
+
+public:
+    QSet<QByteArray> mPayloadParts;
+    QSet<QByteArray> mAttributes;
+    ItemFetchScope::AncestorRetrieval mAncestorDepth = ItemFetchScope::None;
+    bool mFullPayload = false;
+    bool mAllAttributes = false;
+    bool mCacheOnly = false;
+    bool mCheckCachedPayloadPartsOnly = false;
+    bool mFetchMtime = true;
+    bool mIgnoreRetrievalErrors = false;
+    QDateTime mChangedSince;
+    bool mFetchRid = true;
+    bool mFetchGid = false;
+    bool mFetchTags = false;
+    TagFetchScope mTagFetchScope;
+    bool mFetchVRefs = false;
+};
+
+} // namespace Akonadi
 
 using namespace Akonadi;
 
 ItemFetchScope::ItemFetchScope()
-{
-    d = new ItemFetchScopePrivate();
-}
-
-ItemFetchScope::ItemFetchScope(const ItemFetchScope &other)
-    : d(other.d)
+    : d(new ItemFetchScopePrivate())
 {
 }
 
-ItemFetchScope::~ItemFetchScope()
-{
-}
+ItemFetchScope::ItemFetchScope(const ItemFetchScope &other) = default;
+
+ItemFetchScope::~ItemFetchScope() = default;
 
 ItemFetchScope &ItemFetchScope::operator=(const ItemFetchScope &other)
 {
@@ -86,7 +112,7 @@ bool ItemFetchScope::isEmpty() const
     return d->mPayloadParts.isEmpty() && d->mAttributes.isEmpty() && !d->mFullPayload && !d->mAllAttributes && !d->mCacheOnly
         && !d->mCheckCachedPayloadPartsOnly && d->mFetchMtime // true by default -> false = non-empty
         && !d->mIgnoreRetrievalErrors && d->mFetchRid // true by default
-        && !d->mFetchGid && !d->mFetchTags && !d->mFetchVRefs && !d->mFetchRelations && d->mAncestorDepth == AncestorRetrieval::None;
+        && !d->mFetchGid && !d->mFetchTags && !d->mFetchVRefs && d->mAncestorDepth == AncestorRetrieval::None;
 }
 
 bool ItemFetchScope::cacheOnly() const
@@ -205,14 +231,4 @@ void ItemFetchScope::setFetchVirtualReferences(bool fetchVRefs)
 bool ItemFetchScope::fetchVirtualReferences() const
 {
     return d->mFetchVRefs;
-}
-
-void ItemFetchScope::setFetchRelations(bool fetchRelations)
-{
-    d->mFetchRelations = fetchRelations;
-}
-
-bool ItemFetchScope::fetchRelations() const
-{
-    return d->mFetchRelations;
 }

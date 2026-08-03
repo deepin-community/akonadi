@@ -13,7 +13,6 @@
 #include "exceptionbase.h"
 #include "itempayloadinternals_p.h"
 #include "job.h"
-#include "relation.h"
 #include "tag.h"
 
 #include <QByteArray>
@@ -25,13 +24,8 @@
 #include <typeinfo>
 
 class QUrl;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<typename T>
-class QVector;
-#else
 template<typename T>
 class QList;
-#endif
 
 namespace Akonadi
 {
@@ -113,7 +107,7 @@ public:
     /**
      * Describes a list of items.
      */
-    using List = QVector<Item>;
+    using List = QList<Item>;
 
     /**
      * Describes a flag name.
@@ -400,13 +394,6 @@ public:
     void clearTags();
 
     /**
-     * Returns all relations of this item.
-     * @since 4.15
-     * @see RelationCreateJob, RelationDeleteJob to modify relations
-     */
-    Relation::List relations() const;
-
-    /**
      * Sets the payload based on the canonical representation normally
      * used for data of this mime type.
      *
@@ -529,7 +516,7 @@ public:
      *
      * The result is always sorted (increasing ids).
      */
-    QVector<int> availablePayloadMetaTypeIds() const;
+    QList<int> availablePayloadMetaTypeIds() const;
 
     /**
      * Sets a path to a file with full payload.
@@ -710,31 +697,14 @@ private:
      */
     void setStorageCollectionId(Collection::Id collectionId);
 
-#if 0
-    /**
-     * Helper function for non-template throwing of PayloadException.
-     */
-    QString payloadExceptionText(int spid, int mtid) const;
-
-    /**
-     * Non-template throwing of PayloadException.
-     * Needs to be inline, otherwise catch (Akonadi::PayloadException)
-     * won't work (only catch (Akonadi::Exception))
-     */
-    inline void throwPayloadException(int spid, int mtid) const
-    {
-        throw PayloadException(payloadExceptionText(spid, mtid));
-    }
-#else
     void throwPayloadException(int spid, int mtid) const;
-#endif
 
     QSharedDataPointer<ItemPrivate> d_ptr;
     friend class ItemPrivate;
     /// @endcond
 };
 
-AKONADICORE_EXPORT uint qHash(const Akonadi::Item &item);
+AKONADICORE_EXPORT size_t qHash(const Akonadi::Item &item, size_t seed = 0) noexcept;
 
 template<typename T>
 inline T *Item::attribute(Item::CreateOption option)
@@ -970,4 +940,4 @@ void Item::setPayload(T *p)
 
 Q_DECLARE_METATYPE(Akonadi::Item)
 Q_DECLARE_METATYPE(Akonadi::Item::List)
-Q_DECLARE_TYPEINFO(Akonadi::Item, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Akonadi::Item, Q_RELOCATABLE_TYPE);

@@ -6,7 +6,7 @@
 
 #include "session.h"
 
-#include <private/standarddirs_p.h>
+#include "private/standarddirs_p.h"
 
 #include <QCoreApplication>
 #include <QFile>
@@ -21,7 +21,7 @@ Session::Session(const QString &input, QObject *parent)
     : QObject(parent)
 {
     auto file = new QFile(this);
-    if (input != QLatin1String("-")) {
+    if (input != QLatin1StringView("-")) {
         file->setFileName(input);
         if (!file->open(QFile::ReadOnly)) {
             qFatal("Failed to open %s", qPrintable(input));
@@ -130,3 +130,5 @@ void Session::printStats() const
     std::cerr << "Sent: " << m_sentBytes << " bytes" << std::endl;
     std::cerr << "Received: " << m_receivedBytes << " bytes" << std::endl;
 }
+
+#include "moc_session.cpp"

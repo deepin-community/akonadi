@@ -8,7 +8,7 @@
 #include "akonadiserver_debug.h"
 #include "utils.h"
 
-#include <private/standarddirs_p.h>
+#include "private/standarddirs_p.h"
 
 #include <QDir>
 #include <QSqlDriver>
@@ -18,9 +18,9 @@
 using namespace Akonadi;
 using namespace Akonadi::Server;
 
-static QString dataDir()
+static QString dataDir(const QString &dbPathOverride = {})
 {
-    QString akonadiHomeDir = StandardDirs::saveDir("data");
+    QString akonadiHomeDir = dbPathOverride.isEmpty() ? StandardDirs::saveDir("data") : dbPathOverride;
     if (!QDir(akonadiHomeDir).exists()) {
         if (!QDir().mkpath(akonadiHomeDir)) {
             qCCritical(AKONADISERVER_LOG) << "Unable to create" << akonadiHomeDir << "during database initialization";
@@ -28,18 +28,18 @@ static QString dataDir()
         }
     }
 
-    akonadiHomeDir += QDir::separator();
+    akonadiHomeDir += QStringLiteral("/");
 
     return akonadiHomeDir;
 }
 
-static QString sqliteDataFile()
+static QString sqliteDataFile(const QString &dbPathOverride = {})
 {
-    const QString dir = dataDir();
+    const QString dir = dataDir(dbPathOverride);
     if (dir.isEmpty()) {
         return QString();
     }
-    const QString akonadiPath = dir + QLatin1String("akonadi.db");
+    const QString akonadiPath = dir + QLatin1StringView("akonadi.db");
     if (!QFile::exists(akonadiPath)) {
         QFile file(akonadiPath);
         if (!file.open(QIODevice::WriteOnly)) {
@@ -52,18 +52,14 @@ static QString sqliteDataFile()
     return akonadiPath;
 }
 
-DbConfigSqlite::DbConfigSqlite(Version driverVersion)
-    : mDriverVersion(driverVersion)
+DbConfigSqlite::DbConfigSqlite(const QString &configFile)
+    : DbConfig(configFile)
 {
 }
 
 QString DbConfigSqlite::driverName() const
 {
-    if (mDriverVersion == Default) {
-        return QStringLiteral("QSQLITE");
-    } else {
-        return QStringLiteral("QSQLITE3");
-    }
+    return QStringLiteral("QSQLITE");
 }
 
 QString DbConfigSqlite::databaseName() const
@@ -71,10 +67,23 @@ QString DbConfigSqlite::databaseName() const
     return mDatabaseName;
 }
 
-bool DbConfigSqlite::init(QSettings &settings, bool storeSettings)
+QString DbConfigSqlite::databasePath() const
+{
+    return mDatabaseName;
+}
+
+void DbConfigSqlite::setDatabasePath(const QString &path, QSettings &settings)
+{
+    mDatabaseName = path;
+    settings.beginGroup(driverName());
+    settings.setValue(QStringLiteral("Name"), mDatabaseName);
+    settings.endGroup();
+}
+
+bool DbConfigSqlite::init(QSettings &settings, bool storeSettings, const QString &dbPathOverride)
 {
     // determine default settings depending on the driver
-    const QString defaultDbName = sqliteDataFile();
+    const QString defaultDbName = sqliteDataFile(dbPathOverride);
     if (defaultDbName.isEmpty()) {
         return false;
     }
@@ -127,9 +136,6 @@ void DbConfigSqlite::apply(QSqlDatabase &database)
         database.setPassword(mPassword);
     }
 
-    if (driverName() == QLatin1String("QSQLITE3") && !mConnectionOptions.contains(QLatin1String("SQLITE_ENABLE_SHARED_CACHE"))) {
-        mConnectionOptions += QLatin1String(";QSQLITE_ENABLE_SHARED_CACHE");
-    }
     database.setConnectOptions(mConnectionOptions);
 
     // can we check that during init() already?
@@ -155,7 +161,7 @@ bool DbConfigSqlite::setPragma(QSqlDatabase &db, QSqlQuery &query, const QString
 
 void DbConfigSqlite::setup()
 {
-    const QLatin1String connectionName("initConnection");
+    const QLatin1StringView connectionName("initConnectionSqlite");
 
     {
         QSqlDatabase db = QSqlDatabase::addDatabase(driverName(), connectionName);
@@ -177,7 +183,7 @@ void DbConfigSqlite::setup()
         // database performance. It does not have any effect on non-empty files, so
         // we check, whether the database has not yet been initialized.
         if (dbFile.size() == 0) {
-            if (Utils::getDirectoryFileSystem(mDatabaseName) == QLatin1String("btrfs")) {
+            if (Utils::getDirectoryFileSystem(mDatabaseName) == QLatin1StringView("btrfs")) {
                 Utils::disableCoW(mDatabaseName);
             }
         }
@@ -276,4 +282,16 @@ void DbConfigSqlite::setup()
     }
 
     QSqlDatabase::removeDatabase(connectionName);
+}
+
+bool DbConfigSqlite::disableConstraintChecks(const QSqlDatabase &db)
+{
+    QSqlQuery query(db);
+    return query.exec(QStringLiteral("PRAGMA ignore_check_constraints=ON"));
+}
+
+bool DbConfigSqlite::enableConstraintChecks(const QSqlDatabase &db)
+{
+    QSqlQuery query(db);
+    return query.exec(QStringLiteral("PRAGMA ignore_check_constraints=OFF"));
 }

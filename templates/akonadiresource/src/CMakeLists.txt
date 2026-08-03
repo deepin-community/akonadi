@@ -1,5 +1,5 @@
 set(%{APPNAMELC}resource_SRCS
-    %{APPNAMELC}resource.cpp
+    %{APPNAMELC}resource.cpp %{APPNAMELC}resource.h
 )
 
 ecm_qt_declare_logging_category(%{APPNAMELC}resource_SRCS
@@ -28,8 +28,8 @@ set_target_properties(akonadi_%{APPNAMELC}_resource PROPERTIES MACOSX_BUNDLE FAL
 
 target_link_libraries(akonadi_%{APPNAMELC}_resource
     Qt::DBus
-    KF5::AkonadiAgentBase
-    KF5::ConfigCore
+    KF6::AkonadiAgentBase
+    KF6::ConfigCore
 )
 
 install(TARGETS akonadi_%{APPNAMELC}_resource ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

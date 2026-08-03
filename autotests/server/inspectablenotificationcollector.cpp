@@ -7,6 +7,8 @@
 
 #include "inspectablenotificationcollector.h"
 
+#include <QTest>
+
 using namespace Akonadi;
 using namespace Akonadi::Server;
 
@@ -20,3 +22,5 @@ void InspectableNotificationCollector::notify(Protocol::ChangeNotificationList &
     Q_EMIT notifySignal(ntfs);
     NotificationCollector::notify(std::move(ntfs));
 }
+
+#include "moc_inspectablenotificationcollector.cpp"

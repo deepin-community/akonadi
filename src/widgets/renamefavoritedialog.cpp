@@ -1,5 +1,5 @@
 /*
-    SPDX-FileCopyrightText: 2011-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2011-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -34,3 +34,5 @@ QString RenameFavoriteDialog::newName() const
 {
     return ui.lineEdit->text();
 }
+
+#include "moc_renamefavoritedialog_p.cpp"

@@ -6,9 +6,11 @@
 
 #include "agentinstancewidget.h"
 
-#include "agentfilterproxymodel.h"
 #include "agentinstance.h"
+#include "agentinstancefilterproxymodel.h"
 #include "agentinstancemodel.h"
+
+#include <KLocalizedString>
 
 #include <QApplication>
 #include <QHBoxLayout>
@@ -82,7 +84,7 @@ public:
     AgentInstanceWidget *const mParent;
     QListView *mView = nullptr;
     AgentInstanceModel *mModel = nullptr;
-    AgentFilterProxyModel *proxy = nullptr;
+    AgentInstanceFilterProxyModel *proxy = nullptr;
 };
 
 void AgentInstanceWidgetPrivate::currentAgentInstanceChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex)
@@ -137,8 +139,7 @@ AgentInstanceWidget::AgentInstanceWidget(QWidget *parent)
 
     d->mModel = new AgentInstanceModel(this);
 
-    d->proxy = new AgentFilterProxyModel(this);
-    d->proxy->setDynamicSortFilter(true);
+    d->proxy = new AgentInstanceFilterProxyModel(this);
     d->proxy->sort(0);
     d->proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
     d->proxy->setSourceModel(d->mModel);
@@ -197,9 +198,29 @@ QAbstractItemView *AgentInstanceWidget::view() const
     return d->mView;
 }
 
-AgentFilterProxyModel *AgentInstanceWidget::agentFilterProxyModel() const
+AgentInstanceFilterProxyModel *AgentInstanceWidget::agentInstanceFilterProxyModel() const
 {
     return d->proxy;
+}
+
+bool AgentInstanceWidget::enablePlasmaActivities() const
+{
+    return d->proxy->enablePlasmaActivities();
+}
+
+void AgentInstanceWidget::setEnablePlasmaActivities(bool newEnablePlasmaActivities)
+{
+    d->proxy->setEnablePlasmaActivities(newEnablePlasmaActivities);
+}
+
+AccountActivitiesAbstract *AgentInstanceWidget::accountActivitiesAbstract() const
+{
+    return d->proxy->accountActivitiesAbstract();
+}
+
+void AgentInstanceWidget::setAccountActivitiesAbstract(AccountActivitiesAbstract *abstract)
+{
+    d->proxy->setAccountActivitiesAbstract(abstract);
 }
 
 AgentInstanceWidgetDelegate::AgentInstanceWidgetDelegate(QObject *parent)
@@ -235,7 +256,7 @@ void AgentInstanceWidgetDelegate::paint(QPainter *painter, const QStyleOptionVie
     }
 
     if (status == 1) {
-        statusMessage.append(QStringLiteral(" (%1%)").arg(progress));
+        statusMessage.append(QStringLiteral(" ") + i18nc("Status percent value", "(%1%)", progress));
     }
 
     const QPixmap iconPixmap = icon.pixmap(style->pixelMetric(QStyle::PM_MessageBoxIconSize));
@@ -290,3 +311,5 @@ QSize AgentInstanceWidgetDelegate::sizeHint(const QStyleOptionViewItem &option, 
 } // namespace Akonadi
 
 #include "agentinstancewidget.moc"
+
+#include "moc_agentinstancewidget.cpp"

@@ -24,9 +24,9 @@ using namespace Akonadi;
 
 Q_GLOBAL_STATIC(Akonadi::Collection, s_defaultParentCollection) // NOLINT(readability-redundant-member-init)
 
-uint Akonadi::qHash(const Akonadi::Collection &collection)
+size_t Akonadi::qHash(const Akonadi::Collection &collection, size_t seed) noexcept
 {
-    return ::qHash(collection.id());
+    return ::qHash(collection.id(), seed);
 }
 
 /**
@@ -266,7 +266,7 @@ QUrl Collection::url(UrlType type) const
 
 Collection Collection::fromUrl(const QUrl &url)
 {
-    if (url.scheme() != QLatin1String("akonadi")) {
+    if (url.scheme() != QLatin1StringView("akonadi")) {
         return Collection();
     }
 
@@ -425,3 +425,5 @@ void Collection::markAttributeModified(const QByteArray &type)
 {
     d_ptr->mAttributeStorage.markAttributeModified(type);
 }
+
+#include "moc_collection.cpp"

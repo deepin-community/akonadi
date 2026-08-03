@@ -21,7 +21,6 @@
 #include <KLazyLocalizedString>
 #include <QItemSelectionModel>
 #include <QPointer>
-#include <kwidgetsaddons_version.h>
 
 using namespace Akonadi;
 
@@ -55,7 +54,9 @@ public:
 
         setContextText(AgentActionManager::CreateAgentInstance, AgentActionManager::ErrorMessageText, ki18n("Could not create agent instance: %1"));
 
-        setContextText(AgentActionManager::CreateAgentInstance, AgentActionManager::ErrorMessageTitle, i18nc("@title:window", "Agent Instance Creation Failed"));
+        setContextText(AgentActionManager::CreateAgentInstance,
+                       AgentActionManager::ErrorMessageTitle,
+                       i18nc("@title:window", "Agent Instance Creation Failed"));
 
         setContextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxTitle, i18nc("@title:window", "Delete Agent Instance?"));
 
@@ -87,7 +88,7 @@ public:
 
         if (instances.count() == 1) {
             const AgentInstance &instance = instances.first();
-            if (instance.type().capabilities().contains(QLatin1String("NoConfig"))) {
+            if (instance.type().capabilities().contains(QLatin1StringView("NoConfig"))) {
                 configureActionEnabled = false;
             }
         }
@@ -150,23 +151,14 @@ public:
     {
         const AgentInstance::List instances = selectedAgentInstances();
         if (!instances.isEmpty()) {
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
             if (KMessageBox::questionTwoActions(mParentWidget,
-#else
-            if (KMessageBox::questionYesNo(mParentWidget,
-
-#endif
                                                 contextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxText),
                                                 contextText(AgentActionManager::DeleteAgentInstance, AgentActionManager::MessageBoxTitle),
                                                 KStandardGuiItem::del(),
                                                 KStandardGuiItem::cancel(),
                                                 QString(),
                                                 KMessageBox::Dangerous)
-#if KWIDGETSADDONS_VERSION >= QT_VERSION_CHECK(5, 100, 0)
                 == KMessageBox::ButtonCode::PrimaryAction) {
-#else
-                == KMessageBox::Yes) {
-#endif
                 for (const AgentInstance &instance : instances) {
                     AgentManager::self()->removeInstance(instance);
                 }
@@ -212,7 +204,7 @@ public:
     KActionCollection *mActionCollection = nullptr;
     QWidget *mParentWidget = nullptr;
     QItemSelectionModel *mSelectionModel = nullptr;
-    QVector<QAction *> mActions;
+    QList<QAction *> mActions;
     QStringList mMimeTypeFilter;
     QStringList mCapabilityFilter;
 

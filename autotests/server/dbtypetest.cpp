@@ -7,10 +7,10 @@
 #include <QObject>
 #include <QTest>
 
-#include <aktest.h>
-#include <storage/dbtype.h>
+#include "aktest.h"
+#include "storage/dbtype.h"
 
-#define QL1S(x) QLatin1String(x)
+#define QL1S(x) QLatin1StringView(x)
 
 using namespace Akonadi::Server;
 
@@ -27,7 +27,6 @@ private Q_SLOTS:
 
         QTest::newRow("mysql") << "QMYSQL" << DbType::MySQL;
         QTest::newRow("sqlite") << "QSQLITE" << DbType::Sqlite;
-        QTest::newRow("sqlite3") << "QSQLITE3" << DbType::Sqlite;
         QTest::newRow("psql") << "QPSQL" << DbType::PostgreSQL;
     }
 

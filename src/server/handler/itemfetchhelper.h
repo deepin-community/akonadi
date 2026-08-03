@@ -11,9 +11,8 @@
 #include "storage/datastore.h"
 #include "storage/itemretriever.h"
 
-#include <private/imapset_p.h>
-#include <private/protocol_p.h>
-#include <private/scope_p.h>
+#include "private/protocol_p.h"
+#include "private/scope_p.h"
 
 #include <functional>
 
@@ -63,23 +62,22 @@ private:
 
     void updateItemAccessTime();
     void triggerOnDemandFetch();
-    QSqlQuery buildItemQuery();
-    QSqlQuery buildPartQuery(const QVector<QByteArray> &partList, bool allPayload, bool allAttrs);
-    QSqlQuery buildFlagQuery();
-    QSqlQuery buildTagQuery();
-    QSqlQuery buildVRefQuery();
+    QueryBuilder buildItemQuery();
+    QueryBuilder buildPartQuery(QSqlQuery &itemQuery, const QList<QByteArray> &partList, bool allPayload, bool allAttrs);
+    QueryBuilder buildFlagQuery(QSqlQuery &itemQuery);
+    QueryBuilder buildTagQuery(QSqlQuery &itemQuery);
+    QueryBuilder buildVRefQuery(QSqlQuery &itemQuery);
 
-    QVector<Protocol::Ancestor> ancestorsForItem(Collection::Id parentColId);
-    static bool needsAccessTimeUpdate(const QVector<QByteArray> &parts);
+    QList<Protocol::Ancestor> ancestorsForItem(Collection::Id parentColId);
+    static bool needsAccessTimeUpdate(const QList<QByteArray> &parts);
     QVariant extractQueryResult(const QSqlQuery &query, ItemQueryColumns column) const;
     bool isScopeLocal(const Scope &scope);
     DataStore *storageBackend() const;
-    static QByteArray relationsToByteArray(const Relation::List &relations);
 
 private:
     Connection *mConnection = nullptr;
     const CommandContext &mContext;
-    QHash<Collection::Id, QVector<Protocol::Ancestor>> mAncestorCache;
+    QHash<Collection::Id, QList<Protocol::Ancestor>> mAncestorCache;
     Scope mScope;
     Protocol::ItemFetchScope mItemFetchScope;
     Protocol::TagFetchScope mTagFetchScope;
@@ -87,7 +85,6 @@ private:
     bool mUpdateATimeEnabled = true;
     AkonadiServer &mAkonadi;
     Protocol::FetchLimit mItemsLimit;
-    QueryBuilder mItemQuery;
     QString mPimItemQueryAlias;
 
     friend class ::ItemFetchHelperTest;

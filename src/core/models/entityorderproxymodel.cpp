@@ -43,7 +43,7 @@ EntityOrderProxyModel::EntityOrderProxyModel(QObject *parent)
     , d_ptr(new EntityOrderProxyModelPrivate(this))
 {
     setRecursiveFilteringEnabled(true);
-    setDynamicSortFilter(true);
+
     // setSortCaseSensitivity( Qt::CaseInsensitive );
 }
 
@@ -315,3 +315,5 @@ void EntityOrderProxyModel::clearTreeOrder()
     d->m_orderConfig.deleteGroup();
     invalidate();
 }
+
+#include "moc_entityorderproxymodel.cpp"

@@ -9,7 +9,7 @@
 #include "agentmanager.h"
 #include "akonadicontrol_debug.h"
 
-#include <private/dbus_p.h>
+#include "private/dbus_p.h"
 
 #include <QDBusConnection>
 #include <QTimer>
@@ -157,3 +157,5 @@ void AccountsIntegration::onAccountServiceEnabled(const QString &serviceType, bo
         removeAgentInstance(identifier.value());
     }
 }
+
+#include "moc_accountsintegration.cpp"

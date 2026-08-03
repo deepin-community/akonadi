@@ -14,9 +14,9 @@
 #include "parttypehelper.h"
 #include "selectquerybuilder.h"
 
-#include <private/externalpartstorage_p.h>
-#include <private/protocol_p.h>
-#include <private/standarddirs_p.h>
+#include "private/externalpartstorage_p.h"
+#include "private/protocol_p.h"
+#include "private/standarddirs_p.h"
 
 #include <config-akonadi.h>
 #if HAVE_UNISTD_H
@@ -63,6 +63,10 @@ void PartStreamer::streamPayload(Part &part, const QByteArray &partName)
     Protocol::PartMetaData metaPart = requestPartMetaData(partName);
     if (metaPart.name().isEmpty()) {
         throw PartStreamerException(QStringLiteral("Client sent empty metadata for part '%1'.").arg(QString::fromUtf8(partName)));
+    }
+    if (metaPart.name() != partName) {
+        throw PartStreamerException(
+            QStringLiteral("Client sent metadata for part '%1' but requested part '%2'.").arg(QString::fromUtf8(metaPart.name()), QString::fromUtf8(partName)));
     }
     part.setVersion(metaPart.version());
 

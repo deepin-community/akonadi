@@ -11,7 +11,6 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include <QThreadStorage>
-#include <QVector>
 
 class QSqlQuery;
 class QTimer;
@@ -25,6 +24,7 @@ namespace Akonadi
 {
 namespace Server
 {
+class DbConfig;
 class DataStore;
 class DataStoreFactory
 {
@@ -100,6 +100,11 @@ public:
     static void setFactory(std::unique_ptr<DataStoreFactory> factory);
 
     /**
+     * Returns DataStore associated with the given database connection.
+     */
+    static DataStore *dataStoreForDatabase(const QSqlDatabase &db);
+
+    /**
       Closes the database connection and destroys the DataStore object.
     */
     ~DataStore() override;
@@ -131,19 +136,19 @@ public:
 
     /* --- ItemFlags ----------------------------------------------------- */
     virtual bool setItemsFlags(const PimItem::List &items,
-                               const QVector<Flag> *currentFlags,
-                               const QVector<Flag> &newFlags,
+                               const QList<Flag> *currentFlags,
+                               const QList<Flag> &newFlags,
                                bool *flagsChanged = nullptr,
                                const Collection &col = Collection(),
                                bool silent = false);
     virtual bool appendItemsFlags(const PimItem::List &items,
-                                  const QVector<Flag> &flags,
+                                  const QList<Flag> &flags,
                                   bool *flagsChanged = nullptr,
                                   bool checkIfExists = true,
                                   const Collection &col = Collection(),
                                   bool silent = false);
     virtual bool removeItemsFlags(const PimItem::List &items,
-                                  const QVector<Flag> &flags,
+                                  const QList<Flag> &flags,
                                   bool *tagsChanged = nullptr,
                                   const Collection &collection = Collection(),
                                   bool silent = false);
@@ -170,8 +175,6 @@ public:
 
     /// removes the given collection and all its content
     virtual bool cleanupCollection(Collection &collection);
-    /// same as the above but for database backends without working referential actions on foreign keys
-    virtual bool cleanupCollection_slow(Collection &collection);
 
     /// moves the collection @p collection to @p newParent.
     virtual bool moveCollection(Collection &collection, const Collection &newParent);
@@ -190,13 +193,13 @@ public:
     virtual void activeCachePolicy(Collection &col);
 
     /// Returns all virtual collections the @p item is linked to
-    QVector<Collection> virtualCollections(const PimItem &item);
+    QList<Collection> virtualCollections(const PimItem &item);
 
     QMap<Server::Entity::Id, QList<PimItem>> virtualCollections(const Akonadi::Server::PimItem::List &items);
 
     /* --- PimItem ------------------------------------------------------- */
-    virtual bool appendPimItem(QVector<Part> &parts,
-                               const QVector<Flag> &flags,
+    virtual bool appendPimItem(QList<Part> &parts,
+                               const QList<Flag> &flags,
                                const MimeType &mimetype,
                                const Collection &collection,
                                const QDateTime &dateTime,
@@ -311,9 +314,10 @@ protected:
     /**
       Creates a new DataStore object and opens it.
     */
-    DataStore(AkonadiServer &akonadi);
+    DataStore(AkonadiServer *akonadi, DbConfig *dbConfig);
+    explicit DataStore(DbConfig *config);
 
-    void debugLastDbError(const char *actionDescription) const;
+    void debugLastDbError(QStringView actionDescription) const;
     void debugLastQueryError(const QSqlQuery &query, const char *actionDescription) const;
 
 private:
@@ -342,7 +346,8 @@ private Q_SLOTS:
 protected:
     static std::unique_ptr<DataStoreFactory> sFactory;
     std::unique_ptr<NotificationCollector> mNotificationCollector;
-    AkonadiServer &m_akonadi;
+    AkonadiServer *const m_akonadi = nullptr;
+    DbConfig *const m_dbConfig = nullptr;
 
 private:
     Q_DISABLE_COPY_MOVE(DataStore)
@@ -355,13 +360,11 @@ private:
     uint m_transactionLevel;
     struct TransactionQuery {
         QString query;
-        QVector<QVariant> boundValues;
+        QList<QVariant> boundValues;
         bool isBatch;
     };
     QByteArray mSessionId;
     QTimer *m_keepAliveTimer = nullptr;
-    static bool s_hasForeignKeyConstraints;
-    static QMutex sTransactionMutex;
 
     friend class DataStoreFactory;
 };

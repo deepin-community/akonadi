@@ -1,4 +1,6 @@
-enable_debianabimanager.diff
+# Fixed in 25.04.2
+upstream_fix_many_folders.patch
+
 postgresql-data-checksums.patch
 disable_secure_file_priv_check.diff
 load_local_apparmor_rules.diff

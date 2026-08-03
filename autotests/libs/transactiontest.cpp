@@ -15,7 +15,7 @@
 #include "session.h"
 #include "transactionjobs.h"
 
-#include <qtest_akonadi.h>
+#include "qtest_akonadi.h"
 
 using namespace Akonadi;
 
@@ -35,7 +35,7 @@ void TransactionTest::testTransaction()
     AKVERIFYEXEC(listJob);
     const Collection::List list = listJob->collections();
     for (const Collection &col : list) {
-        if (col.name() == QLatin1String("res3")) {
+        if (col.name() == QLatin1StringView("res3")) {
             basisCollection = col;
         }
     }
@@ -85,3 +85,5 @@ void TransactionTest::testTransaction()
     auto deleteJob = new CollectionDeleteJob(testCollection, Session::defaultSession());
     AKVERIFYEXEC(deleteJob);
 }
+
+#include "moc_transactiontest.cpp"

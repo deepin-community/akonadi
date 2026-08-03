@@ -4,18 +4,18 @@
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
 
-#ifndef AKONADI_QUERYBUILDER_H
-#define AKONADI_QUERYBUILDER_H
+#pragma once
 
 #include "dbtype.h"
 #include "query.h"
 
+#include <QList>
 #include <QPair>
 #include <QSqlQuery>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
-#include <QVector>
+#include <optional>
 
 #ifdef QUERYBUILDER_UNITTEST
 class QueryBuilderTest;
@@ -25,11 +25,14 @@ namespace Akonadi
 {
 namespace Server
 {
+class DataStore;
 /**
   Helper class to construct arbitrary SQL queries.
 */
 class QueryBuilder
 {
+    Q_DISABLE_COPY(QueryBuilder)
+
 public:
     enum QueryType {
         Select,
@@ -47,7 +50,9 @@ public:
         /// NOTE: only supported for UPDATE and SELECT queries.
         InnerJoin,
         /// NOTE: only supported for SELECT queries
-        LeftJoin
+        LeftJoin,
+        /// NOTE: only supported for SELECT queries
+        LeftOuterJoin
     };
 
     /**
@@ -69,6 +74,7 @@ public:
       @param table The main table to operate on.
     */
     explicit QueryBuilder(const QString &table, QueryType type = Select);
+    QueryBuilder(DataStore *store, const QString &table, QueryType type = Select);
 
     /**
       Creates a new query builder with subquery in FROM clause for SELECT queries.
@@ -76,6 +82,12 @@ public:
       @param tableQueryAlias alias name for table query
     */
     explicit QueryBuilder(const QSqlQuery &tableQuery, const QString &tableQueryAlias);
+    QueryBuilder(DataStore *store, const QSqlQuery &tableQuery, const QString &tableQueryAlias);
+
+    QueryBuilder(QueryBuilder &&) noexcept;
+    QueryBuilder &operator=(QueryBuilder &&) noexcept;
+
+    ~QueryBuilder();
 
     /**
       Sets the database which should execute the query. Unfortunately the SQL "standard"
@@ -140,12 +152,38 @@ public:
     /**
       Add a WHERE or HAVING condition which compares a column with a given value.
       @param column The column that should be compared.
-      @param op The operator used for comparison
+      @param op The operator used for comparison.
       @param value The value @p column is compared to.
       @param type Defines whether this condition should be part of the WHERE or the HAVING
                   part of the query. Defaults to WHERE.
     */
     void addValueCondition(const QString &column, Query::CompareOperator op, const QVariant &value, ConditionType type = WhereCondition);
+
+    /**
+     * Add a WHERE or HAVING condition which compares a column with a given value.
+     *
+     * This is an overload specially for passing a list of IDs, which is a fairly common case in Akonadi.
+     *
+     * @param column  The column that should be compared.
+     * @param op  The operator used for comparison.
+     * @param value The value @p column is compared to.
+     * @param type Defines whether this condition should be part of the WHERE or the HAVING
+     *             part of the query. Defaults to WHERE.
+     */
+    void addValueCondition(const QString &column, Query::CompareOperator op, const QList<qint64> &value, ConditionType type = WhereCondition);
+
+    /**
+     * Add a WHERE or HAVING condition which compares a column with a given value.
+     *
+     * This is an overload specially for passing a set of IDs, which is a fairly common case in Akonadi.
+     *
+     * @param column  The column that should be compared.
+     * @param op  The operator used for comparison.
+     * @param value The value @p column is compared to.
+     * @param type Defines whether this condition should be part of the WHERE or the HAVING
+     *             part of the query. Defaults to WHERE.
+     */
+    void addValueCondition(const QString &column, Query::CompareOperator op, const QSet<qint64> &value, ConditionType type = WhereCondition);
 
     /**
       Add a WHERE or HAVING condition which compares a column with another column.
@@ -197,10 +235,30 @@ public:
 
     /**
       Sets a column to the given value (only valid for INSERT and UPDATE queries).
+
+      Calling this function resets any values set by setColumnValues().
+
       @param column Column to change.
       @param value The value @p column should be set to.
     */
     void setColumnValue(const QString &column, const QVariant &value);
+
+    /**
+     * @brief Set column to given values (only valid for INSERT query).
+     *
+     * This will result in the query inserting multiple rows. The values must contain
+     * the same number of elements for each column otherwise the query will fail.
+     *
+     * Calling this function resets any values set by setColumnValue().
+     *
+     * @param column Column to insert into.
+     * @param values Values to be set for the @p column.
+     */
+    template<typename T>
+    void setColumnValues(const QString &column, const QList<T> &values)
+    {
+        setColumnValues(column, QVariant::fromValue(values));
+    }
 
     /**
      * Specify whether duplicates should be included in the result.
@@ -215,7 +273,7 @@ public:
      * The default value for @p offset is -1, indicating no offset.
      * @note This has no effect on anything but SELECT queries.
      */
-    void setLimit(int limit, int offset=-1);
+    void setLimit(int limit, int offset = -1);
 
     /**
      * Sets the column used for identification in an INSERT statement.
@@ -230,7 +288,10 @@ public:
     /**
       Returns the query, only valid after exec().
     */
-    QSqlQuery &query();
+    inline QSqlQuery &query()
+    {
+        return mQuery;
+    }
 
     /**
       Executes the query, returns true on success.
@@ -262,14 +323,18 @@ public:
      * Returns concatenated table name with column name.
      * @param column Column name.
      * @note Pass only @p column that are not prefixed by table name.
-    */
+     */
     QString getTableWithColumn(const QString &column) const;
 
 private:
+    void setColumnValues(const QString &column, const QVariant &values);
+
     void buildQuery(QString *query);
     void bindValue(QString *query, const QVariant &value);
     void buildWhereCondition(QString *query, const Query::Condition &cond);
     void buildCaseStatement(QString *query, const Query::Case &caseStmt);
+    void buildInsertColumns(QString *query);
+    void buildInsertValues(QString *query);
     QString getTableQuery(const QSqlQuery &query, const QString &alias);
 
     /**
@@ -278,18 +343,26 @@ private:
      */
     void sqliteAdaptUpdateJoin(Query::Condition &cond);
 
+protected:
+    DataStore *dataStore() const
+    {
+        return mDataStore;
+    }
+
 private:
     QString mTable;
-    QSqlQuery mTableSubQuery;
+    std::optional<std::reference_wrapper<const QSqlQuery>> mTableSubQuery;
+    DataStore *mDataStore = nullptr;
     DbType::Type mDatabaseType;
     Query::Condition mRootCondition[NUM_CONDITIONS];
     QSqlQuery mQuery;
     QueryType mType;
     QStringList mColumns;
-    QVector<QVariant> mBindValues;
-    QVector<QPair<QString, Query::SortOrder>> mSortColumns;
+    QList<QVariant> mBindValues;
+    QList<QPair<QString, Query::SortOrder>> mSortColumns;
     QStringList mGroupColumns;
-    QVector<QPair<QString, QVariant>> mColumnValues;
+    QList<QPair<QString, QVariant>> mColumnValues;
+    QList<QPair<QString, QVariant>> mColumnMultiValues;
     QString mIdentificationColumn;
 
     // we must make sure that the tables are joined in the correct order
@@ -308,5 +381,3 @@ private:
 
 } // namespace Server
 } // namespace Akonadi
-
-#endif

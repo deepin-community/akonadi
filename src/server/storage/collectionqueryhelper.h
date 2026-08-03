@@ -8,7 +8,7 @@
 
 #include "entities.h"
 
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 namespace Akonadi
 {
@@ -47,13 +47,7 @@ bool canBeMovedTo(const Collection &collection, const Collection &parent);
 /**
   Retrieve the collection referred to by the given hierarchical RID chain.
 */
-Collection resolveHierarchicalRID(const QVector<Scope::HRID> &hridChain, Resource::Id resId);
-
-/**
-  Returns an existing collection specified by the given scope. If that does not
-  specify exactly one valid collection, an exception is thrown.
-*/
-Collection singleCollectionFromScope(const Scope &scope, const CommandContext &context);
+Collection resolveHierarchicalRID(const QList<Scope::HRID> &hridChain, Resource::Id resId);
 }
 
 } // namespace Server

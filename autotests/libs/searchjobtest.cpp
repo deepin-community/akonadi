@@ -48,7 +48,7 @@ void SearchJobTest::testCreateDeleteSearch()
     const Collection::List cols = list->collections();
     Collection col;
     for (const auto &c : cols) {
-        if (c.name() == QLatin1String("search123456")) {
+        if (c.name() == QLatin1StringView("search123456")) {
             col = c;
             break;
         }
@@ -83,13 +83,13 @@ void SearchJobTest::testModifySearch()
     auto attr = created.attribute<PersistentSearchAttribute>();
     QVERIFY(!attr->isRecursive());
     QVERIFY(!attr->isRemoteSearchEnabled());
-    QCOMPARE(attr->queryCollections(), QVector<qint64>{0});
+    QCOMPARE(attr->queryCollections(), QList<qint64>{0});
     const QString oldQueryString = attr->queryString();
 
     // Change the attributes
     attr->setRecursive(true);
     attr->setRemoteSearchEnabled(true);
-    attr->setQueryCollections(QVector<qint64>{1});
+    attr->setQueryCollections(QList<qint64>{1});
     Akonadi::SearchQuery newQuery;
     newQuery.addTerm(Akonadi::SearchTerm(QStringLiteral("plugin"), 3));
     newQuery.addTerm(Akonadi::SearchTerm(QStringLiteral("resource"), 4));
@@ -108,9 +108,11 @@ void SearchJobTest::testModifySearch()
 
     QVERIFY(attr->isRecursive());
     QVERIFY(attr->isRemoteSearchEnabled());
-    QCOMPARE(attr->queryCollections(), QVector<qint64>{1});
+    QCOMPARE(attr->queryCollections(), QList<qint64>{1});
     QVERIFY(attr->queryString() != oldQueryString);
 
     auto delJob = new CollectionDeleteJob(col, this);
     AKVERIFYEXEC(delJob);
 }
+
+#include "moc_searchjobtest.cpp"

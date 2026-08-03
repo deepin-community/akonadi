@@ -1,14 +1,14 @@
-include(${CMAKE_SOURCE_DIR}/KF5AkonadiMacros.cmake)
+include(${CMAKE_SOURCE_DIR}/KPimAkonadiMacros.cmake)
 
 kde_enable_exceptions()
 
-remove_definitions(-DTRANSLATION_DOMAIN=\"libakonadi5\")
+remove_definitions(-DTRANSLATION_DOMAIN=\"libakonadi6\")
 add_definitions(-DTRANSLATION_DOMAIN=\"akonadi_knut_resource\")
 
 # Disabled for now, resourcetester remained in kdepim-runtime
-#add_subdirectory( tests )
+#add_subdirectory(tests)
 
-set( knutresource_SRCS knutresource.cpp)
+set(knutresource_SRCS knutresource.cpp knutresource.h)
 
 ecm_qt_declare_logging_category(knutresource_SRCS HEADER knutresource_debug.h IDENTIFIER KNUTRESOURCE_LOG CATEGORY_NAME org.kde.pim.knut)
 
@@ -25,14 +25,13 @@ add_executable(akonadi_knut_resource ${knutresource_SRCS})
 set_target_properties(akonadi_knut_resource PROPERTIES MACOSX_BUNDLE FALSE)
 
 target_link_libraries(akonadi_knut_resource
-  KF5::AkonadiXml
-  KF5::AkonadiCore
-  KF5::KIOCore
-  KF5::AkonadiAgentBase
+  KPim6::AkonadiXml
+  KPim6::AkonadiCore
+  KPim6::AkonadiAgentBase
   Qt::Xml
-  KF5::I18n
+  KF6::I18n
 )
 
-install( TARGETS akonadi_knut_resource ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
-install( FILES knutresource.desktop DESTINATION "${KDE_INSTALL_DATAROOTDIR}/akonadi/agents" )
-install( FILES knut-template.xml DESTINATION ${KDE_INSTALL_DATADIR_KF}/akonadi_knut_resource/ )
+install(TARGETS akonadi_knut_resource ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES knutresource.desktop DESTINATION "${KDE_INSTALL_DATAROOTDIR}/akonadi/agents")
+install(FILES knut-template.xml DESTINATION ${KDE_INSTALL_DATADIR_KF}/akonadi_knut_resource/)

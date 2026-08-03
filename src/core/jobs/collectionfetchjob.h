@@ -22,15 +22,14 @@ class CollectionFetchJobPrivate;
  * from the Akonadi storage. This fetches collection data, not item data.
  *
  * @code
- *
  * using namespace Akonadi;
+ * using namespace Qt::StringLiterals;
  *
  * // fetching all collections containing emails recursively, starting at the root collection
- * CollectionFetchJob *job = new CollectionFetchJob(Collection::root(), CollectionFetchJob::Recursive, this);
- * job->fetchScope().setContentMimeTypes(QStringList() << "message/rfc822");
- * connect(job, SIGNAL(collectionsReceived(Akonadi::Collection::List)),
- *         this, SLOT(myCollectionsReceived(Akonadi::Collection::List)));
- * connect(job, SIGNAL(result(KJob*)), this, SLOT(collectionFetchResult(KJob*)));
+ * auto job = new CollectionFetchJob(Collection::root(), CollectionFetchJob::Recursive, this);
+ * job->fetchScope().setContentMimeTypes({ u"message/rfc822"_s });
+ * connect(job, &CollectionFetchJob::collectionsReceived, this &MyClass::myCollectionsReceived);
+ * connect(job, &KJob::result, this, &MyClass::collectionFetchResult);
  *
  * @endcode
  *
@@ -123,7 +122,7 @@ public:
     /**
      * Returns the list of fetched collection.
      */
-    Q_REQUIRED_RESULT Collection::List collections() const;
+    [[nodiscard]] Collection::List collections() const;
 
     /**
      * Sets the collection fetch scope.
@@ -152,7 +151,7 @@ public:
      * @see setFetchScope() for replacing the current collection fetch scope
      * @since 4.4
      */
-    Q_REQUIRED_RESULT CollectionFetchScope &fetchScope();
+    [[nodiscard]] CollectionFetchScope &fetchScope();
 
 Q_SIGNALS:
     /**

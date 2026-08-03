@@ -55,9 +55,6 @@ set(libakonadiserver_SRCS
     handler/itemmovehandler.cpp
     handler/loginhandler.cpp
     handler/logouthandler.cpp
-    handler/relationfetchhandler.cpp
-    handler/relationmodifyhandler.cpp
-    handler/relationremovehandler.cpp
     handler/resourceselecthandler.cpp
     handler/searchhandler.cpp
     handler/searchhelper.cpp
@@ -103,7 +100,6 @@ set(libakonadiserver_SRCS
     storage/query.cpp
     storage/querybuilder.cpp
     storage/querycache.cpp
-    storage/queryhelper.cpp
     storage/schematypes.cpp
     storage/tagqueryhelper.cpp
     storage/transaction.cpp
@@ -152,9 +148,6 @@ set(libakonadiserver_SRCS
     handler/itemmovehandler.h
     handler/loginhandler.h
     handler/logouthandler.h
-    handler/relationfetchhandler.h
-    handler/relationmodifyhandler.h
-    handler/relationremovehandler.h
     handler/resourceselecthandler.h
     handler/searchhandler.h
     handler/searchhelper.h
@@ -199,7 +192,6 @@ set(libakonadiserver_SRCS
     storage/query.h
     storage/querybuilder.h
     storage/querycache.h
-    storage/queryhelper.h
     storage/schematypes.h
     storage/tagqueryhelper.h
     storage/transaction.h
@@ -219,21 +211,21 @@ set(libakonadiserver_SRCS
     preprocessormanager.h
     storagejanitor.h
 
-    )
+   )
 
 set(akonadiserver_SRCS
     main.cpp
 )
-ecm_qt_declare_logging_category(akonadiserver_SRCS HEADER akonadiserver_debug.h IDENTIFIER AKONADISERVER_LOG CATEGORY_NAME org.kde.pim.akonadiserver
+ecm_qt_declare_logging_category(libakonadiserver_SRCS HEADER akonadiserver_debug.h IDENTIFIER AKONADISERVER_LOG CATEGORY_NAME org.kde.pim.akonadiserver
         DESCRIPTION "akonadi (Akonadi Server)"
         OLD_CATEGORY_NAMES log_akonadiserver
         EXPORT AKONADI
-    )
+)
 
-ecm_qt_declare_logging_category(akonadiserver_SRCS HEADER akonadiserver_search_debug.h IDENTIFIER AKONADISERVER_SEARCH_LOG CATEGORY_NAME org.kde.pim.akonadiserver.search
+ecm_qt_declare_logging_category(libakonadiserver_SRCS HEADER akonadiserver_search_debug.h IDENTIFIER AKONADISERVER_SEARCH_LOG CATEGORY_NAME org.kde.pim.akonadiserver.search
         DESCRIPTION "akonadi (Akonadi Server Search Functionality)"
         EXPORT AKONADI
-    )
+)
 
 qt_generate_dbus_interface(debuginterface.h org.freedesktop.Akonadi.DebugInterface.xml)
 
@@ -251,7 +243,7 @@ qt_add_dbus_interface(libakonadiserver_SRCS ${Akonadi_SOURCE_DIR}/src/interfaces
 qt_add_dbus_interface(libakonadiserver_SRCS ${Akonadi_SOURCE_DIR}/src/interfaces/org.freedesktop.Akonadi.Agent.Search.xml agentsearchinterface)
 
 add_library(libakonadiserver STATIC ${libakonadiserver_SRCS})
-#if (COMPILE_WITH_UNITY_CMAKE_SUPPORT)
+#if(COMPILE_WITH_UNITY_CMAKE_SUPPORT)
 #    set_target_properties(libakonadiserver PROPERTIES UNITY_BUILD ON)
 #    set_source_files_properties(storage/itemretrievalmanager.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 #endif()
@@ -272,7 +264,7 @@ endif()
 
 target_link_libraries(libakonadiserver
     akonadi_shared
-    KF5AkonadiPrivate
+    KPim6::AkonadiPrivate
     Qt::Core
     Qt::Network
     Qt::Sql
@@ -285,11 +277,11 @@ set_target_properties(akonadiserver PROPERTIES MACOSX_BUNDLE FALSE)
 set_target_properties(akonadiserver PROPERTIES OUTPUT_NAME akonadiserver)
 target_link_libraries(akonadiserver
     libakonadiserver
-    KF5::CoreAddons
+    KF6::CoreAddons
 )
 
 install(TARGETS akonadiserver
-        ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
+        ${KDE_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
@@ -300,10 +292,14 @@ install(FILES
 
 install(FILES
   search/abstractsearchplugin.h
-  DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiCore/akonadi
+  DESTINATION ${KDE_INSTALL_INCLUDEDIR}/KPim6/AkonadiCore/akonadi
 )
 
 ## DBus XML files
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.freedesktop.Akonadi.DebugInterface.xml
         DESTINATION ${AKONADI_DBUS_INTERFACES_INSTALL_DIR}
 )
+
+#######################################################
+
+add_subdirectory(dbmigrator)

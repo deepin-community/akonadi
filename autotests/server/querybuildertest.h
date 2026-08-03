@@ -4,8 +4,7 @@
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
 
-#ifndef AKONADI_QUERYBUILDERTEST_H
-#define AKONADI_QUERYBUILDERTEST_H
+#pragma once
 
 #undef QT_NO_CAST_FROM_ASCII
 
@@ -28,7 +27,5 @@ private Q_SLOTS:
     void benchQueryBuilder();
 
 private:
-    QList<Akonadi::Server::QueryBuilder> mBuilders;
+    std::vector<Akonadi::Server::QueryBuilder> mBuilders;
 };
-
-#endif

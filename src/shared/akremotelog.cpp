@@ -19,7 +19,7 @@
 #include <QDBusPendingReply>
 #include <QDBusServiceWatcher>
 
-#include <private/instance_p.h>
+#include "private/instance_p.h"
 
 #define AKONADICONSOLE_SERVICE "org.kde.akonadiconsole"
 #define AKONADICONSOLE_LOGGER_PATH "/logger"
@@ -41,7 +41,7 @@ public:
         sInstance = this;
 
         // Don't do remote logging for Akonadi Console because it deadlocks it
-        if (QCoreApplication::applicationName() == QLatin1String("akonadiconsole")) {
+        if (QCoreApplication::applicationName() == QLatin1StringView("akonadiconsole")) {
             return;
         }
 

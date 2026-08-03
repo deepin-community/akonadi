@@ -6,13 +6,8 @@
 
 #include "collectionqueryhelper.h"
 
-#include "connection.h"
 #include "handler.h"
-#include "queryhelper.h"
-#include "storage/querybuilder.h"
 #include "storage/selectquerybuilder.h"
-
-#include <private/imapset_p.h>
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
@@ -33,7 +28,9 @@ void CollectionQueryHelper::remoteIdToQuery(const QStringList &rids, const Comma
 void CollectionQueryHelper::scopeToQuery(const Scope &scope, const CommandContext &context, QueryBuilder &qb)
 {
     if (scope.scope() == Scope::Uid) {
-        QueryHelper::setToQuery(scope.uidSet(), Collection::idFullColumnName(), qb);
+        if (!scope.isEmpty()) {
+            qb.addValueCondition(Collection::idFullColumnName(), Query::In, scope.uidSet());
+        }
     } else if (scope.scope() == Scope::Rid) {
         if (context.collectionId() <= 0 && !context.resource().isValid()) {
             throw HandlerException("Operations based on remote identifiers require a resource or collection context");
@@ -63,7 +60,7 @@ bool CollectionQueryHelper::hasAllowedName(const Collection &collection, const Q
     if (!qb.exec()) {
         return false;
     }
-    const QVector<Collection> result = qb.result();
+    const QList<Collection> result = qb.result();
     if (!result.isEmpty()) {
         return result.first().id() == collection.id();
     }
@@ -87,7 +84,7 @@ bool CollectionQueryHelper::canBeMovedTo(const Collection &collection, const Col
     return hasAllowedName(collection, collection.name(), _parent.id());
 }
 
-Collection CollectionQueryHelper::resolveHierarchicalRID(const QVector<Scope::HRID> &ridChain, Resource::Id resId)
+Collection CollectionQueryHelper::resolveHierarchicalRID(const QList<Scope::HRID> &ridChain, Resource::Id resId)
 {
     if (ridChain.size() < 2) {
         throw HandlerException("Empty or incomplete hierarchical RID chain");
@@ -120,29 +117,4 @@ Collection CollectionQueryHelper::resolveHierarchicalRID(const QVector<Scope::HR
         parentId = result.id();
     }
     return result;
-}
-
-Collection CollectionQueryHelper::singleCollectionFromScope(const Scope &scope, const CommandContext &context)
-{
-    // root
-    if (scope.scope() == Scope::Uid && scope.uidSet().intervals().count() == 1) {
-        const ImapInterval i = scope.uidSet().intervals().at(0);
-        if (!i.size()) { // ### why do we need this hack for 0, shouldn't that be size() == 1?
-            Collection root;
-            root.setId(0);
-            return root;
-        }
-    }
-    SelectQueryBuilder<Collection> qb;
-    scopeToQuery(scope, context, qb);
-    if (!qb.exec()) {
-        throw HandlerException("Unable to execute query");
-    }
-    const Collection::List cols = qb.result();
-    if (cols.isEmpty()) {
-        throw HandlerException("No collection found");
-    } else if (cols.size() > 1) {
-        throw HandlerException("Collection cannot be uniquely identified");
-    }
-    return cols.first();
 }

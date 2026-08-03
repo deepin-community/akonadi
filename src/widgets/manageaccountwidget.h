@@ -1,5 +1,5 @@
 /*
-    SPDX-FileCopyrightText: 2014-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2014-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -19,6 +19,7 @@ namespace Akonadi
 {
 class AgentInstance;
 class ManageAccountWidgetPrivate;
+class AccountActivitiesAbstract;
 
 class AKONADIWIDGETS_EXPORT ManageAccountWidget : public QWidget
 {
@@ -35,21 +36,27 @@ public:
 
     void setSpecialCollectionIdentifier(const QString &identifier);
 
-    Q_REQUIRED_RESULT QStringList mimeTypeFilter() const;
+    [[nodiscard]] QStringList mimeTypeFilter() const;
     void setMimeTypeFilter(const QStringList &mimeTypeFilter);
 
-    Q_REQUIRED_RESULT QStringList capabilityFilter() const;
+    [[nodiscard]] QStringList capabilityFilter() const;
     void setCapabilityFilter(const QStringList &capabilityFilter);
 
-    Q_REQUIRED_RESULT QStringList excludeCapabilities() const;
+    [[nodiscard]] QStringList excludeCapabilities() const;
     void setExcludeCapabilities(const QStringList &excludeCapabilities);
 
     void setItemDelegate(QAbstractItemDelegate *delegate);
 
-    Q_REQUIRED_RESULT QAbstractItemView *view() const;
+    [[nodiscard]] QAbstractItemView *view() const;
 
-    Q_REQUIRED_RESULT QPushButton *addAccountButton() const;
+    [[nodiscard]] QPushButton *addAccountButton() const;
     void disconnectAddAccountButton();
+
+    [[nodiscard]] bool enablePlasmaActivities() const;
+    void setEnablePlasmaActivities(bool newEnablePlasmaActivities);
+
+    [[nodiscard]] AccountActivitiesAbstract *accountActivitiesAbstract() const;
+    void setAccountActivitiesAbstract(AccountActivitiesAbstract *abstract);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -57,14 +64,12 @@ protected:
 public Q_SLOTS:
     void slotAddAccount();
 
-private Q_SLOTS:
-    void slotAccountSelected(const Akonadi::AgentInstance &current);
-    void slotRemoveSelectedAccount();
-    void slotRestartSelectedAccount();
-    void slotModifySelectedAccount();
-
 private:
-    void slotSearchAgentType(const QString &str);
+    AKONADIWIDGETS_NO_EXPORT void slotAccountSelected(const Akonadi::AgentInstance &current);
+    AKONADIWIDGETS_NO_EXPORT void slotRemoveSelectedAccount();
+    AKONADIWIDGETS_NO_EXPORT void slotRestartSelectedAccount();
+    AKONADIWIDGETS_NO_EXPORT void slotModifySelectedAccount();
+    AKONADIWIDGETS_NO_EXPORT void slotSearchAgentType(const QString &str);
 
 private:
     std::unique_ptr<ManageAccountWidgetPrivate> const d;

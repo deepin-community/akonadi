@@ -230,8 +230,14 @@ QString <xsl:value-of select="$className"/>::<xsl:value-of select="@name"/>FullC
 // count records
 int <xsl:value-of select="$className"/>::count(const QString &amp;column, const QVariant &amp;value)
 {
-    return Entity::count&lt;<xsl:value-of select="$className"/>&gt;(column, value);
+    return count(DataStore::self(), column, value);
 }
+
+int <xsl:value-of select="$className"/>::count(DataStore *store, const QString &amp;column, const QVariant &amp;value)
+{
+    return Entity::count&lt;<xsl:value-of select="$className"/>&gt;(store, column, value);
+}
+
 
 // check existence
 <xsl:if test="column[@name = 'id']">
@@ -247,7 +253,12 @@ bool <xsl:value-of select="$className"/>::exists(qint64 id)
 }
 </xsl:if>
 <xsl:if test="column[@name = 'name']">
-bool <xsl:value-of select="$className"/>::exists(const <xsl:value-of select="column[@name = 'name']/@type"/> &amp;name)
+bool <xsl:value-of select="$className"/>::exists(const <xsl:value-of select="column[@name = 'name']/@type" /> &amp;name)
+{
+    return exists(DataStore::self(), name);
+}
+
+bool <xsl:value-of select="$className"/>::exists(DataStore *store, const <xsl:value-of select="column[@name = 'name']/@type"/> &amp;name)
 {
     if (Private::cacheEnabled) {
         QMutexLocker lock(&amp;Private::cacheMutex);
@@ -255,38 +266,57 @@ bool <xsl:value-of select="$className"/>::exists(const <xsl:value-of select="col
             return true;
         }
     }
-    return count(nameColumn(), name) > 0;
+    return count(store, nameColumn(), name) > 0;
 }
 </xsl:if>
 
 
 // result extraction
-QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::extractResult(QSqlQuery &amp;query)
+<xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::extractEntity(const QSqlQuery &amp;query)
 {
-    QVector&lt;<xsl:value-of select="$className"/>&gt; rv;
+    return extractEntity(DataStore::self(), query);
+}
+
+<xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::extractEntity(DataStore *store, const QSqlQuery &amp;query)
+{
+    Q_UNUSED(store);
+    return <xsl:value-of select="$className"/>(
+        <xsl:for-each select="column">
+        (query.isNull(<xsl:value-of select="position() - 1"/>)
+            ? <xsl:call-template name="data-type"/>()
+            <xsl:text>: </xsl:text>
+            <xsl:choose>
+              <xsl:when test="starts-with(@type,'QString')">
+                <xsl:text>Utils::variantToString(query.value(</xsl:text><xsl:value-of select="position() - 1"/><xsl:text>))</xsl:text>
+              </xsl:when>
+              <xsl:when test="starts-with(@type, 'enum')">
+                <xsl:text>static_cast&lt;</xsl:text><xsl:value-of select="@enumType"/>&gt;(query.value(<xsl:value-of select="position() - 1"/><xsl:text>).value&lt;int&gt;())</xsl:text>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>query.value(</xsl:text><xsl:value-of select="position() - 1"/>).value&lt;<xsl:value-of select="@type"/>&gt;<xsl:text>()</xsl:text>
+              </xsl:otherwise>
+            </xsl:choose>
+            <xsl:text>)</xsl:text><xsl:if test="position() != last()"><xsl:text>,</xsl:text></xsl:if>
+          </xsl:for-each>
+    );
+}
+
+
+QList&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::extractResult(QSqlQuery &amp;query)
+{
+    return extractResult(DataStore::self(), query);
+}
+
+QList&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::extractResult(DataStore *store, QSqlQuery &amp;query)
+{
+    Q_UNUSED(store); // only used in specfic case when the entity has a QDateTime column (e.g. PimItem). This will suppress
+                     // "unused parameter" warning for other entities that do not have a QDateTime column.
+    QList&lt;<xsl:value-of select="$className"/>&gt; rv;
     if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
         rv.reserve(query.size());
     }
     while (query.next()) {
-        rv.append(<xsl:value-of select="$className"/>(
-        <xsl:for-each select="column">
-              (query.isNull(<xsl:value-of select="position() - 1"/>)
-                ? <xsl:call-template name="data-type"/>()
-                <xsl:text>: </xsl:text>
-                <xsl:choose>
-                <xsl:when test="starts-with(@type,'QString')">
-                  <xsl:text>Utils::variantToString(query.value(</xsl:text><xsl:value-of select="position() - 1"/><xsl:text>))</xsl:text>
-                </xsl:when>
-                <xsl:when test="starts-with(@type, 'enum')">
-                  <xsl:text>static_cast&lt;</xsl:text><xsl:value-of select="@enumType"/>&gt;(query.value(<xsl:value-of select="position() - 1"/><xsl:text>).value&lt;int&gt;())</xsl:text>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:text>query.value(</xsl:text><xsl:value-of select="position() - 1"/>).value&lt;<xsl:value-of select="@type"/>&gt;<xsl:text>()</xsl:text>
-                </xsl:otherwise>
-              </xsl:choose>
-              <xsl:text>)</xsl:text><xsl:if test="position() != last()"><xsl:text>,</xsl:text></xsl:if>
-            </xsl:for-each>
-            ));
+        rv.append(extractEntity(store, query));
     }
     query.finish();
     return rv;
@@ -296,7 +326,12 @@ QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$classN
 <xsl:if test="column[@name='id']">
 <xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::retrieveById(qint64 id)
 {
+    return retrieveById(DataStore::self(), id);
+}
+<xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::retrieveById(DataStore *store, qint64 id)
+{
     <xsl:call-template name="data-retrieval">
+      <xsl:with-param name="dataStore">store</xsl:with-param>
       <xsl:with-param name="key">id</xsl:with-param>
       <xsl:with-param name="cache">idCache</xsl:with-param>
     </xsl:call-template>
@@ -306,7 +341,13 @@ QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$classN
 <xsl:if test="column[@name = 'name'] and $className != 'PartType'">
 <xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::retrieveByName(const <xsl:value-of select="column[@name = 'name']/@type"/> &amp;name)
 {
+    return retrieveByName(DataStore::self(), name);
+}
+
+<xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::retrieveByName(DataStore *store, const <xsl:value-of select="column[@name = 'name']/@type"/> &amp;name)
+{
     <xsl:call-template name="data-retrieval">
+      <xsl:with-param name="dataStore">store</xsl:with-param>
       <xsl:with-param name="key">name</xsl:with-param>
       <xsl:with-param name="cache">nameCache</xsl:with-param>
     </xsl:call-template>
@@ -314,15 +355,20 @@ QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$classN
 
 <xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::retrieveByNameOrCreate(const <xsl:value-of select="column[@name = 'name']/@type"/> &amp;name)
 {
+  return retrieveByNameOrCreate(DataStore::self(), name);
+}
+
+<xsl:value-of select="$className"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::retrieveByNameOrCreate(DataStore *store, const <xsl:value-of select="column[@name = 'name']/@type"/> &amp;name)
+{
   static QMutex lock;
   QMutexLocker locker(&amp;lock);
-  auto rv = retrieveByName(name);
+  auto rv = retrieveByName(store, name);
   if (rv.isValid()) {
     return rv;
   }
 
   rv.setName(name);
-  if (!rv.insert()) {
+  if (!rv.insert(store)) {
     return <xsl:value-of select="$className"/>();
   }
 
@@ -336,8 +382,14 @@ QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$classN
 <xsl:if test="column[@name = 'name'] and $className = 'PartType'">
 <xsl:text>PartType PartType::retrieveByFQName(const QString &amp;ns, const QString &amp;name)</xsl:text>
 {
+    return retrieveByFQName(DataStore::self(), ns, name);
+}
+
+<xsl:text>PartType PartType::retrieveByFQName(DataStore *store, const QString &amp;ns, const QString &amp;name)</xsl:text>
+{
     const QString fqname = ns + QLatin1Char(':') + name;
     <xsl:call-template name="data-retrieval">
+      <xsl:with-param name="dataStore">store</xsl:with-param>
       <xsl:with-param name="key">ns</xsl:with-param>
       <xsl:with-param name="key2">name</xsl:with-param>
       <xsl:with-param name="lookupKey">fqname</xsl:with-param>
@@ -347,16 +399,21 @@ QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$classN
 
 <xsl:text>PartType PartType::retrieveByFQNameOrCreate(const QString &amp;ns, const QString &amp;name)</xsl:text>
 {
+    return retrieveByFQNameOrCreate(DataStore::self(), ns, name);
+}
+
+<xsl:text>PartType PartType::retrieveByFQNameOrCreate(DataStore *store, const QString &amp;ns, const QString &amp;name)</xsl:text>
+{
   static QMutex lock;
   QMutexLocker locker(&amp;lock);
-  PartType rv = retrieveByFQName(ns, name);
+  PartType rv = retrieveByFQName(store, ns, name);
   if (rv.isValid()) {
     return rv;
   }
 
   rv.setNs(ns);
   rv.setName(name);
-  if (!rv.insert()) {
+  if (!rv.insert(store)) {
     return PartType();
   }
 
@@ -367,31 +424,41 @@ QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$classN
 }
 </xsl:if>
 
-QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::retrieveAll()
+QList&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::retrieveAll()
 {
-    QSqlDatabase db = DataStore::self()->database();
+    return retrieveAll(DataStore::self());
+}
+
+QList&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::retrieveAll(DataStore *store)
+{
+    QSqlDatabase db = store->database();
     if (!db.isOpen()) {
         return {};
     }
 
-    QueryBuilder qb(tableName(), QueryBuilder::Select);
+    QueryBuilder qb(store, tableName(), QueryBuilder::Select);
     qb.addColumns(columnNames());
     if (!qb.exec()) {
         qCWarning(AKONADISERVER_LOG) &lt;&lt; "Error during selection of all records from table" &lt;&lt; tableName()
                                      &lt;&lt; qb.query().lastError().text() &lt;&lt; qb.query().lastQuery();
         return {};
     }
-    return extractResult(qb.query());
+    return extractResult(store, qb.query());
 }
 
-QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::retrieveFiltered(const QString &amp;key, const QVariant &amp;value)
+QList&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::retrieveFiltered(const QString &amp;key, const QVariant &amp;value)
 {
-    QSqlDatabase db = DataStore::self()->database();
+    return retrieveFiltered(DataStore::self(), key, value);
+}
+
+QList&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$className"/>::retrieveFiltered(DataStore *store, const QString &amp;key, const QVariant &amp;value)
+{
+    QSqlDatabase db = store->database();
     if (!db.isOpen()) {
         return {};
     }
 
-    SelectQueryBuilder&lt;<xsl:value-of select="$className"/>&gt; qb;
+    SelectQueryBuilder&lt;<xsl:value-of select="$className"/>&gt; qb(store);
     if (value.isNull()) {
         qb.addValueCondition(key, Query::Is, QVariant());
     } else {
@@ -408,10 +475,16 @@ QVector&lt;<xsl:value-of select="$className"/>&gt; <xsl:value-of select="$classN
 
 // data retrieval for referenced tables
 <xsl:for-each select="column[@refTable != '']">
-<xsl:variable name="method-name"><xsl:call-template name="method-name-n1"/></xsl:variable>
+<xsl:variable name="method-name"><xsl:call-template name="method-name-n1"><xsl:with-param name="table" select="@refTable"/></xsl:call-template></xsl:variable>
+
 <xsl:value-of select="@refTable"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::<xsl:value-of select="$method-name"/>() const
 {
-    return <xsl:value-of select="@refTable"/>::retrieveById(<xsl:value-of select="@name"/>());
+    return <xsl:value-of select="$method-name"/>(DataStore::self());
+}
+
+<xsl:value-of select="@refTable"/><xsl:text> </xsl:text><xsl:value-of select="$className"/>::<xsl:value-of select="$method-name"/>(DataStore *store) const
+{
+    return <xsl:value-of select="@refTable"/>::retrieveById(store, <xsl:value-of select="@name"/>());
 }
 
 void <xsl:value-of select="$className"/>::
@@ -425,9 +498,14 @@ void <xsl:value-of select="$className"/>::
 
 // data retrieval for inverse referenced tables
 <xsl:for-each select="reference">
-QVector&lt;<xsl:value-of select="@table"/>&gt; <xsl:value-of select="$className"/>::<xsl:value-of select="@name"/>() const
+QList&lt;<xsl:value-of select="@table"/>&gt; <xsl:value-of select="$className"/>::<xsl:value-of select="@name"/>() const
 {
-    return <xsl:value-of select="@table"/>::retrieveFiltered(<xsl:value-of select="@table"/>::<xsl:value-of select="@key"/>Column(), id());
+    return <xsl:value-of select="@name"/>(DataStore::self());
+}
+
+QList&lt;<xsl:value-of select="@table"/>&gt; <xsl:value-of select="$className"/>::<xsl:value-of select="@name"/>(DataStore *store) const
+{
+    return <xsl:value-of select="@table"/>::retrieveFiltered(store, <xsl:value-of select="@table"/>::<xsl:value-of select="@key"/>Column(), id());
 }
 </xsl:for-each>
 
@@ -436,16 +514,22 @@ QVector&lt;<xsl:value-of select="@table"/>&gt; <xsl:value-of select="$className"
 <xsl:variable name="relationName"><xsl:value-of select="@table1"/><xsl:value-of select="@table2"/>Relation</xsl:variable>
 <xsl:variable name="rightSideClass"><xsl:value-of select="@table2"/></xsl:variable>
 <xsl:variable name="rightSideEntity"><xsl:value-of select="@table2"/></xsl:variable>
+<xsl:variable name="methodName"><xsl:call-template name="method-name-n1"><xsl:with-param name="table" select="@table2"/></xsl:call-template>s</xsl:variable>
 
 // data retrieval for n:m relations
-QVector&lt;<xsl:value-of select="$rightSideClass"/>&gt; <xsl:value-of select="$className"/>::<xsl:value-of select="concat(translate(substring(@table2,1,1),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'), substring(@table2,2))"/>s() const
+QList&lt;<xsl:value-of select="$rightSideClass"/>&gt; <xsl:value-of select="$className"/>::<xsl:value-of select="$methodName"/>() const
 {
-    QSqlDatabase db = DataStore::self()->database();
+    return <xsl:value-of select="$methodName"/>(DataStore::self());
+}
+
+QList&lt;<xsl:value-of select="$rightSideClass"/>&gt; <xsl:value-of select="$className"/>::<xsl:value-of select="$methodName"/>(DataStore *store) const
+{
+    QSqlDatabase db = store->database();
     if (!db.isOpen()) {
         return {};
     }
 
-    QueryBuilder qb(<xsl:value-of select="$rightSideClass"/>::tableName(), QueryBuilder::Select);
+    QueryBuilder qb(store, <xsl:value-of select="$rightSideClass"/>::tableName(), QueryBuilder::Select);
     static const QStringList columns = {
     <xsl:for-each select="/database/table[@name = $rightSideEntity]/column">
         <xsl:value-of select="$rightSideClass"/>::<xsl:value-of select="@name"/>FullColumnName()
@@ -464,48 +548,88 @@ QVector&lt;<xsl:value-of select="$rightSideClass"/>&gt; <xsl:value-of select="$c
         return {};
     }
 
-    return <xsl:value-of select="$rightSideClass"/>::extractResult(qb.query());
+    return <xsl:value-of select="$rightSideClass"/>::extractResult(store, qb.query());
 }
 
 // manipulate n:m relations
 bool <xsl:value-of select="$className"/>::relatesTo<xsl:value-of select="@table2"/>(const <xsl:value-of select="$rightSideClass"/> &amp;value) const
 {
-    return Entity::relatesTo&lt;<xsl:value-of select="$relationName"/>&gt;(id(), value.id());
+    return relatesTo<xsl:value-of select="@table2"/>(DataStore::self(), value);
+}
+
+bool <xsl:value-of select="$className"/>::relatesTo<xsl:value-of select="@table2"/>(DataStore *store, const <xsl:value-of select="$rightSideClass"/> &amp;value) const
+{
+    return Entity::relatesTo&lt;<xsl:value-of select="$relationName"/>&gt;(store, id(), value.id());
 }
 
 bool <xsl:value-of select="$className"/>::relatesTo<xsl:value-of select="@table2"/>(qint64 leftId, qint64 rightId)
 {
-    return Entity::relatesTo&lt;<xsl:value-of select="$relationName"/>&gt;(leftId, rightId);
+    return relatesTo<xsl:value-of select="@table2"/>(DataStore::self(), leftId, rightId);
+}
+
+bool <xsl:value-of select="$className"/>::relatesTo<xsl:value-of select="@table2"/>(DataStore *store, qint64 leftId, qint64 rightId)
+{
+    return Entity::relatesTo&lt;<xsl:value-of select="$relationName"/>&gt;(store, leftId, rightId);
 }
 
 bool <xsl:value-of select="$className"/>::add<xsl:value-of select="@table2"/>(const <xsl:value-of select="$rightSideClass"/> &amp;value) const
 {
-    return Entity::addToRelation&lt;<xsl:value-of select="$relationName"/>&gt;(id(), value.id());
+    return add<xsl:value-of select="@table2"/>(DataStore::self(), value);
+}
+
+bool <xsl:value-of select="$className"/>::add<xsl:value-of select="@table2"/>(DataStore *store, const <xsl:value-of select="$rightSideClass"/> &amp;value) const
+{
+    return Entity::addToRelation&lt;<xsl:value-of select="$relationName"/>&gt;(store, id(), value.id());
 }
 
 bool <xsl:value-of select="$className"/>::add<xsl:value-of select="@table2"/>(qint64 leftId, qint64 rightId)
 {
-    return Entity::addToRelation&lt;<xsl:value-of select="$relationName"/>&gt;(leftId, rightId);
+    return add<xsl:value-of select="@table2"/>(DataStore::self(), leftId, rightId);
+}
+
+bool <xsl:value-of select="$className"/>::add<xsl:value-of select="@table2"/>(DataStore *store, qint64 leftId, qint64 rightId)
+{
+    return Entity::addToRelation&lt;<xsl:value-of select="$relationName"/>&gt;(store, leftId, rightId);
 }
 
 bool <xsl:value-of select="$className"/>::remove<xsl:value-of select="@table2"/>(const <xsl:value-of select="$rightSideClass"/> &amp;value) const
 {
-    return Entity::removeFromRelation&lt;<xsl:value-of select="$relationName"/>&gt;(id(), value.id());
+    return remove<xsl:value-of select="@table2"/>(DataStore::self(), value);
+}
+
+bool <xsl:value-of select="$className"/>::remove<xsl:value-of select="@table2"/>(DataStore *store, const <xsl:value-of select="$rightSideClass"/> &amp;value) const
+{
+    return Entity::removeFromRelation&lt;<xsl:value-of select="$relationName"/>&gt;(store, id(), value.id());
 }
 
 bool <xsl:value-of select="$className"/>::remove<xsl:value-of select="@table2"/>(qint64 leftId, qint64 rightId)
 {
-    return Entity::removeFromRelation&lt;<xsl:value-of select="$relationName"/>&gt;(leftId, rightId);
+    return remove<xsl:value-of select="@table2"/>(DataStore::self(), leftId, rightId);
+}
+
+bool <xsl:value-of select="$className"/>::remove<xsl:value-of select="@table2"/>(DataStore *store, qint64 leftId, qint64 rightId)
+{
+    return Entity::removeFromRelation&lt;<xsl:value-of select="$relationName"/>&gt;(store, leftId, rightId);
 }
 
 bool <xsl:value-of select="$className"/>::clear<xsl:value-of select="@table2"/>s() const
 {
-    return Entity::clearRelation&lt;<xsl:value-of select="$relationName"/>&gt;(id());
+    return clear<xsl:value-of select="@table2"/>s(DataStore::self());
+}
+
+bool <xsl:value-of select="$className"/>::clear<xsl:value-of select="@table2"/>s(DataStore *store) const
+{
+    return Entity::clearRelation&lt;<xsl:value-of select="$relationName"/>&gt;(store, id());
 }
 
 bool <xsl:value-of select="$className"/>::clear<xsl:value-of select="@table2"/>s(qint64 id)
 {
-    return Entity::clearRelation&lt;<xsl:value-of select="$relationName"/>&gt;(id);
+    return clear<xsl:value-of select="@table2"/>s(DataStore::self(), id);
+}
+
+bool <xsl:value-of select="$className"/>::clear<xsl:value-of select="@table2"/>s(DataStore *store, qint64 id)
+{
+    return Entity::clearRelation&lt;<xsl:value-of select="$relationName"/>&gt;(store, id);
 }
 
 </xsl:for-each>
@@ -535,14 +659,19 @@ QDebug &amp;operator&lt;&lt;(QDebug &amp;d, const <xsl:value-of select="$classNa
 // inserting new data
 bool <xsl:value-of select="$className"/>::insert(qint64* insertId)
 {
-    QSqlDatabase db = DataStore::self()->database();
+    return insert(DataStore::self(), insertId);
+}
+
+bool <xsl:value-of select="$className"/>::insert(DataStore *store, qint64* insertId)
+{
+    QSqlDatabase db = store->database();
     if (!db.isOpen()) {
         return false;
     }
 
-    QueryBuilder qb(tableName(), QueryBuilder::Insert);
+    QueryBuilder qb(store, tableName(), QueryBuilder::Insert);
     <xsl:if test="@identificationColumn">
-    qb.setIdentificationColumn(QLatin1String("<xsl:value-of select="@identificationColumn"/>"));
+    qb.setIdentificationColumn(QLatin1StringView("<xsl:value-of select="@identificationColumn"/>"));
     </xsl:if>
     <xsl:for-each select="column[@name != 'id']">
       <xsl:variable name="refColumn"><xsl:value-of select="@refColumn"/></xsl:variable>
@@ -589,13 +718,18 @@ bool <xsl:value-of select="$className"/>::hasPendingChanges() const
 // update existing data
 bool <xsl:value-of select="$className"/>::update()
 {
+    return update(DataStore::self());
+}
+
+bool <xsl:value-of select="$className"/>::update(DataStore *store)
+{
     invalidateCache();
-    QSqlDatabase db = DataStore::self()->database();
+    QSqlDatabase db = store->database();
     if (!db.isOpen()) {
         return false;
     }
 
-    QueryBuilder qb(tableName(), QueryBuilder::Update);
+    QueryBuilder qb(store, tableName(), QueryBuilder::Update);
 
     <xsl:for-each select="column[@name != 'id']">
     <xsl:variable name="refColumn"><xsl:value-of select="@refColumn"/></xsl:variable>
@@ -634,20 +768,35 @@ bool <xsl:value-of select="$className"/>::update()
 // delete records
 bool <xsl:value-of select="$className"/>::remove(const QString &amp;column, const QVariant &amp;value)
 {
+    return remove(DataStore::self(), column, value);
+}
+
+bool <xsl:value-of select="$className"/>::remove(DataStore *store, const QString &amp;column, const QVariant &amp;value)
+{
     invalidateCompleteCache();
-    return Entity::remove&lt;<xsl:value-of select="$className"/>&gt;(column, value);
+    return Entity::remove&lt;<xsl:value-of select="$className"/>&gt;(store, column, value);
 }
 
 <xsl:if test="column[@name = 'id']">
 bool <xsl:value-of select="$className"/>::remove()
 {
+    return remove(DataStore::self());
+}
+
+bool <xsl:value-of select="$className"/>::remove(DataStore *store)
+{
     invalidateCache();
-    return Entity::remove&lt;<xsl:value-of select="$className"/>&gt;(idColumn(), id());
+    return Entity::remove&lt;<xsl:value-of select="$className"/>&gt;(store, idColumn(), id());
 }
 
 bool <xsl:value-of select="$className"/>::remove(qint64 id)
 {
-    return remove(idColumn(), id);
+    return remove(DataStore::self(), id);
+}
+
+bool <xsl:value-of select="$className"/>::remove(DataStore *store, qint64 id)
+{
+    return remove(store, idColumn(), id);
 }
 </xsl:if>
 

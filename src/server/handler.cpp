@@ -5,7 +5,7 @@
  ***************************************************************************/
 #include "handler.h"
 
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 #include "handler/collectioncopyhandler.h"
 #include "handler/collectioncreatehandler.h"
@@ -23,9 +23,6 @@
 #include "handler/itemmovehandler.h"
 #include "handler/loginhandler.h"
 #include "handler/logouthandler.h"
-#include "handler/relationfetchhandler.h"
-#include "handler/relationmodifyhandler.h"
-#include "handler/relationremovehandler.h"
 #include "handler/resourceselecthandler.h"
 #include "handler/searchcreatehandler.h"
 #include "handler/searchhandler.h"
@@ -124,13 +121,6 @@ std::unique_ptr<Handler> Handler::findHandlerForCommandAuthenticated(Protocol::C
     case Protocol::Command::ModifyTag:
         return std::make_unique<TagModifyHandler>(akonadi);
 
-    case Protocol::Command::FetchRelations:
-        return std::make_unique<RelationFetchHandler>(akonadi);
-    case Protocol::Command::ModifyRelation:
-        return std::make_unique<RelationModifyHandler>(akonadi);
-    case Protocol::Command::RemoveRelations:
-        return std::make_unique<RelationRemoveHandler>(akonadi);
-
     case Protocol::Command::SelectResource:
         return std::make_unique<ResourceSelectHandler>(akonadi);
 
@@ -148,9 +138,6 @@ std::unique_ptr<Handler> Handler::findHandlerForCommandAuthenticated(Protocol::C
         return {};
     case Protocol::Command::TagChangeNotification:
         Q_ASSERT_X(cmd != Protocol::Command::TagChangeNotification, __FUNCTION__, "TagChangeNotification command is not allowed on this connection");
-        return {};
-    case Protocol::Command::RelationChangeNotification:
-        Q_ASSERT_X(cmd != Protocol::Command::RelationChangeNotification, __FUNCTION__, "RelationChangeNotification command is not allowed on this connection");
         return {};
     case Protocol::Command::SubscriptionChangeNotification:
         Q_ASSERT_X(cmd != Protocol::Command::SubscriptionChangeNotification,
@@ -243,7 +230,9 @@ bool Handler::failureResponse(const QString &failureMessage)
     return false;
 }
 
-bool Handler::checkScopeConstraints(const Akonadi::Scope &scope, int permittedScopes)
+bool Handler::checkScopeConstraints(const Scope &scope, const QVector<Scope::SelectionScope> &permittedScopes) const
 {
-    return scope.scope() & permittedScopes;
+    return std::any_of(permittedScopes.cbegin(), permittedScopes.cend(), [&scope](Scope::SelectionScope permittedScope) {
+        return scope.scope() == permittedScope;
+    });
 }

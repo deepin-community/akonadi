@@ -1,0 +1,39 @@
+From 3416562fbac8184ee881c81cc6710c1effcaa982 Mon Sep 17 00:00:00 2001
+From: Martin Koller <kollix@aon.at>
+Date: Mon, 19 May 2025 12:14:59 +0200
+Subject: [PATCH] fix batch query operation really completing full set
+
+Fixes a porting error which led to only doing a query for the first
+batch of ids instead of continuing the whole id set
+
+BUG: 494807
+FIXED-IN: 25.04.2
+---
+ src/server/handler/collectionfetchhandler.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/server/handler/collectionfetchhandler.cpp b/src/server/handler/collectionfetchhandler.cpp
+index c8b4a78e6..8f87ba2c3 100644
+--- a/src/server/handler/collectionfetchhandler.cpp
++++ b/src/server/handler/collectionfetchhandler.cpp
+@@ -401,7 +401,7 @@ void CollectionFetchHandler::retrieveCollections(const Collection &topParent, in
+         QStringList mimeTypes;
+         {
+             // Get new query if necessary
+-            if (!mimeTypeQb && mimetypeQueryStart < mimeTypeIds.size()) {
++            if ((!mimeTypeQb || !mimeTypeQb->query().isValid()) && mimetypeQueryStart < mimeTypeIds.size()) {
+                 const QVariantList ids = mimeTypeIds.mid(mimetypeQueryStart, querySizeLimit);
+                 mimetypeQueryStart += querySizeLimit;
+                 mimeTypeQb = getMimeTypeQuery(ids);
+@@ -425,7 +425,7 @@ void CollectionFetchHandler::retrieveCollections(const Collection &topParent, in
+         CollectionAttribute::List attributes;
+         {
+             // Get new query if necessary
+-            if (!attributeQb && attributeQueryStart < attributeIds.size()) {
++            if ((!attributeQb || !attributeQb->query().isValid()) && attributeQueryStart < attributeIds.size()) {
+                 const QVariantList ids = attributeIds.mid(attributeQueryStart, querySizeLimit);
+                 attributeQueryStart += querySizeLimit;
+                 attributeQb = getAttributeQuery(ids, QSet<QByteArray>());
+-- 
+GitLab
+

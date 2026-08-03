@@ -39,7 +39,7 @@ public:
     /**
      * Returns whether this collection is supposed to be indexed at all.
      */
-    Q_REQUIRED_RESULT bool indexingEnabled() const;
+    [[nodiscard]] bool indexingEnabled() const;
 
     /**
      * Sets whether this collection should be indexed at all.
@@ -48,9 +48,9 @@ public:
     void setIndexingEnabled(bool enable);
 
     /// @cond PRIVATE
-    QByteArray type() const override;
+    [[nodiscard]] QByteArray type() const override;
     Attribute *clone() const override;
-    QByteArray serialized() const override;
+    [[nodiscard]] QByteArray serialized() const override;
     void deserialize(const QByteArray &data) override;
     /// @endcond
 

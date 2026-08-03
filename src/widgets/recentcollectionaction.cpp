@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2011-2022 Laurent Montel <montel@kde.org>
+ * SPDX-FileCopyrightText: 2011-2024 Laurent Montel <montel@kde.org>
  *
  * SPDX-License-Identifier: LGPL-2.0-or-later
  */
@@ -36,10 +36,10 @@ RecentCollectionAction::RecentCollectionAction(Akonadi::StandardActionManager::T
                                                const QAbstractItemModel *model,
                                                QMenu *menu)
     : QObject(menu)
+    , mListRecentCollection(readConfig())
     , mMenu(menu)
     , mModel(model)
 {
-    mListRecentCollection = readConfig();
     mRecentAction = mMenu->addAction(i18n("Recent Folder"));
     mMenu->addSeparator();
     fillRecentCollection(type, selectedCollectionsList);

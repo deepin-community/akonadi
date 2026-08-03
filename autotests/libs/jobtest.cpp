@@ -4,7 +4,7 @@
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
 
-#include <qtest_akonadi.h>
+#include "qtest_akonadi.h"
 
 #include "fakesession.h"
 #include "job.h"
@@ -96,16 +96,26 @@ private Q_SLOTS:
         QSignalSpy job2DoneSpy(job2, &KJob::result);
         QVERIFY(job2DoneSpy.isValid());
 
-        QCOMPARE(sessionQueueSpy.size(), 2);
+        auto job3 = new FakeJob(&session);
+        QSignalSpy job3DoneSpy(job3, &KJob::result);
+        QVERIFY(job3DoneSpy.isValid());
+
+        auto job4 = new FakeJob(&session);
+        QSignalSpy job4DoneSpy(job4, &KJob::result);
+        QVERIFY(job4DoneSpy.isValid());
+
+        QCOMPARE(sessionQueueSpy.size(), 4);
         QSignalSpy job1AboutToStartSpy(job1, &Job::aboutToStart);
         QVERIFY(job1AboutToStartSpy.wait());
 
-        // one job running, one queued, now kill the session
+        // one job running, 3 queued, now kill the session
         session.clear();
         QVERIFY(sessionReconnectSpy.wait());
 
         QCOMPARE(job1DoneSpy.size(), 1);
         QCOMPARE(job2DoneSpy.size(), 1);
+        QCOMPARE(job3DoneSpy.size(), 1);
+        QCOMPARE(job4DoneSpy.size(), 1);
         QCOMPARE(sessionReconnectSpy.size(), 2);
     }
 
@@ -188,19 +198,19 @@ private Q_SLOTS:
         QSignalSpy sessionReconnectSpy(&session, &Session::reconnected);
 
         auto parentJob = new FakeJob(&session);
-        parentJob->setObjectName(QStringLiteral("parentJob"));
+        parentJob->setObjectName(QLatin1StringView("parentJob"));
         QSignalSpy parentJobDoneSpy(parentJob, &KJob::result);
 
         auto subjob = new FakeJob(parentJob);
-        subjob->setObjectName(QStringLiteral("subjob"));
+        subjob->setObjectName(QLatin1StringView("subjob"));
         QSignalSpy subjobDoneSpy(subjob, &KJob::result);
 
         auto subjob2 = new FakeJob(parentJob);
-        subjob2->setObjectName(QStringLiteral("subjob2"));
+        subjob2->setObjectName(QLatin1StringView("subjob2"));
         QSignalSpy subjob2DoneSpy(subjob2, &KJob::result);
 
         auto nextJob = new FakeJob(&session);
-        nextJob->setObjectName(QStringLiteral("nextJob"));
+        nextJob->setObjectName(QLatin1StringView("nextJob"));
         QSignalSpy nextJobDoneSpy(nextJob, &KJob::result);
 
         QCOMPARE(sessionQueueSpy.size(), 2);

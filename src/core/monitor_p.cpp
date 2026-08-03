@@ -18,9 +18,8 @@
 #include "notificationsubscriber.h"
 #include "protocolhelper_p.h"
 #include "session.h"
-#include "vectorhelper.h"
 
-#include <shared/akranges.h>
+#include "shared/akranges.h"
 
 #include <utility>
 
@@ -279,8 +278,7 @@ void MonitorPrivate::checkBatchSupport(const Protocol::ChangeNotificationPtr &ms
         needsSplit = isBatch && !batchSupported && hasListeners(&Monitor::itemChanged);
         return;
     case Protocol::ItemChangeNotification::ModifyTags:
-    case Protocol::ItemChangeNotification::ModifyRelations:
-        // Tags and relations were added after batch notifications, so they are always supported
+        // Tags were added after batch notifications, so they are always supported
         batchSupported = true;
         needsSplit = false;
         return;
@@ -360,10 +358,6 @@ bool MonitorPrivate::ensureDataAvailable(const Protocol::ChangeNotificationPtr &
                 return false;
             }
         }
-        return true;
-    }
-
-    if (msg->type() == Protocol::Command::RelationChangeNotification) {
         return true;
     }
 
@@ -456,13 +450,6 @@ bool MonitorPrivate::ensureDataAvailable(const Protocol::ChangeNotificationPtr &
             return allCached;
         }
 
-        // Make sure all tags for ModifyTags operation are in cache too
-        if (itemNtf.operation() == Protocol::ItemChangeNotification::ModifyTags) {
-            if (!tagCache->ensureCached((itemNtf.addedTags() + itemNtf.removedTags()) | Actions::toQList, mTagFetchScope)) {
-                return false;
-            }
-        }
-
         if (itemNtf.metadata().contains("FETCH_ITEM") || itemNtf.mustRetrieve()) {
             if (!itemCache->ensureCached(Protocol::ChangeNotification::itemsToUids(itemNtf.items()), mItemFetchScope)) {
                 return false;
@@ -499,10 +486,6 @@ bool MonitorPrivate::emitNotification(const Protocol::ChangeNotificationPtr &msg
             tag = ProtocolHelper::parseTag(tagNtf.tag());
         }
         someoneWasListening = emitTagNotification(tagNtf, tag);
-    } else if (msg->type() == Protocol::Command::RelationChangeNotification) {
-        const auto &relNtf = Protocol::cmdCast<Protocol::RelationChangeNotification>(msg);
-        const Relation rel = ProtocolHelper::parseRelationFetchResult(relNtf.relation());
-        someoneWasListening = emitRelationNotification(relNtf, rel);
     } else if (msg->type() == Protocol::Command::CollectionChangeNotification) {
         const auto &colNtf = Protocol::cmdCast<Protocol::CollectionChangeNotification>(msg);
         const Collection parent = collectionCache->retrieve(colNtf.parentCollection());
@@ -527,20 +510,21 @@ bool MonitorPrivate::emitNotification(const Protocol::ChangeNotificationPtr &msg
             destParent = collectionCache->retrieve(itemNtf.parentDestCollection());
         }
         const bool fetched = itemNtf.metadata().contains("FETCH_ITEM") || itemNtf.mustRetrieve();
-        // For removals this will retrieve an empty set. We'll deal with that in emitItemNotification
         Item::List items;
         if (fetched && fetchItems()) {
             items = itemCache->retrieve(Protocol::ChangeNotification::itemsToUids(itemNtf.items()));
-        } else {
+        }
+
+        // For removals we will likely retrieve an empty item set, so we just reconstruct the items from the notification.
+        if (items.empty()) {
             const auto &ntfItems = itemNtf.items();
             items.reserve(ntfItems.size());
             for (const auto &ntfItem : ntfItems) {
                 items.push_back(ProtocolHelper::parseItemFetchResult(ntfItem, &mItemFetchScope));
             }
         }
-        // It is possible that the retrieval fails also in the non-removal case (e.g. because the item was meanwhile removed while
-        // the changerecorder stored the notification or the notification was in the queue). In order to drop such invalid notifications we have to ignore them.
-        if (!items.isEmpty() || itemNtf.operation() == Protocol::ItemChangeNotification::Remove || !fetchItems()) {
+
+        if (!items.isEmpty()) {
             someoneWasListening = emitItemsNotification(itemNtf, items, parent, destParent);
         }
     } else if (msg->type() == Protocol::Command::SubscriptionChangeNotification) {
@@ -565,8 +549,6 @@ bool MonitorPrivate::emitNotification(const Protocol::ChangeNotificationPtr &msg
                     return Monitor::Collections;
                 case Protocol::ModifySubscriptionCommand::TagChanges:
                     return Monitor::Tags;
-                case Protocol::ModifySubscriptionCommand::RelationChanges:
-                    return Monitor::Relations;
                 case Protocol::ModifySubscriptionCommand::SubscriptionChanges:
                     return Monitor::Subscribers;
                 case Protocol::ModifySubscriptionCommand::ChangeNotifications:
@@ -601,9 +583,6 @@ bool MonitorPrivate::emitNotification(const Protocol::ChangeNotificationPtr &msg
             break;
         case Protocol::Command::TagChangeNotification:
             notification.setType(ChangeNotification::Tag);
-            break;
-        case Protocol::Command::RelationChangeNotification:
-            notification.setType(ChangeNotification::Relation);
             break;
         case Protocol::Command::SubscriptionChangeNotification:
             notification.setType(ChangeNotification::Subscription);
@@ -672,8 +651,8 @@ void MonitorPrivate::slotFlushRecentlyChangedCollections()
 
 int MonitorPrivate::translateAndCompress(QQueue<Protocol::ChangeNotificationPtr> &notificationQueue, const Protocol::ChangeNotificationPtr &msg)
 {
-    // Always handle tags and relations
-    if (msg->type() == Protocol::Command::TagChangeNotification || msg->type() == Protocol::Command::RelationChangeNotification) {
+    // Always handle tags
+    if (msg->type() == Protocol::Command::TagChangeNotification) {
         notificationQueue.enqueue(msg);
         return 1;
     }
@@ -690,6 +669,9 @@ int MonitorPrivate::translateAndCompress(QQueue<Protocol::ChangeNotificationPtr>
 
     if (msg->type() == Protocol::Command::ItemChangeNotification) {
         const auto &itemNtf = Protocol::cmdCast<Protocol::ItemChangeNotification>(msg);
+        if (itemNtf.items().empty()) {
+            return 0;
+        }
         if (useRefCounting) {
             sourceWatched = isMonitored(itemNtf.parentCollection());
             destWatched = isMonitored(itemNtf.parentDestCollection());
@@ -850,7 +832,6 @@ void MonitorPrivate::handleCommands()
             case Protocol::Command::ItemChangeNotification:
             case Protocol::Command::CollectionChangeNotification:
             case Protocol::Command::TagChangeNotification:
-            case Protocol::Command::RelationChangeNotification:
             case Protocol::Command::SubscriptionChangeNotification:
             case Protocol::Command::DebugChangeNotification:
                 slotNotify(command.staticCast<Protocol::ChangeNotification>());
@@ -993,20 +974,6 @@ void MonitorPrivate::dispatchNotifications()
     }
 }
 
-static Relation::List extractRelations(const QSet<Protocol::ItemChangeNotification::Relation> &rels)
-{
-    Relation::List relations;
-    if (rels.isEmpty()) {
-        return relations;
-    }
-
-    relations.reserve(rels.size());
-    for (const auto &rel : rels) {
-        relations.push_back(Relation(rel.type.toLatin1(), Akonadi::Item(rel.leftId), Akonadi::Item(rel.rightId)));
-    }
-    return relations;
-}
-
 bool MonitorPrivate::emitItemsNotification(const Protocol::ItemChangeNotification &msg,
                                            const Item::List &items,
                                            const Collection &collection,
@@ -1026,18 +993,17 @@ bool MonitorPrivate::emitItemsNotification(const Protocol::ItemChangeNotificatio
         }
     }
 
-    Relation::List addedRelations;
-    Relation::List removedRelations;
-    if (msg.operation() == Protocol::ItemChangeNotification::ModifyRelations) {
-        addedRelations = extractRelations(msg.addedRelations());
-        removedRelations = extractRelations(msg.removedRelations());
-    }
-
-    Tag::List addedTags;
-    Tag::List removedTags;
+    QSet<Tag> addedTags;
+    QSet<Tag> removedTags;
     if (msg.operation() == Protocol::ItemChangeNotification::ModifyTags) {
-        addedTags = tagCache->retrieve(msg.addedTags() | Actions::toQList);
-        removedTags = tagCache->retrieve(msg.removedTags() | Actions::toQList);
+        addedTags.reserve(msg.addedTags().size());
+        for (const auto &tagProto : msg.addedTags()) {
+            addedTags.insert(ProtocolHelper::parseTag(tagProto));
+        }
+        removedTags.reserve(msg.removedTags().size());
+        for (const auto &tagProto : msg.removedTags()) {
+            removedTags.insert(ProtocolHelper::parseTag(tagProto));
+        }
     }
 
     Item::List its = items;
@@ -1073,9 +1039,7 @@ bool MonitorPrivate::emitItemsNotification(const Protocol::ItemChangeNotificatio
         handled |= emitToListeners(&Monitor::itemsUnlinked, its, col);
         return handled;
     case Protocol::ItemChangeNotification::ModifyTags:
-        return emitToListeners(&Monitor::itemsTagsChanged, its, addedTags | Actions::toQSet, removedTags | Actions::toQSet);
-    case Protocol::ItemChangeNotification::ModifyRelations:
-        return emitToListeners(&Monitor::itemsRelationsChanged, its, addedRelations, removedRelations);
+        return emitToListeners(&Monitor::itemsTagsChanged, its, addedTags, removedTags);
     default:
         qCDebug(AKONADICORE_LOG) << "Unknown operation type" << msg.operation() << "in item change notification";
         return false;
@@ -1148,23 +1112,6 @@ bool MonitorPrivate::emitTagNotification(const Protocol::TagChangeNotification &
     }
 }
 
-bool MonitorPrivate::emitRelationNotification(const Protocol::RelationChangeNotification &msg, const Relation &relation)
-{
-    if (!relation.isValid()) {
-        return false;
-    }
-
-    switch (msg.operation()) {
-    case Protocol::RelationChangeNotification::Add:
-        return emitToListeners(&Monitor::relationAdded, relation);
-    case Protocol::RelationChangeNotification::Remove:
-        return emitToListeners(&Monitor::relationRemoved, relation);
-    default:
-        qCDebug(AKONADICORE_LOG) << "Unknown operation type" << msg.operation() << "in tag change notification";
-        return false;
-    }
-}
-
 bool MonitorPrivate::emitSubscriptionChangeNotification(const Protocol::SubscriptionChangeNotification &msg, const Akonadi::NotificationSubscriber &subscriber)
 {
     if (!subscriber.isValid()) {
@@ -1222,7 +1169,6 @@ void MonitorPrivate::invalidateCaches(const Protocol::ChangeNotificationPtr &msg
         case Protocol::ItemChangeNotification::Modify:
         case Protocol::ItemChangeNotification::ModifyFlags:
         case Protocol::ItemChangeNotification::ModifyTags:
-        case Protocol::ItemChangeNotification::ModifyRelations:
         case Protocol::ItemChangeNotification::Move:
             itemCache->update(Protocol::ChangeNotification::itemsToUids(itemNtf.items()), mItemFetchScope);
             break;
@@ -1331,8 +1277,6 @@ Protocol::ModifySubscriptionCommand::ChangeType MonitorPrivate::monitorTypeToPro
         return Protocol::ModifySubscriptionCommand::ItemChanges;
     case Monitor::Tags:
         return Protocol::ModifySubscriptionCommand::TagChanges;
-    case Monitor::Relations:
-        return Protocol::ModifySubscriptionCommand::RelationChanges;
     case Monitor::Subscribers:
         return Protocol::ModifySubscriptionCommand::SubscriptionChanges;
     case Monitor::Notifications:
@@ -1355,7 +1299,6 @@ void MonitorPrivate::updateListeners(QMetaMethod signal, ListenerAction action)
     UPDATE_LISTENERS(&Monitor::itemChanged)
     UPDATE_LISTENERS(&Monitor::itemsFlagsChanged)
     UPDATE_LISTENERS(&Monitor::itemsTagsChanged)
-    UPDATE_LISTENERS(&Monitor::itemsRelationsChanged)
     UPDATE_LISTENERS(&Monitor::itemMoved)
     UPDATE_LISTENERS(&Monitor::itemsMoved)
     UPDATE_LISTENERS(&Monitor::itemAdded)
@@ -1378,9 +1321,6 @@ void MonitorPrivate::updateListeners(QMetaMethod signal, ListenerAction action)
     UPDATE_LISTENERS(&Monitor::tagAdded)
     UPDATE_LISTENERS(&Monitor::tagChanged)
     UPDATE_LISTENERS(&Monitor::tagRemoved)
-
-    UPDATE_LISTENERS(&Monitor::relationAdded)
-    UPDATE_LISTENERS(&Monitor::relationRemoved)
 
     UPDATE_LISTENERS(&Monitor::notificationSubscriberAdded)
     UPDATE_LISTENERS(&Monitor::notificationSubscriberChanged)

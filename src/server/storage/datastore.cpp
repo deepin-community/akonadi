@@ -12,30 +12,29 @@
 #include "akonadiserver_debug.h"
 #include "collectionqueryhelper.h"
 #include "collectionstatistics.h"
-#include "countquerybuilder.h"
 #include "dbconfig.h"
 #include "dbinitializer.h"
 #include "dbupdater.h"
 #include "handler.h"
-#include "handlerhelper.h"
-#include "notificationmanager.h"
 #include "parthelper.h"
 #include "parttypehelper.h"
 #include "querycache.h"
-#include "queryhelper.h"
 #include "selectquerybuilder.h"
+#include "storage/query.h"
 #include "storagedebugger.h"
 #include "tracer.h"
 #include "transaction.h"
-#include <utils.h>
 
-#include <private/externalpartstorage_p.h>
+#include "private/externalpartstorage_p.h"
+#include <shared/akranges.h>
 
 #include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QSqlDriver>
+#include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QString>
 #include <QStringList>
 #include <QThread>
@@ -44,28 +43,50 @@
 #include <QVariant>
 
 #include <functional>
+#include <shared_mutex>
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
-
-bool DataStore::s_hasForeignKeyConstraints = false;
-QMutex DataStore::sTransactionMutex = {};
+using namespace AkRanges;
 
 static QThreadStorage<DataStore *> sInstances;
 
-#define TRANSACTION_MUTEX_LOCK                                                                                                                                 \
-    if (DbType::isSystemSQLite(m_database))                                                                                                                    \
-    sTransactionMutex.lock()
-#define TRANSACTION_MUTEX_UNLOCK                                                                                                                               \
-    if (DbType::isSystemSQLite(m_database))                                                                                                                    \
-    sTransactionMutex.unlock()
-
-#define setBoolPtr(ptr, val)                                                                                                                                   \
-    {                                                                                                                                                          \
-        if ((ptr)) {                                                                                                                                           \
-            *(ptr) = (val);                                                                                                                                    \
-        }                                                                                                                                                      \
+class DataStoreDbMap
+{
+public:
+    void registerDataStore(DataStore *store, const QString &connectionName)
+    {
+        std::unique_lock lock{m_mutex};
+        m_table.insert(connectionName, store);
     }
+
+    void unregisterDataStore(const QString &connectionName)
+    {
+        std::unique_lock lock{m_mutex};
+        m_table.remove(connectionName);
+    }
+
+    DataStore *lookupByConnection(const QSqlDatabase &db)
+    {
+        std::shared_lock lock{m_mutex};
+        auto *store = m_table.value(db.connectionName(), nullptr);
+        Q_ASSERT(store);
+        return store;
+    }
+
+private:
+    std::shared_mutex m_mutex;
+    QHash<QString, DataStore *> m_table;
+};
+
+static DataStoreDbMap sStoreLookup;
+
+static inline void setBoolPtr(bool *ptr, bool val)
+{
+    if (ptr) {
+        *ptr = val;
+    }
+}
 
 std::unique_ptr<DataStoreFactory> DataStore::sFactory;
 
@@ -74,16 +95,22 @@ void DataStore::setFactory(std::unique_ptr<DataStoreFactory> factory)
     sFactory = std::move(factory);
 }
 
+DataStore *DataStore::dataStoreForDatabase(const QSqlDatabase &db)
+{
+    return sStoreLookup.lookupByConnection(db);
+}
+
 /***************************************************************************
  *   DataStore                                                           *
  ***************************************************************************/
-DataStore::DataStore(AkonadiServer &akonadi)
+DataStore::DataStore(AkonadiServer *akonadi, DbConfig *dbConfig)
     : m_akonadi(akonadi)
+    , m_dbConfig(dbConfig)
     , m_dbOpened(false)
     , m_transactionLevel(0)
     , m_keepAliveTimer(nullptr)
 {
-    if (DbConfig::configuredDatabase()->driverName() == QLatin1String("QMYSQL")) {
+    if (dbConfig->driverName() == QLatin1StringView("QMYSQL")) {
         // Send a dummy query to MySQL every 1 hour to keep the connection alive,
         // otherwise MySQL just drops the connection and our subsequent queries fail
         // without properly reporting the error
@@ -91,6 +118,11 @@ DataStore::DataStore(AkonadiServer &akonadi)
         m_keepAliveTimer->setInterval(3600 * 1000);
         QObject::connect(m_keepAliveTimer, &QTimer::timeout, this, &DataStore::sendKeepAliveQuery);
     }
+}
+
+DataStore::DataStore(DbConfig *dbConfig)
+    : DataStore(nullptr, dbConfig)
+{
 }
 
 DataStore::~DataStore()
@@ -103,8 +135,9 @@ void DataStore::open()
     m_connectionName = QUuid::createUuid().toString() + QString::number(reinterpret_cast<qulonglong>(QThread::currentThread()));
     Q_ASSERT(!QSqlDatabase::contains(m_connectionName));
 
-    m_database = QSqlDatabase::addDatabase(DbConfig::configuredDatabase()->driverName(), m_connectionName);
-    DbConfig::configuredDatabase()->apply(m_database);
+    m_database = QSqlDatabase::addDatabase(m_dbConfig->driverName(), m_connectionName);
+    sStoreLookup.registerDataStore(this, m_connectionName);
+    m_dbConfig->apply(m_database);
 
     if (!m_database.isValid()) {
         m_dbOpened = false;
@@ -113,7 +146,10 @@ void DataStore::open()
     m_dbOpened = m_database.open();
 
     if (!m_dbOpened) {
-        debugLastDbError("Cannot open database.");
+        qCCritical(AKONADISERVER_LOG) << "Database error: Cannot open database.";
+        qCCritical(AKONADISERVER_LOG) << "  Last driver error:" << m_database.lastError().driverText();
+        qCCritical(AKONADISERVER_LOG) << "  Last database error:" << m_database.lastError().databaseText();
+        return;
     } else {
         qCDebug(AKONADISERVER_LOG) << "Database" << m_database.databaseName() << "opened using driver" << m_database.driverName();
     }
@@ -125,7 +161,7 @@ void DataStore::open()
         }
     });
 
-    DbConfig::configuredDatabase()->initSession(m_database);
+    m_dbConfig->initSession(m_database);
 
     if (m_keepAliveTimer) {
         m_keepAliveTimer->start();
@@ -161,6 +197,7 @@ void DataStore::close()
     m_database.close();
     m_database = QSqlDatabase();
     QSqlDatabase::removeDatabase(m_connectionName);
+    sStoreLookup.unregisterDataStore(m_connectionName);
 
     StorageDebugger::instance()->removeConnection(reinterpret_cast<qint64>(this));
 
@@ -169,18 +206,17 @@ void DataStore::close()
 
 bool DataStore::init()
 {
-    Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
+    // Q_ASSERT(QThread::currentThread() == QCoreApplication::instance()->thread());
 
     AkonadiSchema schema;
-    DbInitializer::Ptr initializer = DbInitializer::createInstance(database(), &schema);
+    DbInitializer::Ptr initializer = DbInitializer::createInstance(m_database, &schema);
     if (!initializer->run()) {
         qCCritical(AKONADISERVER_LOG) << initializer->errorMsg();
         return false;
     }
-    s_hasForeignKeyConstraints = initializer->hasForeignKeyConstraints();
 
     if (QFile::exists(QStringLiteral(":dbupdate.xml"))) {
-        DbUpdater updater(database(), QStringLiteral(":dbupdate.xml"));
+        DbUpdater updater(m_database, QStringLiteral(":dbupdate.xml"));
         if (!updater.run()) {
             return false;
         }
@@ -205,8 +241,9 @@ bool DataStore::init()
 
 NotificationCollector *DataStore::notificationCollector()
 {
+    Q_ASSERT(m_akonadi);
     if (!mNotificationCollector) {
-        mNotificationCollector = std::make_unique<NotificationCollector>(m_akonadi, this);
+        mNotificationCollector = std::make_unique<NotificationCollector>(*m_akonadi, this);
     }
 
     return mNotificationCollector.get();
@@ -228,8 +265,8 @@ bool DataStore::hasDataStore()
 /* --- ItemFlags ----------------------------------------------------- */
 
 bool DataStore::setItemsFlags(const PimItem::List &items,
-                              const QVector<Flag> *currentFlags,
-                              const QVector<Flag> &newFlags,
+                              const QList<Flag> *currentFlags,
+                              const QList<Flag> &newFlags,
                               bool *flagsChanged,
                               const Collection &col_,
                               bool silent)
@@ -331,13 +368,15 @@ bool DataStore::doAppendItemsFlag(const PimItem::List &items, const Flag &flag, 
         return true; // all items have the desired flags already
     }
 
-    QueryBuilder qb2(PimItemFlagRelation::tableName(), QueryBuilder::Insert);
-    qb2.setColumnValue(PimItemFlagRelation::leftColumn(), appendIds);
-    qb2.setColumnValue(PimItemFlagRelation::rightColumn(), flagIds);
-    qb2.setIdentificationColumn(QString());
-    if (!qb2.exec()) {
-        qCWarning(AKONADISERVER_LOG) << "Failed to append flag" << flag.name() << "to Items" << appendIds;
-        return false;
+    {
+        QueryBuilder qb2(PimItemFlagRelation::tableName(), QueryBuilder::Insert);
+        qb2.setColumnValue(PimItemFlagRelation::leftColumn(), appendIds);
+        qb2.setColumnValue(PimItemFlagRelation::rightColumn(), flagIds);
+        qb2.setIdentificationColumn(QString());
+        if (!qb2.exec()) {
+            qCWarning(AKONADISERVER_LOG) << "Failed to append flag" << flag.name() << "to Items" << appendIds;
+            return false;
+        }
     }
 
     if (!silent) {
@@ -348,7 +387,7 @@ bool DataStore::doAppendItemsFlag(const PimItem::List &items, const Flag &flag, 
 }
 
 bool DataStore::appendItemsFlags(const PimItem::List &items,
-                                 const QVector<Flag> &flags,
+                                 const QList<Flag> &flags,
                                  bool *flagsChanged,
                                  bool checkIfExists,
                                  const Collection &col,
@@ -377,7 +416,7 @@ bool DataStore::appendItemsFlags(const PimItem::List &items,
                 return false;
             }
 
-            QSqlQuery query = qb.query();
+            auto &query = qb.query();
             if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
                 // The query size feature is not supported by the sqllite driver
                 if (query.size() == items.count()) {
@@ -394,7 +433,6 @@ bool DataStore::appendItemsFlags(const PimItem::List &items,
                     setBoolPtr(flagsChanged, true);
                 }
             }
-            query.finish();
         }
 
         if (!doAppendItemsFlag(items, flag, existing, col, silent)) {
@@ -405,7 +443,7 @@ bool DataStore::appendItemsFlags(const PimItem::List &items,
     return true;
 }
 
-bool DataStore::removeItemsFlags(const PimItem::List &items, const QVector<Flag> &flags, bool *flagsChanged, const Collection &col_, bool silent)
+bool DataStore::removeItemsFlags(const PimItem::List &items, const QList<Flag> &flags, bool *flagsChanged, const Collection &col_, bool silent)
 {
     Collection col = col_;
     QSet<QString> removedFlags;
@@ -443,6 +481,7 @@ bool DataStore::removeItemsFlags(const PimItem::List &items, const QVector<Flag>
     }
 
     if (qb.query().numRowsAffected() != 0) {
+        qb.query().finish();
         setBoolPtr(flagsChanged, true);
         if (!silent) {
             QSet<QByteArray> removedFlagsBa;
@@ -460,8 +499,8 @@ bool DataStore::removeItemsFlags(const PimItem::List &items, const QVector<Flag>
 
 bool DataStore::setItemsTags(const PimItem::List &items, const Tag::List &tags, bool *tagsChanged, bool silent)
 {
-    QSet<qint64> removedTags;
-    QSet<qint64> addedTags;
+    QList<Tag> removedTags;
+    QList<Tag> addedTags;
     QVariantList insIds;
     QVariantList insTags;
     Query::Condition delConds(Query::Or);
@@ -473,7 +512,7 @@ bool DataStore::setItemsTags(const PimItem::List &items, const Tag::List &tags, 
         for (const Tag &tag : itemTags) {
             if (!tags.contains(tag)) {
                 // Remove tags from items that had it set
-                removedTags << tag.id();
+                removedTags.push_back(tag);
                 Query::Condition cond;
                 cond.addValueCondition(PimItemTagRelation::leftFullColumnName(), Query::Equals, item.id());
                 cond.addValueCondition(PimItemTagRelation::rightFullColumnName(), Query::Equals, tag.id());
@@ -484,7 +523,7 @@ bool DataStore::setItemsTags(const PimItem::List &items, const Tag::List &tags, 
         for (const Tag &tag : tags) {
             if (!itemTags.contains(tag)) {
                 // Add tags to items that did not have the tag
-                addedTags << tag.id();
+                addedTags.push_back(tag);
                 insIds << item.id();
                 insTags << tag.id();
             }
@@ -539,17 +578,19 @@ bool DataStore::doAppendItemsTag(const PimItem::List &items, const Tag &tag, con
         return true; // all items have the desired tags already
     }
 
-    QueryBuilder qb2(PimItemTagRelation::tableName(), QueryBuilder::Insert);
-    qb2.setColumnValue(PimItemTagRelation::leftColumn(), appendIds);
-    qb2.setColumnValue(PimItemTagRelation::rightColumn(), tagIds);
-    qb2.setIdentificationColumn(QString());
-    if (!qb2.exec()) {
-        qCWarning(AKONADISERVER_LOG) << "Failed to append tag" << tag << "to Items" << appendItems;
-        return false;
+    {
+        QueryBuilder qb2(PimItemTagRelation::tableName(), QueryBuilder::Insert);
+        qb2.setColumnValue(PimItemTagRelation::leftColumn(), appendIds);
+        qb2.setColumnValue(PimItemTagRelation::rightColumn(), tagIds);
+        qb2.setIdentificationColumn(QString());
+        if (!qb2.exec()) {
+            qCWarning(AKONADISERVER_LOG) << "Failed to append tag" << tag << "to Items" << appendItems;
+            return false;
+        }
     }
 
     if (!silent) {
-        notificationCollector()->itemsTagsChanged(appendItems, {tag.id()}, {}, col);
+        notificationCollector()->itemsTagsChanged(appendItems, {tag}, {}, col);
     }
 
     return true;
@@ -580,7 +621,7 @@ bool DataStore::appendItemsTags(const PimItem::List &items, const Tag::List &tag
                 return false;
             }
 
-            QSqlQuery query = qb.query();
+            auto &query = qb.query();
             if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
                 if (query.size() == items.count()) {
                     continue;
@@ -596,7 +637,6 @@ bool DataStore::appendItemsTags(const PimItem::List &items, const Tag::List &tag
                     setBoolPtr(tagsChanged, true);
                 }
             }
-            query.finish();
         }
 
         if (!doAppendItemsTag(items, tag, existing, col, silent)) {
@@ -607,25 +647,18 @@ bool DataStore::appendItemsTags(const PimItem::List &items, const Tag::List &tag
     return true;
 }
 
-bool DataStore::removeItemsTags(const PimItem::List &items, const Tag::List &tags, bool *tagsChanged, bool silent)
+bool DataStore::removeItemsTags(const PimItem::List &items, const Tag::List &removedTags, bool *tagsChanged, bool silent)
 {
-    QSet<qint64> removedTags;
-    QVariantList itemsIds;
-    QVariantList tagsIds;
-
     setBoolPtr(tagsChanged, false);
-    itemsIds.reserve(items.count());
 
-    for (const PimItem &item : items) {
-        itemsIds << item.id();
-        for (int i = 0; i < tags.count(); ++i) {
-            const qint64 tagId = tags[i].id();
-            if (!removedTags.contains(tagId)) {
-                tagsIds << tagId;
-                removedTags << tagId;
-            }
-        }
-    }
+    const auto itemsIds = items | Views::transform([](const auto &item) -> QVariant {
+                              return item.id();
+                          })
+        | Actions::toQList;
+    const auto tagsIds = removedTags | Views::transform([](const auto &tag) -> QVariant {
+                             return tag.id();
+                         })
+        | Actions::toQList;
 
     // Delete all given tags from all given items in one go
     QueryBuilder qb(PimItemTagRelation::tableName(), QueryBuilder::Delete);
@@ -639,45 +672,61 @@ bool DataStore::removeItemsTags(const PimItem::List &items, const Tag::List &tag
     }
 
     if (qb.query().numRowsAffected() != 0) {
+        qb.query().finish();
         setBoolPtr(tagsChanged, true);
         if (!silent) {
-            notificationCollector()->itemsTagsChanged(items, QSet<qint64>(), removedTags);
+            notificationCollector()->itemsTagsChanged(items, {}, removedTags);
         }
     }
 
     return true;
 }
 
-bool DataStore::removeTags(const Tag::List &tags, bool silent)
+bool DataStore::removeTags(const Tag::List &removedTags, bool silent)
 {
     // Currently the "silent" argument is only for API symmetry
     Q_UNUSED(silent)
 
-    QVariantList removedTagsIds;
-    QSet<qint64> removedTags;
-    removedTagsIds.reserve(tags.count());
-    removedTags.reserve(tags.count());
-    for (const Tag &tag : tags) {
-        removedTagsIds << tag.id();
-        removedTags << tag.id();
-    }
+    const auto removedTagsIds = removedTags | Views::transform([](const auto &tag) -> QVariant {
+                                    return tag.id();
+                                })
+        | Actions::toQList;
 
     // Get all PIM items that we will untag
     SelectQueryBuilder<PimItem> itemsQuery;
+    itemsQuery.addColumn(PimItem::collectionIdFullColumnName());
     itemsQuery.addJoin(QueryBuilder::LeftJoin, PimItemTagRelation::tableName(), PimItemTagRelation::leftFullColumnName(), PimItem::idFullColumnName());
     itemsQuery.addValueCondition(PimItemTagRelation::rightFullColumnName(), Query::In, removedTagsIds);
+    itemsQuery.addSortColumn(PimItem::collectionIdFullColumnName(), Query::Ascending);
 
     if (!itemsQuery.exec()) {
         qCWarning(AKONADISERVER_LOG) << "Removing tags failed: failed to query Items for given tags" << removedTagsIds;
         return false;
     }
-    const PimItem::List items = itemsQuery.result();
 
-    if (!items.isEmpty()) {
-        notificationCollector()->itemsTagsChanged(items, QSet<qint64>(), removedTags);
+    // Emit itemsTagsChanged for all items that have the removed tags.
+    // We group them by collection, since that's what the notification collector as well as
+    // resources expect.
+    PimItem::List items;
+    auto &query = itemsQuery.query();
+    Collection::Id lastCollectionId = -1;
+    const auto collectionIdColumn = query.record().count() - 1;
+    while (query.next()) {
+        const auto collectionId = query.value(collectionIdColumn).value<Collection::Id>();
+        if (!items.empty() && collectionId != lastCollectionId) {
+            notificationCollector()->itemsTagsChanged(items, {}, removedTags, Collection::retrieveById(lastCollectionId));
+            items.clear();
+        }
+
+        items.push_back(PimItem::extractEntity(query));
+        lastCollectionId = collectionId;
     }
 
-    for (const Tag &tag : tags) {
+    if (!items.empty()) {
+        notificationCollector()->itemsTagsChanged(items, {}, removedTags, Collection::retrieveById(lastCollectionId));
+    }
+
+    for (const Tag &tag : removedTags) {
         // Emit special tagRemoved notification for each resource that owns the tag
         QueryBuilder qb(TagRemoteIdResourceRelation::tableName(), QueryBuilder::Select);
         qb.addColumn(TagRemoteIdResourceRelation::remoteIdFullColumnName());
@@ -690,7 +739,7 @@ bool DataStore::removeTags(const Tag::List &tags, bool silent)
         }
 
         // Emit specialized notifications for each resource
-        QSqlQuery query = qb.query();
+        auto &query = qb.query();
         while (query.next()) {
             const QString rid = query.value(0).toString();
             const QByteArray resource = query.value(1).toByteArray();
@@ -736,6 +785,7 @@ bool DataStore::removeItemParts(const PimItem &item, const QSet<QByteArray> &par
             return false;
         }
     }
+    qb.query().finish(); // finish before dispatching notification
 
     notificationCollector()->itemChanged(item, parts);
     return true;
@@ -749,7 +799,7 @@ bool DataStore::invalidateItemCache(const PimItem &item)
     qb.addJoin(QueryBuilder::InnerJoin, PartType::tableName(), Part::partTypeIdFullColumnName(), PartType::idFullColumnName());
     qb.addValueCondition(Part::pimItemIdFullColumnName(), Query::Equals, item.id());
     qb.addValueCondition(Part::dataFullColumnName(), Query::IsNot, QVariant());
-    qb.addValueCondition(PartType::nsFullColumnName(), Query::Equals, QLatin1String("PLD"));
+    qb.addValueCondition(PartType::nsFullColumnName(), Query::Equals, QLatin1StringView("PLD"));
     qb.addValueCondition(PimItem::dirtyFullColumnName(), Query::Equals, false);
 
     if (!qb.exec()) {
@@ -800,13 +850,6 @@ bool DataStore::appendCollection(Collection &collection, const QStringList &mime
 
 bool DataStore::cleanupCollection(Collection &collection)
 {
-    if (!s_hasForeignKeyConstraints) {
-        return cleanupCollection_slow(collection);
-    }
-
-    // db will do most of the work for us, we just deal with notifications and external payload parts here
-    Q_ASSERT(s_hasForeignKeyConstraints);
-
     // collect item deletion notifications
     const PimItem::List items = collection.items();
     const QByteArray resource = collection.resource().name().toLatin1();
@@ -824,8 +867,8 @@ bool DataStore::cleanupCollection(Collection &collection)
     qb.addValueCondition(Part::storageFullColumnName(), Query::Equals, Part::External);
     qb.addValueCondition(Part::dataFullColumnName(), Query::IsNot, QVariant());
     if (!qb.exec()) {
-        qCWarning(AKONADISERVER_LOG) << "Failed to cleanup collection" << collection.name() << "(ID" << collection.id() << "):"
-                                     << "Failed to query existing payload parts";
+        qCWarning(AKONADISERVER_LOG) << "Failed to cleanup collection" << collection.name() << "(ID" << collection.id()
+                                     << "):" << "Failed to query existing payload parts";
         return false;
     }
 
@@ -841,60 +884,6 @@ bool DataStore::cleanupCollection(Collection &collection)
     qb.query().finish();
 
     // delete the collection itself, referential actions will do the rest
-    notificationCollector()->collectionRemoved(collection);
-    return collection.remove();
-}
-
-bool DataStore::cleanupCollection_slow(Collection &collection)
-{
-    Q_ASSERT(!s_hasForeignKeyConstraints);
-
-    // delete the content
-    const PimItem::List items = collection.items();
-    const QByteArray resource = collection.resource().name().toLatin1();
-    notificationCollector()->itemsRemoved(items, collection, resource);
-
-    for (const PimItem &item : items) {
-        if (!item.clearFlags()) { // TODO: move out of loop and use only a single query
-            qCWarning(AKONADISERVER_LOG) << "Slow cleanup of collection" << collection.name() << "(ID" << collection.id() << ")"
-                                         << "failed: error clearing items flags";
-            return false;
-        }
-        if (!PartHelper::remove(Part::pimItemIdColumn(), item.id())) { // TODO: reduce to single query
-            qCWarning(AKONADISERVER_LOG) << "Slow cleanup of collection" << collection.name() << "(ID" << collection.id() << ")"
-                                         << "failed: error clearing item payload parts";
-
-            return false;
-        }
-
-        if (!PimItem::remove(PimItem::idColumn(), item.id())) { // TODO: move into single querya
-            qCWarning(AKONADISERVER_LOG) << "Slow cleanup of collection" << collection.name() << "(ID" << collection.id() << ")"
-                                         << "failed: error clearing items";
-            return false;
-        }
-
-        if (!Entity::clearRelation<CollectionPimItemRelation>(item.id(), Entity::Right)) { // TODO: move into single query
-            qCWarning(AKONADISERVER_LOG) << "Slow cleanup of collection" << collection.name() << "(ID" << collection.id() << ")"
-                                         << "failed: error clearing linked items";
-            return false;
-        }
-    }
-
-    // delete collection mimetypes
-    collection.clearMimeTypes();
-    Collection::clearPimItems(collection.id());
-
-    // delete attributes
-    const CollectionAttribute::List attrs = collection.attributes();
-    for (CollectionAttribute attr : attrs) {
-        if (!attr.remove()) {
-            qCWarning(AKONADISERVER_LOG) << "Slow cleanup of collection" << collection.name() << "(ID" << collection.id() << ")"
-                                         << "failed: error clearing attribute" << attr.type();
-            return false;
-        }
-    }
-
-    // delete the collection itself
     notificationCollector()->collectionRemoved(collection);
     return collection.remove();
 }
@@ -976,8 +965,8 @@ bool DataStore::moveCollection(Collection &collection, const Collection &newPare
     }
 
     if (!collection.update()) {
-        qCWarning(AKONADISERVER_LOG) << "Failed to move Collection" << collection.name() << "(ID" << collection.id() << ")"
-                                     << "into Collection" << collection.name() << "(ID" << collection.id() << ")";
+        qCWarning(AKONADISERVER_LOG) << "Failed to move Collection" << collection.name() << "(ID" << collection.id() << ")" << "into Collection"
+                                     << collection.name() << "(ID" << collection.id() << ")";
         return false;
     }
 
@@ -1030,7 +1019,7 @@ void DataStore::activeCachePolicy(Collection &col)
     col.setCachePolicyLocalParts(QStringLiteral("ALL"));
 }
 
-QVector<Collection> DataStore::virtualCollections(const PimItem &item)
+QList<Collection> DataStore::virtualCollections(const PimItem &item)
 {
     SelectQueryBuilder<Collection> qb;
     qb.addJoin(QueryBuilder::InnerJoin, Collection::tableName(), Collection::idFullColumnName(), CollectionPimItemRelation::leftFullColumnName());
@@ -1038,7 +1027,7 @@ QVector<Collection> DataStore::virtualCollections(const PimItem &item)
 
     if (!qb.exec()) {
         qCWarning(AKONADISERVER_LOG) << "Failed to query virtual collections which PimItem" << item.id() << "belongs into";
-        return QVector<Collection>();
+        return QList<Collection>();
     }
 
     return qb.result();
@@ -1070,7 +1059,7 @@ QMap<Entity::Id, QList<PimItem>> DataStore::virtualCollections(const PimItem::Li
         return QMap<Entity::Id, QList<PimItem>>();
     }
 
-    QSqlQuery query = qb.query();
+    auto &query = qb.query();
     QMap<Entity::Id, QList<PimItem>> map;
     query.next();
     while (query.isValid()) {
@@ -1091,8 +1080,8 @@ QMap<Entity::Id, QList<PimItem>> DataStore::virtualCollections(const PimItem::Li
 }
 
 /* --- PimItem ------------------------------------------------------- */
-bool DataStore::appendPimItem(QVector<Part> &parts,
-                              const QVector<Flag> &flags,
+bool DataStore::appendPimItem(QList<Part> &parts,
+                              const QList<Flag> &flags,
                               const MimeType &mimetype,
                               const Collection &collection,
                               const QDateTime &dateTime,
@@ -1126,7 +1115,7 @@ bool DataStore::appendPimItem(QVector<Part> &parts,
     // insert every part
     if (!parts.isEmpty()) {
         // don't use foreach, the caller depends on knowing the part has changed, see the Append handler
-        for (QVector<Part>::iterator it = parts.begin(); it != parts.end(); ++it) {
+        for (QList<Part>::iterator it = parts.begin(); it != parts.end(); ++it) {
             (*it).setPimItemId(pimItem.id());
             if ((*it).datasize() < (*it).data().size()) {
                 (*it).setDatasize((*it).data().size());
@@ -1142,7 +1131,7 @@ bool DataStore::appendPimItem(QVector<Part> &parts,
 
     bool seen = false;
     for (const Flag &flag : flags) {
-        seen |= (flag.name() == QLatin1String(AKONADI_FLAG_SEEN) || flag.name() == QLatin1String(AKONADI_FLAG_IGNORED));
+        seen |= (flag.name() == QLatin1StringView(AKONADI_FLAG_SEEN) || flag.name() == QLatin1StringView(AKONADI_FLAG_IGNORED));
         if (!pimItem.addFlag(flag)) {
             qCWarning(AKONADISERVER_LOG) << "Failed to add flag" << flag.name() << "to new PimItem" << pimItem.id();
             return false;
@@ -1187,21 +1176,6 @@ bool DataStore::cleanupPimItems(const PimItem::List &items, bool silent)
 {
     // generate relation removed notifications
     if (!silent) {
-        for (const PimItem &item : items) {
-            SelectQueryBuilder<Relation> relationQuery;
-            relationQuery.addValueCondition(Relation::leftIdFullColumnName(), Query::Equals, item.id());
-            relationQuery.addValueCondition(Relation::rightIdFullColumnName(), Query::Equals, item.id());
-            relationQuery.setSubQueryMode(Query::Or);
-
-            if (!relationQuery.exec()) {
-                throw HandlerException("Failed to obtain relations");
-            }
-            const Relation::List relations = relationQuery.result();
-            for (const Relation &relation : relations) {
-                notificationCollector()->relationRemoved(relation);
-            }
-        }
-
         // generate the notification before actually removing the data
         notificationCollector()->itemsRemoved(items);
     }
@@ -1272,7 +1246,7 @@ bool DataStore::removeCollectionAttribute(const Collection &col, const QByteArra
         throw HandlerException("Unable to query for collection attribute");
     }
 
-    const QVector<CollectionAttribute> result = qb.result();
+    const QList<CollectionAttribute> result = qb.result();
     for (CollectionAttribute attr : result) {
         if (!attr.remove()) {
             throw HandlerException("Unable to remove collection attribute");
@@ -1286,15 +1260,17 @@ bool DataStore::removeCollectionAttribute(const Collection &col, const QByteArra
     return false;
 }
 
-void DataStore::debugLastDbError(const char *actionDescription) const
+void DataStore::debugLastDbError(QStringView actionDescription) const
 {
     qCCritical(AKONADISERVER_LOG) << "Database error:" << actionDescription;
     qCCritical(AKONADISERVER_LOG) << "  Last driver error:" << m_database.lastError().driverText();
     qCCritical(AKONADISERVER_LOG) << "  Last database error:" << m_database.lastError().databaseText();
 
-    m_akonadi.tracer().error("DataStore (Database Error)",
-                             QStringLiteral("%1\nDriver said: %2\nDatabase said:%3")
-                                 .arg(QString::fromLatin1(actionDescription), m_database.lastError().driverText(), m_database.lastError().databaseText()));
+    if (m_akonadi) {
+        m_akonadi->tracer().error("DataStore (Database Error)",
+                                  QStringLiteral("%1\nDriver said: %2\nDatabase said:%3")
+                                      .arg(actionDescription, m_database.lastError().driverText(), m_database.lastError().databaseText()));
+    }
 }
 
 void DataStore::debugLastQueryError(const QSqlQuery &query, const char *actionDescription) const
@@ -1304,8 +1280,10 @@ void DataStore::debugLastQueryError(const QSqlQuery &query, const char *actionDe
     qCCritical(AKONADISERVER_LOG) << "  Last driver error:" << m_database.lastError().driverText();
     qCCritical(AKONADISERVER_LOG) << "  Last database error:" << m_database.lastError().databaseText();
 
-    m_akonadi.tracer().error("DataStore (Database Query Error)",
-                             QStringLiteral("%1: %2").arg(QString::fromLatin1(actionDescription), query.lastError().text()));
+    if (m_akonadi) {
+        m_akonadi->tracer().error("DataStore (Database Query Error)",
+                                  QStringLiteral("%1: %2").arg(QString::fromLatin1(actionDescription), query.lastError().text()));
+    }
 }
 
 // static
@@ -1332,11 +1310,9 @@ bool DataStore::doRollback()
     driver->rollbackTransaction();
     StorageDebugger::instance()->removeTransaction(reinterpret_cast<qint64>(this), false, timer.elapsed(), m_database.lastError().text());
     if (m_database.lastError().isValid()) {
-        TRANSACTION_MUTEX_UNLOCK;
-        debugLastDbError("DataStore::rollbackTransaction");
+        debugLastDbError(u"DataStore::rollbackTransaction");
         return false;
     }
-    TRANSACTION_MUTEX_UNLOCK;
     return true;
 }
 
@@ -1357,21 +1333,18 @@ bool DataStore::beginTransaction(const QString &name)
         m_transactionKilledByDB = false;
         QElapsedTimer timer;
         timer.start();
-        TRANSACTION_MUTEX_LOCK;
         if (DbType::type(m_database) == DbType::Sqlite) {
-            m_database.exec(QStringLiteral("BEGIN IMMEDIATE TRANSACTION"));
-            StorageDebugger::instance()->addTransaction(reinterpret_cast<qint64>(this), name, timer.elapsed(), m_database.lastError().text());
-            if (m_database.lastError().isValid()) {
-                debugLastDbError("DataStore::beginTransaction (SQLITE)");
-                TRANSACTION_MUTEX_UNLOCK;
+            QSqlQuery query(QStringLiteral("BEGIN IMMEDIATE TRANSACTION"), m_database);
+            StorageDebugger::instance()->addTransaction(reinterpret_cast<qint64>(this), name, timer.elapsed(), query.lastError().text());
+            if (query.lastError().isValid()) {
+                debugLastDbError(QStringLiteral("DataStore::beginTransaction (SQLITE) name: %1").arg(name));
                 return false;
             }
         } else {
             m_database.driver()->beginTransaction();
             StorageDebugger::instance()->addTransaction(reinterpret_cast<qint64>(this), name, timer.elapsed(), m_database.lastError().text());
             if (m_database.lastError().isValid()) {
-                debugLastDbError("DataStore::beginTransaction");
-                TRANSACTION_MUTEX_UNLOCK;
+                debugLastDbError(u"DataStore::beginTransaction");
                 return false;
             }
         }
@@ -1381,7 +1354,7 @@ bool DataStore::beginTransaction(const QString &name)
             // INSERT INTO mimetypetable (name) VALUES ('foo') RETURNING id;
             // INSERT INTO collectionmimetyperelation (collection_id, mimetype_id) VALUES (x, y)
             // where "y" refers to the newly inserted mimetype
-            m_database.exec(QStringLiteral("SET CONSTRAINTS ALL DEFERRED"));
+            QSqlQuery query(QStringLiteral("SET CONSTRAINTS ALL DEFERRED"), m_database);
         }
     }
 
@@ -1434,11 +1407,10 @@ bool DataStore::commitTransaction()
         driver->commitTransaction();
         StorageDebugger::instance()->removeTransaction(reinterpret_cast<qint64>(this), true, timer.elapsed(), m_database.lastError().text());
         if (m_database.lastError().isValid()) {
-            debugLastDbError("DataStore::commitTransaction");
+            debugLastDbError(u"DataStore::commitTransaction");
             rollbackTransaction();
             return false;
         } else {
-            TRANSACTION_MUTEX_UNLOCK;
             m_transactionLevel--;
             Q_EMIT transactionCommitted();
         }
@@ -1468,6 +1440,10 @@ void DataStore::cleanupAfterRollback()
     Resource::invalidateCompleteCache();
     Collection::invalidateCompleteCache();
     PartType::invalidateCompleteCache();
-    m_akonadi.collectionStatistics().expireCache();
+    if (m_akonadi) {
+        m_akonadi->collectionStatistics().expireCache();
+    }
     QueryCache::clear();
 }
+
+#include "moc_datastore.cpp"

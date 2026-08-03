@@ -12,7 +12,7 @@
 #include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
 
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
@@ -41,7 +41,7 @@ bool ItemDeleteHandler::parseStream()
         return failureResponse("Unable to execute query");
     }
 
-    const QVector<PimItem> items = qb.result();
+    const QList<PimItem> items = qb.result();
     if (items.isEmpty()) {
         return failureResponse("No items found");
     }

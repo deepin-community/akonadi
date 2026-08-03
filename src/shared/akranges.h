@@ -9,9 +9,9 @@
 #include "akhelpers.h"
 #include "aktraits.h"
 
+#include <QList>
 #include <QMap>
 #include <QSet>
-#include <QVector>
 
 #include <algorithm>
 #include <functional>
@@ -23,32 +23,19 @@ namespace AkRanges
 {
 namespace detail
 {
-template<typename RangeLike, typename OutContainer, AK_REQUIRES(AkTraits::isAppendable<OutContainer>)>
+template<typename RangeLike, AkTraits::Container OutContainer>
 OutContainer copyContainer(const RangeLike &range)
 {
-    OutContainer rv;
-    rv.reserve(range.size());
-    for (auto &&v : range) {
-        rv.push_back(std::move(v));
-    }
-    return rv;
-}
-
-template<typename RangeLike, typename OutContainer, AK_REQUIRES(AkTraits::isInsertable<OutContainer>)>
-OutContainer copyContainer(const RangeLike &range)
-{
-    OutContainer rv;
-    rv.reserve(range.size());
-    for (const auto &v : range) {
-        rv.insert(v); // Qt containers lack move-enabled insert() overload
-    }
-    return rv;
+    return OutContainer(range.begin(), range.end());
 }
 
 template<typename RangeList, typename OutContainer>
 OutContainer copyAssocContainer(const RangeList &range)
 {
     OutContainer rv;
+    if constexpr (AkTraits::ReservableContainer<OutContainer>) {
+        rv.reserve(range.size());
+    }
     for (const auto &v : range) {
         rv.insert(v.first, v.second); // Qt containers lack move-enabled insert() overload
     }
@@ -64,7 +51,7 @@ struct IteratorTrait {
     using reference = typename Iterator::reference;
 };
 
-// Without QT_STRICT_ITERATORS QVector and QList iterators do not satisfy STL
+// Without QT_STRICT_ITERATORS QList and QList iterators do not satisfy STL
 // iterator concepts since they are nothing more but typedefs to T* - for those
 // we need to provide custom traits.
 template<typename Iterator>
@@ -72,11 +59,7 @@ struct IteratorTrait<Iterator *> {
     // QTypedArrayData::iterator::iterator_category
     using iterator_category = std::random_access_iterator_tag;
     using value_type = Iterator;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    using difference_type = int;
-#else
     using difference_type = qsizetype;
-#endif
     using pointer = Iterator *;
     using reference = Iterator &;
 };
@@ -85,25 +68,21 @@ template<typename Iterator>
 struct IteratorTrait<const Iterator *> {
     using iterator_category = std::random_access_iterator_tag;
     using value_type = Iterator;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    using difference_type = int;
-#else
     using difference_type = qsizetype;
-#endif
     using pointer = const Iterator *;
     using reference = const Iterator &;
 };
 
 template<typename IterImpl, typename RangeLike, typename Iterator = typename RangeLike::const_iterator>
-struct IteratorBase {
+struct BidiIteratorBase {
 public:
-    using iterator_category = typename IteratorTrait<Iterator>::iterator_category;
+    using iterator_category = std::bidirectional_iterator_tag;
     using value_type = typename IteratorTrait<Iterator>::value_type;
     using difference_type = typename IteratorTrait<Iterator>::difference_type;
     using pointer = typename IteratorTrait<Iterator>::pointer;
     using reference = typename IteratorTrait<Iterator>::reference;
 
-    IteratorBase(const IteratorBase<IterImpl, RangeLike> &other)
+    BidiIteratorBase(const BidiIteratorBase<IterImpl, RangeLike> &other)
         : mIter(other.mIter)
         , mRange(other.mRange)
     {
@@ -132,28 +111,18 @@ public:
         return !(*static_cast<const IterImpl *>(this) == other);
     }
 
-    bool operator<(const IterImpl &other) const
-    {
-        return mIter < other.mIter;
-    }
-
-    auto operator-(const IterImpl &other) const
-    {
-        return mIter - other.mIter;
-    }
-
     auto operator*() const
     {
         return *mIter;
     }
 
 protected:
-    IteratorBase(const Iterator &iter, const RangeLike &range)
+    BidiIteratorBase(const Iterator &iter, const RangeLike &range)
         : mIter(iter)
         , mRange(range)
     {
     }
-    IteratorBase(const Iterator &iter, RangeLike &&range)
+    BidiIteratorBase(const Iterator &iter, RangeLike &&range)
         : mIter(iter)
         , mRange(std::move(range))
     {
@@ -162,6 +131,24 @@ protected:
     Iterator mIter;
     RangeLike mRange;
 };
+
+template<typename IterImpl, typename RangeLike, typename Iterator = typename RangeLike::const_iterator>
+struct RandomAccessIteratorBase : public BidiIteratorBase<IterImpl, RangeLike, Iterator> {
+public:
+    using iterator_category = std::random_access_iterator_tag;
+
+    using BidiIteratorBase<IterImpl, RangeLike, Iterator>::BidiIteratorBase;
+
+    auto operator-(const IterImpl &other) const
+    {
+        return this->mIter - other.mIter;
+    }
+};
+
+template<typename IterImpl, typename RangeLike, typename Iterator = typename RangeLike::const_iterator>
+using IteratorBase = std::conditional_t<std::random_access_iterator<Iterator>,
+                                        RandomAccessIteratorBase<IterImpl, RangeLike, Iterator>,
+                                        BidiIteratorBase<IterImpl, RangeLike, Iterator>>;
 
 template<typename RangeLike, typename TransformFn, typename Iterator = typename RangeLike::const_iterator>
 struct TransformIterator : public IteratorBase<TransformIterator<RangeLike, TransformFn>, RangeLike> {
@@ -174,9 +161,7 @@ private:
         using type = R;
     };
 
-    template<typename... Ts>
-    using FuncHelper = decltype(std::invoke(std::declval<Ts>()...))(Ts...);
-    using IteratorValueType = typename ResultOf<FuncHelper<TransformFn, typename IteratorTrait<Iterator>::value_type>>::type;
+    using IteratorValueType = std::invoke_result_t<TransformFn, typename IteratorTrait<Iterator>::value_type>;
 
 public:
     using value_type = IteratorValueType;
@@ -191,7 +176,7 @@ public:
 
     auto operator*() const
     {
-        return std::invoke(mFn, *this->mIter);
+        return std::invoke(mFn, *(this->mIter));
     }
 
 private:
@@ -236,6 +221,43 @@ public:
 private:
     Predicate mPredicate;
     Iterator mEnd;
+};
+
+template<typename RangeLike, typename Iterator = typename RangeLike::const_iterator>
+class EnumerateIterator : public IteratorBase<EnumerateIterator<RangeLike>, RangeLike>
+{
+public:
+    using value_type = std::pair<qsizetype, typename Iterator::value_type>;
+    using pointer = value_type *; // FIXME: preserve const-ness
+    using reference = const value_type &; // FIXME: preserve const-ness
+
+    EnumerateIterator(const Iterator &iter, qsizetype start, const RangeLike &range)
+        : IteratorBase<EnumerateIterator, RangeLike>(iter, range)
+        , mCount(start)
+    {
+    }
+
+    auto &operator++()
+    {
+        ++mCount;
+        ++this->mIter;
+        return *this;
+    }
+
+    auto &operator++(int)
+    {
+        auto it = *this;
+        ++(*this);
+        return it;
+    }
+
+    QPair<qsizetype, typename Iterator::value_type> operator*() const
+    {
+        return qMakePair(mCount, *this->mIter);
+    }
+
+private:
+    qsizetype mCount = 0;
 };
 
 template<typename Container, int Pos, typename Iterator = typename Container::const_key_value_iterator>
@@ -357,6 +379,10 @@ struct NoneTag_ {
     UnaryPredicate mFn;
 };
 
+struct EnumerateTag_ {
+    qsizetype mStart = 0;
+};
+
 } // namespace detail
 } // namespace AkRanges
 
@@ -400,6 +426,15 @@ auto operator|(const RangeLike &range, AkRanges::detail::FilterTag_<UnaryPredica
     using namespace AkRanges::detail;
     using OutIt = FilterIterator<RangeLike, UnaryPredicate>;
     return Range<OutIt>(OutIt(std::cbegin(range), std::cend(range), p.mFn, range), OutIt(std::cend(range), std::cend(range), p.mFn, range));
+}
+
+// Generator operator| for enumerate()
+template<typename RangeLike>
+auto operator|(const RangeLike &range, AkRanges::detail::EnumerateTag_ tag)
+{
+    using namespace AkRanges::detail;
+    using OutIt = EnumerateIterator<RangeLike>;
+    return Range<OutIt>(OutIt(std::cbegin(range), tag.mStart, range), OutIt(std::cend(range), tag.mStart, range));
 }
 
 // Generic operator| for foreach()
@@ -455,8 +490,8 @@ namespace AkRanges
 {
 namespace Actions
 {
-/// Non-lazily convert given range or container to QVector
-static constexpr auto toQVector = detail::ToTag_<QVector>{};
+/// Non-lazily convert given range or container to QList
+static constexpr auto toQVector = detail::ToTag_<QList>{};
 /// Non-lazily convert given range or container to QSet
 static constexpr auto toQSet = detail::ToTag_<QSet>{};
 /// Non-lazily convert given range or container to QList
@@ -494,7 +529,7 @@ detail::NoneTag_<UnaryPredicate> none(UnaryPredicate &&pred)
     return detail::NoneTag_<UnaryPredicate>{std::forward<UnaryPredicate>(pred)};
 }
 
-} // namespace Action
+} // namespace Actions
 
 namespace Views
 {
@@ -517,6 +552,12 @@ detail::FilterTag_<UnaryPredicate> filter(UnaryPredicate &&pred)
     return detail::FilterTag_<UnaryPredicate>{std::forward<UnaryPredicate>(pred)};
 }
 
+/// Lazily enumerate elements in input range
+inline detail::EnumerateTag_ enumerate(qsizetype start = 0)
+{
+    return detail::EnumerateTag_{start};
+}
+
 /// Create a range, a view on a container from the given pair fo iterators
 template<typename Iterator1, typename Iterator2, typename It = std::remove_reference_t<Iterator1>>
 detail::Range<It> range(Iterator1 begin, Iterator2 end)
@@ -524,6 +565,6 @@ detail::Range<It> range(Iterator1 begin, Iterator2 end)
     return detail::Range<It>(std::move(begin), std::move(end));
 }
 
-} // namespace View
+} // namespace Views
 
 } // namespace AkRanges

@@ -109,11 +109,6 @@ void AgentInstance::synchronizeTags()
     AgentManager::self()->d->synchronizeTags(*this);
 }
 
-void AgentInstance::synchronizeRelations()
-{
-    AgentManager::self()->d->synchronizeRelations(*this);
-}
-
 AgentInstance &AgentInstance::operator=(const AgentInstance &other)
 {
     if (this != &other) {
@@ -158,7 +153,7 @@ void AgentInstance::reconfigure() const
     }
 }
 
-void Akonadi::AgentInstance::restart() const
+void AgentInstance::restart() const
 {
     QDBusInterface iface(ServerManager::serviceName(Akonadi::ServerManager::Control),
                          QStringLiteral("/AgentManager"),
@@ -171,4 +166,24 @@ void Akonadi::AgentInstance::restart() const
     } else {
         qCWarning(AKONADICORE_LOG) << "Unable to obtain control interface" << iface.lastError().message();
     }
+}
+
+QStringList AgentInstance::activities() const
+{
+    return d->mActivities;
+}
+
+void AgentInstance::setActivities(const QStringList &activities)
+{
+    AgentManager::self()->d->setActivities(*this, activities);
+}
+
+bool AgentInstance::activitiesEnabled() const
+{
+    return d->mActivitiesEnabled;
+}
+
+void AgentInstance::setActivitiesEnabled(bool enabled)
+{
+    AgentManager::self()->d->setActivitiesEnabled(*this, enabled);
 }

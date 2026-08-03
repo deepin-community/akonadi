@@ -6,22 +6,22 @@ set_package_properties(LibXml2 PROPERTIES
     TYPE OPTIONAL
 )
 
-if (LIBXML2_FOUND)
+if(LIBXML2_FOUND)
     add_definitions(-DHAVE_LIBXML2)
-endif ()
+endif()
 
-if (BUILD_TESTING)
+if(BUILD_TESTING)
    add_subdirectory(autotests)
 endif()
 set(akonadixml_SRCS
-    xmldocument.cpp
-    xmlreader.cpp
-    xmlwritejob.cpp
-    xmlwriter.cpp
+    xmldocument.cpp xmldocument.h
+    xmlreader.cpp xmlreader.h
+    xmlwritejob.cpp xmlwritejob.h
+    xmlwriter.cpp xmlwriter.h
 )
 
 # base install include dir
-set(AkonadiXml_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR_KF}/AkonadiXml")
+set(AkonadiXml_INSTALL_INCLUDEDIR "${KDE_INSTALL_INCLUDEDIR}/KPim6/AkonadiXml")
 
 ecm_generate_headers(AkonadiXml_CC_HEADERS
     HEADER_NAMES
@@ -34,56 +34,51 @@ ecm_generate_headers(AkonadiXml_CC_HEADERS
 )
 
 add_executable(akonadi2xml akonadi2xml.cpp)
-if (COMPILE_WITH_UNITY_CMAKE_SUPPORT)
+if(COMPILE_WITH_UNITY_CMAKE_SUPPORT)
     set_target_properties(akonadi2xml PROPERTIES UNITY_BUILD ON)
 endif()
 
 set_target_properties(akonadi2xml PROPERTIES MACOSX_BUNDLE FALSE)
 
 target_link_libraries(akonadi2xml
-    KF5::AkonadiXml
-    KF5::I18n
+    KPim6::AkonadiXml
+    KF6::I18n
     Qt::Widgets # for QApplication
 )
 
-add_library(KF5AkonadiXml ${akonadixml_SRCS})
+add_library(KPim6AkonadiXml ${akonadixml_SRCS})
 
-generate_export_header(KF5AkonadiXml BASE_NAME akonadi-xml)
+generate_export_header(KPim6AkonadiXml BASE_NAME akonadi-xml)
 
-add_library(KF5::AkonadiXml ALIAS KF5AkonadiXml)
+add_library(KPim6::AkonadiXml ALIAS KPim6AkonadiXml)
 
-target_include_directories(KF5AkonadiXml INTERFACE "$<INSTALL_INTERFACE:${AkonadiXml_INSTALL_INCLUDEDIR}>")
-target_include_directories(KF5AkonadiXml PUBLIC "$<BUILD_INTERFACE:${Akonadi_SOURCE_DIR}/src/core;${Akonadi_BINARY_DIR}/src/core>")
+target_include_directories(KPim6AkonadiXml INTERFACE "$<INSTALL_INTERFACE:${AkonadiXml_INSTALL_INCLUDEDIR}>")
+target_include_directories(KPim6AkonadiXml PUBLIC "$<BUILD_INTERFACE:${Akonadi_SOURCE_DIR}/src/core;${Akonadi_BINARY_DIR}/src/core>")
 
-target_link_libraries(KF5AkonadiXml
+target_link_libraries(KPim6AkonadiXml
 PUBLIC
-    KF5::AkonadiCore
+    KPim6::AkonadiCore
     Qt::Xml
 PRIVATE
-    KF5::I18n
+    KF6::I18n
 )
-if (LIBXML2_FOUND)
-    target_link_libraries(KF5AkonadiXml PRIVATE LibXml2::LibXml2)
+if(LIBXML2_FOUND)
+    target_link_libraries(KPim6AkonadiXml PRIVATE LibXml2::LibXml2)
 endif()
 
-set_target_properties(KF5AkonadiXml PROPERTIES
+set_target_properties(KPim6AkonadiXml PROPERTIES
     VERSION ${AKONADI_VERSION}
     SOVERSION ${AKONADI_SOVERSION}
     EXPORT_NAME AkonadiXml
 )
 
-ecm_generate_pri_file(BASE_NAME AkonadiXml
-    LIB_NAME KF5AkonadiXml
-    DEPS "AkonadiCore QtXml" FILENAME_VAR PRI_FILENAME
+install(TARGETS
+    KPim6AkonadiXml
+    EXPORT KPim6AkonadiTargets ${KDE_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(TARGETS
-    KF5AkonadiXml
-    EXPORT KF5AkonadiTargets ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
-)
-
-install(TARGETS
-    akonadi2xml ${KF_INSTALL_TARGETS_DEFAULT_ARGS}
+    akonadi2xml ${KDE_INSTALL_TARGETS_DEFAULT_ARGS}
 )
 
 install(FILES
@@ -96,11 +91,6 @@ install(FILES
     ${AkonadiXml_CC_HEADERS}
     DESTINATION ${AkonadiXml_INSTALL_INCLUDEDIR}/Akonadi
     COMPONENT Devel
-)
-
-install(FILES
-    ${PRI_FILENAME}
-    DESTINATION ${ECM_MKSPECS_INSTALL_DIR}
 )
 
 install(FILES

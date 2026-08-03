@@ -1,6 +1,6 @@
 /*
     SPDX-FileCopyrightText: 2006-2008 Tobias Koenig <tokoe@kde.org>
-    SPDX-FileCopyrightText: 2012-2022 Laurent Montel <montel@kde.org>
+    SPDX-FileCopyrightText: 2012-2024 Laurent Montel <montel@kde.org>
 
     SPDX-License-Identifier: LGPL-2.0-or-later
 */
@@ -17,8 +17,9 @@ class QAbstractItemView;
 namespace Akonadi
 {
 class AgentInstance;
-class AgentFilterProxyModel;
+class AgentInstanceFilterProxyModel;
 class AgentInstanceWidgetPrivate;
+class AccountActivitiesAbstract;
 
 /**
  * @short Provides a widget that lists all available agent instances.
@@ -73,25 +74,31 @@ public:
      * Returns the current agent instance or an invalid agent instance
      * if no agent instance is selected.
      */
-    Q_REQUIRED_RESULT AgentInstance currentAgentInstance() const;
+    [[nodiscard]] AgentInstance currentAgentInstance() const;
 
     /**
      * Returns the selected agent instances.
      * @since 4.5
      */
-    Q_REQUIRED_RESULT QVector<AgentInstance> selectedAgentInstances() const;
+    [[nodiscard]] QList<AgentInstance> selectedAgentInstances() const;
 
     /**
      * Returns the agent filter proxy model, use this to filter by
      * agent mimetype or capabilities.
      */
-    Q_REQUIRED_RESULT AgentFilterProxyModel *agentFilterProxyModel() const;
+    [[nodiscard]] Akonadi::AgentInstanceFilterProxyModel *agentInstanceFilterProxyModel() const;
 
     /**
      * Returns the view used in the widget.
      * @since 4.5
      */
-    Q_REQUIRED_RESULT QAbstractItemView *view() const;
+    [[nodiscard]] QAbstractItemView *view() const;
+
+    [[nodiscard]] bool enablePlasmaActivities() const;
+    void setEnablePlasmaActivities(bool newEnablePlasmaActivities);
+
+    [[nodiscard]] AccountActivitiesAbstract *accountActivitiesAbstract() const;
+    void setAccountActivitiesAbstract(AccountActivitiesAbstract *abstract);
 
 Q_SIGNALS:
     /**

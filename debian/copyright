@@ -7,50 +7,51 @@ Comment:
 Upstream-Contact: kde-devel@kde.org
 
 Files: *
-Copyright: 2009, Andras Mantia <amantia@kde.org>
+Copyright: 2014, - Daniel Vrátil <dvratil@redhat.com>
+           2009, Andras Mantia <amantia@kde.org>
            2006, Andreas Gungl <a.gungl@gmx.de>
-           2009-2010, Bertjan Broeksema <broeksema@kde.org>
+           2010, Bertjan Broeksema <broeksema@kde.org>
            2007, Bruno Virlet <bruno.virlet@gmail.com>
+           2014, Christian Mollekop <mollekopf@kolabsys.com>
            2011, Christian Mollekopf <chrigi_1@fastmail.fm>
            2013-2014, Christian Mollekopf <mollekopf@kolabsys.com>
            2007, Christian Schaarschmidt <schaarsc@gmx.de>
            2009, Constantin Berzan <exit3219@gmail.com>
-           2014-2019, Daniel Vrátil <dvratil@kde.org>
-           2013-2016, David Faure <faure@kde.org>
+           2014, Daniel Vr ??til <dvratil@redhat.com>
+           2014, Daniel Vrátil <dvraitl@redhat.com>
+           2017, Daniel Vrátil <dvratil@kde.og>
+           2015-2024, Daniel Vrátil <dvratil@kde.org>
+           2013-2015, Daniel Vrátil <dvratil@redhat.com>
+           2013-2019, David Faure <faure@kde.org>
+           2024, g10 Code GmbH
            2002, Holger Freyther <freyther@kde.org>
            2009, Igor Trindade Oliveira <igor_trindade@yahoo.com.br>
-           2006-2008, Ingo Klöcker <kloecker@kde.org>
+           Igor Trindade Oliveira <igor_trindade@yahoo.com.br>
+           2006, Ingo Kloecker <kloecker@kde.org>
+           2008, Ingo Klöcker <kloecker@kde.org>
            2010, KDAB
-           2007-2009, Kevin Krammer <kevin.krammer@gmx.at>
+           2008-2009, Kevin Krammer <kevin.krammer@gmx.at>
            2009, Kevin Ottens <ervin@kde.org>
            2010, Klarälvdalens Datakonsult AB
-           2015, Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
-           2010-2018, Laurent Montel <montel@kde.org>
-           2006-2010, Marc Mutz <mutz@kde.org>
+           2015, Klarälvdalens Datakonsult AB a KDAB Group company, info@kdab.com
+           2010-2024, Laurent Montel <montel@kde.org>
+           2010, Marc Mutz <mutz@kde.org>
            1997, Matthias Kalle Dalheimer <kalle@kde.org>
            2010, Michael Jansen <kde@michael-jansen>
            2010, Milian Wolff <mail@milianw.de>
-           2008, Omat Holding B.V <info@omat.nl>
+           2008, Omat Holding B.V. <info@omat.nl>
            2007, Robert Zwerus <arzie@dds.nl>
-           2010, Rosetta Contributors and Canonical Ltd
-           2015-2016, Sandro Knauß <knauss@kde.org>
-           2010, Sebastian Trueg <trueg@kde.org>
+           2016, Sandro Knauß <knauss@kde.org>
+           2015, Sandro Knauß <knauss@kolabsys.com>
            2008-2011, Stephen Kelly <steveire@gmail.com>
-           2009, Szymon Stefanek <s.stefanek@gmail.com>
-           2008-2019, This_file_is_part_of_KDE
+           2009, Szymon Stefanek <s.stefanek at gmail dot com>
            2009, Thomas McGuire <mcguire@kde.org>
            2008, Thomas McGuire <thomas.mcguire@gmx.net>
            2006-2010, Till Adam <adam@kde.org>
-           2000, Timo Hummel <timo.hummel@sap.com>
+           2010, Till Adam <till@kdab.com>
            2006-2011, Tobias Koenig <tokoe@kde.org>
-           2000, Tom Braun <braunt@fh-konstanz.de>
-           2006-2015, Volker Krause <vkrause@kde.org>
-           2010, Will Stephenson <wstephenson@kde.org>
-           a KDAB Group company <info@kdab.net>
-           author Stephen Kelly <stephen@kdab.com>
+           2006-2022, Volker Krause <vkrause@kde.org>
 License: LGPL-2+
-Comment:
- See full list of contributors in "AUTHORS" file.
 
 Files: autotests/akonadicontrol/agenttypetest.cpp
        autotests/libs/testrunner/config.cpp
@@ -88,6 +89,8 @@ Files: autotests/akonadicontrol/agenttypetest.cpp
        src/private/instance_p.h
        src/server/commandcontext.cpp
        src/server/commandcontext.h
+       src/server/handler/searchresulthandler.cpp
+       src/server/handler/searchresulthandler.h
        src/server/storage/collectionstatistics.cpp
        src/server/storage/collectionstatistics.h
        src/server/storage/partstreamer.cpp
@@ -99,24 +102,28 @@ Files: autotests/akonadicontrol/agenttypetest.cpp
 Copyright: 2016-2018, Daniel Vrátil <dvratil@kde.org>
            2013-2015, Daniel Vrátil <dvratil@redhat.com>
            2016, Elvis Angelaccio <elvis.angelaccio@kdemail.net>
-           1991-1999, Free Software Foundation, Inc
            2008, Igor Trindade Oliveira <igor_trindade@yahoo.com.br>
-           2008, Omat Holding B.V <info@omat.nl>
+           2008, Omat Holding B.V. <info@omat.nl>
            2006, Tobias Koenig <tokoe@kde.org>
            2009-2013, Volker Krause <vkrause@kde.org>
 License: LGPL-2.1+
 
-Files: autotests/libs/fakeakonadiservercommand.cpp
+Files: akonadi-mime.xml
+       autotests/libs/fakeakonadiservercommand.cpp
        autotests/libs/fakeakonadiservercommand.h
        autotests/libs/fakeserverdata.cpp
        autotests/libs/fakeserverdata.h
        src/widgets/collectionmaintenancepage.cpp
        src/widgets/collectionmaintenancepage.h
+       src/widgets/tagselectioncombobox.cpp
+       src/widgets/tagselectioncombobox.h
        templates/akonadiresource/src/%{APPNAMELC}resource.cpp
        templates/akonadiresource/src/%{APPNAMELC}resource.h
        templates/akonadiserializer/src/akonadi_serializer_%{APPNAMELC}.cpp
        templates/akonadiserializer/src/akonadi_serializer_%{APPNAMELC}.h
-Copyright: 2009-2018, Montel Laurent <montel@kde.org>
+Copyright: 2014, Christian Mollekopf <mollekopf@kolabsys.com>
+           2020, Daniel Vrátil <dvratil@kde.org>
+           2009-2024, Laurent Montel <montel@kde.org>
            2009, Stephen Kelly <steveire@gmail.com>
 License: GPL-2+
 
@@ -129,16 +136,23 @@ License: LGPL-2.1+3+KDEeV
 Files: autotests/libs/collectioncreatetest.cpp
        autotests/libs/collectionmodifytest.cpp
        autotests/libs/tagmodeltest.cpp
+       autotests/widgets/subscriptiondialogtest.cpp
+       autotests/widgets/tageditwidgettest.cpp
+       autotests/widgets/tagselectioncomboboxtest.cpp
+       autotests/widgets/tagwidgettest.cpp
        src/core/itemchangelog.cpp
        src/core/itemchangelog_p.h
-Copyright: 2015-2017, Daniel Vrátil <dvratil@kde.org>
+Copyright: 2015-2020, Daniel Vrátil <dvratil@kde.org>
+           2015, Daniel Vrátil <dvratil@redhat.com>
 License: GPL-2+3+KDEeV
 
-Files: cmake/*
+Files: cmake/modules/AkonadiMacros.cmake
+       cmake/modules/FindSqlite.cmake
+       CMakePresets.json
 Copyright: 2010, Christophe Giboudeaux <cgiboudeaux@gmail.com>
            2014, Daniel Vrátil <dvratil@redhat.com>
            2008, Gilles Caulier <caulier.gilles@gmail.com>
-           2000-2009, Kitware, Inc., Insight Software Consortium
+           2021-2024, Laurent Montel <montel@kde.org>
 License: BSD-3-clause
 
 Files: src/core/qtest_akonadi.h
@@ -148,16 +162,27 @@ Copyright: 2006, David Faure <faure@kde.org>
            2009, Volker Krause <vkrause@kde.org>
 License: LGPL-2
 
-Files: src/qsqlite/src/qsql_sqlite.h
-       src/qsqlite/src/smain.cpp
-Copyright: 2009, Nokia Corporation and/or its subsidiary(-ies)
-License: GPL-3_or_LGPL-2.1-QTexception-1.0
+Files: tools/clang-tidy-to-junit.py
+Copyright: 2018, PSPDFKit
+License: Expat
 
-Files: src/qsqlite/src/qsql_sqlite.cpp
-Copyright: 2013, Digia Plc and/or its subsidiary(-ies)
-           2009-2010, Nokia Corporation and/or its subsidiary(-ies)
-           2013, Olivier Goffart <ogoffart@woboq.com>
-License: GPL-3_or_LGPL-2.1-QTexception-1.1
+Files: .git-blame-ignore-revs
+       .gitignore
+       .gitlab-ci.yml
+       .kde-ci.yml
+       .krazy
+       metainfo.yaml
+       README.md
+       sanitizers.supp
+       src/.krazy
+Copyright: 2016, Daniel Vrátil <dvratil@kde.org>
+           None
+License: CC0-1.0
+
+Files: debian/*
+Copyright: 2008 Sune Vuorela <debian@pusling.com>
+           2024 Patrick Franz <deltaone@debian.org>
+License: LGPL-2+
 
 License: BSD-3-clause
  Redistribution and use in source and binary forms, with or without
@@ -216,82 +241,6 @@ License: GPL-2+3+KDEeV
  complete text of the GNU General Public License version 3 can be
  found in `/usr/share/common-licenses/GPL-3'.
 
-License: GPL-3_or_LGPL-2.1-QTexception-1.0
- $QT_BEGIN_LICENSE:LGPL$
- Commercial Usage
- Licensees holding valid Qt Commercial licenses may use this file in
- accordance with the Qt Commercial License Agreement provided with the
- Software or, alternatively, in accordance with the terms contained in
- a written agreement between you and Nokia.
- .
- GNU Lesser General Public License Usage
- Alternatively, this file may be used under the terms of the GNU Lesser
- General Public License version 2.1 as published by the Free Software
- Foundation and appearing in the file LICENSE.LGPL included in the
- packaging of this file.  Please review the following information to
- ensure the GNU Lesser General Public License version 2.1 requirements
- will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
- .
- In addition, as a special exception, Nokia gives you certain
- additional rights. These rights are described in the Nokia Qt LGPL
- Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
- package.
- .
- GNU General Public License Usage
- Alternatively, this file may be used under the terms of the GNU
- General Public License version 3.0 as published by the Free Software
- Foundation and appearing in the file LICENSE.GPL included in the
- packaging of this file.  Please review the following information to
- ensure the GNU General Public License version 3.0 requirements will be
- met: http://www.gnu.org/copyleft/gpl.html.
- .
- If you are unsure which license is appropriate for your use, please
- contact the sales department at http://www.qtsoftware.com/contact.
- $QT_END_LICENSE$
- --
- On Debian systems, the complete text of the GNU General Public License
- version 3 can be found in `/usr/share/common-licenses/GPL-3', likewise, the
- complete text of the GNU Lesser General Public License version 2.1 can be
- found in `/usr/share/common-licenses/LGPL-2.1'.
- above.
-
-License: GPL-3_or_LGPL-2.1-QTexception-1.1
- $QT_BEGIN_LICENSE:LGPL$
- Commercial Usage
- Licensees holding valid Qt Commercial licenses may use this file in
- accordance with the Qt Commercial License Agreement provided with the
- Software or, alternatively, in accordance with the terms contained in
- a written agreement between you and Nokia.
- .
- GNU Lesser General Public License Usage
- Alternatively, this file may be used under the terms of the GNU Lesser
- General Public License version 2.1 as published by the Free Software
- Foundation and appearing in the file LICENSE.LGPL included in the
- packaging of this file.  Please review the following information to
- ensure the GNU Lesser General Public License version 2.1 requirements
- will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
- .
- In addition, as a special exception, Nokia gives you certain additional
- rights.  These rights are described in the Nokia Qt LGPL Exception
- version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
- .
- GNU General Public License Usage
- Alternatively, this file may be used under the terms of the GNU
- General Public License version 3.0 as published by the Free Software
- Foundation and appearing in the file LICENSE.GPL included in the
- packaging of this file.  Please review the following information to
- ensure the GNU General Public License version 3.0 requirements will be
- met: http://www.gnu.org/copyleft/gpl.html.
- .
- If you have questions regarding the use of this file, please contact
- Nokia at qt-info@nokia.com.
- $QT_END_LICENSE$
- --
- On Debian systems, the complete text of the GNU General Public License
- version 3 can be found in `/usr/share/common-licenses/GPL-3', likewise, the
- complete text of the GNU Lesser General Public License version 2.1 can be
- found in `/usr/share/common-licenses/LGPL-2.1'.
-
 License: LGPL-2
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public
@@ -342,3 +291,40 @@ License: LGPL-2.1+3+KDEeV
  .
  The complete text of the GNU Lesser General Public License version 3
  can be found in `/usr/share/common-licenses/LGPL-3'.
+
+License: CC0-1.0
+ CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL
+ SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN ATTORNEY-CLIENT
+ RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS.
+ CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE USE OF THIS DOCUMENT OR
+ THE INFORMATION OR WORKS PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR
+ DAMAGES RESULTING FROM THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS
+ PROVIDED HEREUNDER.
+ .
+ Statement of Purpose
+ .
+ The laws of most jurisdictions throughout the world automatically confer
+ exclusive Copyright and Related Rights (defined below) upon the creator and
+ subsequent owner(s) (each and all, an "owner") of an original work of
+ authorship and/or a database (each, a "Work").
+ .
+ On Debian systems, the complete text of the Creative Commons Zero v1.0 Universal
+ license can be found in "/usr/share/common-licenses/CC0-1.0".
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -17,8 +17,6 @@
 #include "storage/selectquerybuilder.h"
 #include "storage/transaction.h"
 
-#include <private/imapset_p.h>
-
 using namespace Akonadi;
 using namespace Akonadi::Server;
 
@@ -52,10 +50,10 @@ bool ItemCopyHandler::copyItem(const PimItem &item, const Collection &target)
     return store->appendPimItem(newParts, item.flags(), item.mimeType(), target, QDateTime::currentDateTimeUtc(), QString(), QString(), item.gid(), newItem);
 }
 
-void ItemCopyHandler::processItems(const QVector<qint64> &ids)
+void ItemCopyHandler::processItems(const QList<qint64> &ids)
 {
     SelectQueryBuilder<PimItem> qb;
-    ItemQueryHelper::itemSetToQuery(ImapSet(ids), qb);
+    ItemQueryHelper::itemSetToQuery(ids, qb);
     if (!qb.exec()) {
         failureResponse(QStringLiteral("Unable to retrieve items"));
         return;
@@ -83,7 +81,7 @@ bool ItemCopyHandler::parseStream()
 {
     const auto &cmd = Protocol::cmdCast<Protocol::CopyItemsCommand>(m_command);
 
-    if (!checkScopeConstraints(cmd.items(), Scope::Uid)) {
+    if (!checkScopeConstraints(cmd.items(), {Scope::Uid})) {
         return failureResponse(QStringLiteral("Only UID copy is allowed"));
     }
 
@@ -104,7 +102,7 @@ bool ItemCopyHandler::parseStream()
     ItemRetriever retriever(akonadi().itemRetrievalManager(), connection(), connection()->context());
     retriever.setItemSet(cmd.items().uidSet());
     retriever.setRetrieveFullPayload(true);
-    QObject::connect(&retriever, &ItemRetriever::itemsRetrieved, [this](const QVector<qint64> &ids) {
+    QObject::connect(&retriever, &ItemRetriever::itemsRetrieved, &retriever, [this](const QList<qint64> &ids) {
         processItems(ids);
     });
     if (!retriever.exec()) {

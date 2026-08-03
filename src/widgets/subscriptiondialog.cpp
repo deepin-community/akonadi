@@ -17,6 +17,7 @@
 #include <KSharedConfig>
 
 #include <KConfigGroup>
+#include <KLineEditEventHandler>
 #include <KLocalizedString>
 
 #include <KMessageBox>
@@ -33,6 +34,10 @@
 
 using namespace Akonadi;
 
+namespace
+{
+static const char mySubscriptionDialogGroupName[] = "SubscriptionDialog";
+}
 /**
  * @internal
  */
@@ -61,6 +66,7 @@ public:
 
         ui.collectionView->setModel(&filterRecursiveCollectionFilter);
         ui.searchLineEdit->setFocus();
+        KLineEditEventHandler::catchReturnKey(ui.searchLineEdit);
         q->connect(ui.searchLineEdit, &QLineEdit::textChanged, q, [this](const QString &str) {
             filterRecursiveCollectionFilter.setSearchPattern(str);
             ui.collectionView->expandAll();
@@ -99,13 +105,13 @@ public:
 
     void writeConfig() const
     {
-        KConfigGroup group(KSharedConfig::openStateConfig(), "SubscriptionDialog");
+        KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(mySubscriptionDialogGroupName));
         group.writeEntry("Size", q->size());
     }
 
     void readConfig() const
     {
-        KConfigGroup group(KSharedConfig::openStateConfig(), "SubscriptionDialog");
+        KConfigGroup group(KSharedConfig::openStateConfig(), QLatin1StringView(mySubscriptionDialogGroupName));
         const QSize sizeDialog = group.readEntry("Size", QSize(500, 400));
         if (sizeDialog.isValid()) {
             q->resize(sizeDialog);

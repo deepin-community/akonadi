@@ -26,9 +26,10 @@ QString DbIntrospectorMySql::hasIndexQuery(const QString &tableName, const QStri
     return QStringLiteral("SHOW INDEXES FROM %1 WHERE `Key_name` = '%2'").arg(tableName, indexName);
 }
 
-QVector<DbIntrospector::ForeignKey> DbIntrospectorMySql::foreignKeyConstraints(const QString &tableName)
+QList<DbIntrospector::ForeignKey> DbIntrospectorMySql::foreignKeyConstraints(const QString &tableName)
 {
-    QueryBuilder qb(QStringLiteral("information_schema.REFERENTIAL_CONSTRAINTS"), QueryBuilder::Select);
+    auto store = DataStore::dataStoreForDatabase(m_database);
+    QueryBuilder qb(store, QStringLiteral("information_schema.REFERENTIAL_CONSTRAINTS"), QueryBuilder::Select);
     qb.addJoin(QueryBuilder::InnerJoin,
                QStringLiteral("information_schema.KEY_COLUMN_USAGE"),
                QStringLiteral("information_schema.REFERENTIAL_CONSTRAINTS.CONSTRAINT_NAME"),
@@ -47,7 +48,7 @@ QVector<DbIntrospector::ForeignKey> DbIntrospectorMySql::foreignKeyConstraints(c
         throw DbException(qb.query());
     }
 
-    QVector<ForeignKey> result;
+    QList<ForeignKey> result;
     while (qb.query().next()) {
         ForeignKey fk;
         fk.name = qb.query().value(0).toString();
@@ -63,6 +64,16 @@ QVector<DbIntrospector::ForeignKey> DbIntrospectorMySql::foreignKeyConstraints(c
     return result;
 }
 
+QString DbIntrospectorMySql::getAutoIncrementValueQuery(const QString &tableName, const QString &)
+{
+    return QStringLiteral("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME = '%1'").arg(tableName);
+}
+
+QString DbIntrospectorMySql::updateAutoIncrementValueQuery(const QString &tableName, const QString &, qint64 value)
+{
+    return QStringLiteral("ALTER TABLE %1 AUTO_INCREMENT = %2").arg(tableName).arg(value);
+}
+
 // END MySql
 
 // BEGIN Sqlite
@@ -72,14 +83,14 @@ DbIntrospectorSqlite::DbIntrospectorSqlite(const QSqlDatabase &database)
 {
 }
 
-QVector<DbIntrospector::ForeignKey> DbIntrospectorSqlite::foreignKeyConstraints(const QString &tableName)
+QList<DbIntrospector::ForeignKey> DbIntrospectorSqlite::foreignKeyConstraints(const QString &tableName)
 {
-    QSqlQuery query(DataStore::self()->database());
+    QSqlQuery query(m_database);
     if (!query.exec(QStringLiteral("PRAGMA foreign_key_list(%1)").arg(tableName))) {
         throw DbException(query);
     }
 
-    QVector<ForeignKey> result;
+    QList<ForeignKey> result;
     while (query.next()) {
         ForeignKey fk;
         fk.column = query.value(3).toString();
@@ -99,6 +110,16 @@ QString DbIntrospectorSqlite::hasIndexQuery(const QString &tableName, const QStr
     return QStringLiteral("SELECT * FROM sqlite_master WHERE type='index' AND tbl_name='%1' AND name='%2';").arg(tableName, indexName);
 }
 
+QString DbIntrospectorSqlite::getAutoIncrementValueQuery(const QString &tableName, const QString &)
+{
+    return QStringLiteral("SELECT seq FROM sqlite_sequence WHERE name = '%1'").arg(tableName);
+}
+
+QString DbIntrospectorSqlite::updateAutoIncrementValueQuery(const QString &tableName, const QString &, qint64 value)
+{
+    return QStringLiteral("UPDATE sqlite_sequence SET seq = %1 WHERE name = '%2'").arg(value).arg(tableName);
+}
+
 // END Sqlite
 
 // BEGIN PostgreSql
@@ -108,7 +129,7 @@ DbIntrospectorPostgreSql::DbIntrospectorPostgreSql(const QSqlDatabase &database)
 {
 }
 
-QVector<DbIntrospector::ForeignKey> DbIntrospectorPostgreSql::foreignKeyConstraints(const QString &tableName)
+QList<DbIntrospector::ForeignKey> DbIntrospectorPostgreSql::foreignKeyConstraints(const QString &tableName)
 {
 #define TABLE_CONSTRAINTS "information_schema.table_constraints"
 #define KEY_COLUMN_USAGE "information_schema.key_column_usage"
@@ -148,7 +169,8 @@ QVector<DbIntrospector::ForeignKey> DbIntrospectorPostgreSql::foreignKeyConstrai
                                                       Query::Equals,
                                                       QStringLiteral(CONSTRAINT_COLUMN_USAGE ".constraint_name"));
 
-    QueryBuilder qb(QStringLiteral(TABLE_CONSTRAINTS), QueryBuilder::Select);
+    auto store = DataStore::dataStoreForDatabase(m_database);
+    QueryBuilder qb(store, QStringLiteral(TABLE_CONSTRAINTS), QueryBuilder::Select);
     qb.addColumn(QStringLiteral(TABLE_CONSTRAINTS ".constraint_name"));
     qb.addColumn(QStringLiteral(KEY_COLUMN_USAGE ".column_name"));
     qb.addColumn(QStringLiteral(CONSTRAINT_COLUMN_USAGE ".table_name AS referenced_table"));
@@ -158,7 +180,7 @@ QVector<DbIntrospector::ForeignKey> DbIntrospectorPostgreSql::foreignKeyConstrai
     qb.addJoin(QueryBuilder::LeftJoin, QStringLiteral(KEY_COLUMN_USAGE), keyColumnUsageCondition);
     qb.addJoin(QueryBuilder::LeftJoin, QStringLiteral(REFERENTIAL_CONSTRAINTS), referentialConstraintsCondition);
     qb.addJoin(QueryBuilder::LeftJoin, QStringLiteral(CONSTRAINT_COLUMN_USAGE), constraintColumnUsageCondition);
-    qb.addValueCondition(QStringLiteral(TABLE_CONSTRAINTS ".constraint_type"), Query::Equals, QLatin1String("FOREIGN KEY"));
+    qb.addValueCondition(QStringLiteral(TABLE_CONSTRAINTS ".constraint_type"), Query::Equals, QLatin1StringView("FOREIGN KEY"));
     qb.addValueCondition(QStringLiteral(TABLE_CONSTRAINTS ".table_name"), Query::Equals, tableName.toLower());
 
 #undef TABLE_CONSTRAINTS
@@ -170,7 +192,7 @@ QVector<DbIntrospector::ForeignKey> DbIntrospectorPostgreSql::foreignKeyConstrai
         throw DbException(qb.query());
     }
 
-    QVector<ForeignKey> result;
+    QList<ForeignKey> result;
     while (qb.query().next()) {
         ForeignKey fk;
         fk.name = qb.query().value(0).toString();
@@ -194,6 +216,17 @@ QString DbIntrospectorPostgreSql::hasIndexQuery(const QString &tableName, const 
     query += QStringLiteral(" UNION SELECT conname FROM pg_catalog.pg_constraint ");
     query += QStringLiteral(" WHERE conname ilike '%1'").arg(indexName);
     return query;
+}
+
+QString DbIntrospectorPostgreSql::getAutoIncrementValueQuery(const QString &tableName, const QString &idColumn)
+{
+    return QStringLiteral("SELECT nextval(pg_get_serial_sequence('%1', '%2'))").arg(tableName, idColumn);
+}
+
+QString DbIntrospectorPostgreSql::updateAutoIncrementValueQuery(const QString &tableName, const QString &idColumn, qint64 value)
+{
+    // Can't use ALTER SEQUENCE, because it doesn't support expressions (like pg_get_serial_sequence())
+    return QStringLiteral("SELECT setval(pg_get_serial_sequence('%1', '%2'), %3) FROM %1").arg(tableName, idColumn).arg(value);
 }
 
 // END PostgreSql

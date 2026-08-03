@@ -76,7 +76,7 @@ public:
     /**
      * Returns the query string used for this search.
      */
-    QString queryString() const;
+    [[nodiscard]] QString queryString() const;
 
     /**
      * Sets the query string to be used for this search.
@@ -88,21 +88,21 @@ public:
      * Returns IDs of collections that will be queried
      * @since 4.13
      */
-    QVector<qint64> queryCollections() const;
+    [[nodiscard]] QList<qint64> queryCollections() const;
 
     /**
      * Sets collections to be queried.
      * @param collections List of collections to be queries
      * @since 4.13
      */
-    void setQueryCollections(const QVector<Collection> &collections);
+    void setQueryCollections(const QList<Collection> &collections);
 
     /**
      * Sets IDs of collections to be queries
      * @param collectionsIds IDs of collections to query
      * @since 4.13
      */
-    void setQueryCollections(const QVector<qint64> &collectionsIds);
+    void setQueryCollections(const QList<qint64> &collectionsIds);
 
     /**
      * Sets whether resources should be queried too.
@@ -129,7 +129,7 @@ public:
      *
      * @since 4.13
      */
-    bool isRemoteSearchEnabled() const;
+    [[nodiscard]] bool isRemoteSearchEnabled() const;
 
     /**
      * Sets whether the search should recurse into collections
@@ -147,12 +147,12 @@ public:
      *
      * @since 4.13
      */
-    bool isRecursive() const;
+    [[nodiscard]] bool isRecursive() const;
 
     /// @cond PRIVATE
-    QByteArray type() const override;
+    [[nodiscard]] QByteArray type() const override;
     Attribute *clone() const override;
-    QByteArray serialized() const override;
+    [[nodiscard]] QByteArray serialized() const override;
     void deserialize(const QByteArray &data) override;
     /// @endcond
 

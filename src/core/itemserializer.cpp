@@ -202,13 +202,13 @@ QSet<QByteArray> ItemSerializer::allowedForeignParts(const Item &item)
 
 Item ItemSerializer::convert(const Item &item, int mtid)
 {
-    qCDebug(AKONADICORE_LOG) << "asked to convert a" << item.mimeType() << "item to format" << (mtid ? QMetaType::typeName(mtid) : "<legacy>");
+    qCDebug(AKONADICORE_LOG) << "asked to convert a" << item.mimeType() << "item to format" << (mtid ? QMetaType(mtid).name() : "<legacy>");
     if (!item.hasPayload()) {
         qCDebug(AKONADICORE_LOG) << "  -> but item has no payload!";
         return Item();
     }
 
-    if (ItemSerializerPlugin *const plugin = TypePluginLoader::pluginForMimeTypeAndClass(item.mimeType(), QVector<int>(1, mtid), TypePluginLoader::NoDefault)) {
+    if (ItemSerializerPlugin *const plugin = TypePluginLoader::pluginForMimeTypeAndClass(item.mimeType(), QList<int>(1, mtid), TypePluginLoader::NoDefault)) {
         qCDebug(AKONADICORE_LOG) << "  -> found a plugin that feels responsible, trying serialising the payload";
         QBuffer buffer;
         buffer.open(QIODevice::ReadWrite);
@@ -236,3 +236,5 @@ void ItemSerializer::overridePluginLookup(QObject *p)
 }
 
 } // namespace Akonadi
+
+#include "moc_itemserializer_p.cpp"

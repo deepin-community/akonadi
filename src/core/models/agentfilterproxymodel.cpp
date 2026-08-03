@@ -30,14 +30,13 @@ public:
     QStringList mimeTypes;
     QStringList capabilities;
     QStringList excludeCapabilities;
-    bool filterAcceptRegExp(const QModelIndex &index, const QRegularExpression &filterRegExpStr);
+    [[nodiscard]] bool filterAcceptRegExp(const QModelIndex &index, const QRegularExpression &filterRegExpStr);
 };
 
 AgentFilterProxyModel::AgentFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
     , d(new AgentFilterProxyModelPrivate)
 {
-    setDynamicSortFilter(true);
 }
 
 AgentFilterProxyModel::~AgentFilterProxyModel() = default;
@@ -138,6 +137,8 @@ bool AgentFilterProxyModel::filterAcceptsRow(int row, const QModelIndex & /*sour
             }
         }
     }
-
-    return d->filterAcceptRegExp(index, filterRegularExpression());
+    const bool result = d->filterAcceptRegExp(index, filterRegularExpression());
+    return result;
 }
+
+#include "moc_agentfilterproxymodel.cpp"

@@ -11,11 +11,12 @@
 #include "akonadiprivate_export.h"
 
 #include <QByteArray>
+#include <QDBusArgument>
 #include <QDateTime>
 #include <QDebug>
 #include <QJsonObject>
+#include <QList>
 #include <QSharedPointer>
-#include <QVector>
 
 #include "scope_p.h"
 #include "tristate_p.h"
@@ -100,11 +101,6 @@ public:
         FetchTags,
         ModifyTag,
 
-        // Relation
-        FetchRelations = 80,
-        ModifyRelation,
-        RemoveRelations,
-
         // Resources
         SelectResource = 90,
 
@@ -113,13 +109,12 @@ public:
 
         // Notifications
         ItemChangeNotification = 110,
-        CollectionChangeNotification,
-        TagChangeNotification,
-        RelationChangeNotification,
-        SubscriptionChangeNotification,
-        DebugChangeNotification,
-        CreateSubscription,
-        ModifySubscription,
+        CollectionChangeNotification = 111,
+        TagChangeNotification = 112,
+        SubscriptionChangeNotification = 114,
+        DebugChangeNotification = 115,
+        CreateSubscription = 116,
+        ModifySubscription = 117,
 
         // _MaxValue = 127
         _ResponseBit = 0x80U // reserved
@@ -172,6 +167,14 @@ AKONADIPRIVATE_EXPORT QDebug operator<<(QDebug dbg, Command::Type type);
 
 } // namespace Protocol
 } // namespace Akonadi
+
+inline const QDBusArgument &operator>>(const QDBusArgument &arg, Akonadi::Protocol::Command::Type &type)
+{
+    quint8 typeInt;
+    arg >> typeInt;
+    type = static_cast<Akonadi::Protocol::Command::Type>(typeInt);
+    return arg;
+}
 
 Q_DECLARE_METATYPE(Akonadi::Protocol::Command::Type)
 Q_DECLARE_METATYPE(Akonadi::Protocol::CommandPtr)
@@ -302,7 +305,6 @@ public:
         RemoteID = 1 << 9,
         GID = 1 << 10,
         Tags = 1 << 11,
-        Relations = 1 << 12,
         VirtReferences = 1 << 13
     };
     Q_DECLARE_FLAGS(FetchFlags, FetchFlag)
@@ -327,15 +329,15 @@ public:
         return !operator==(other);
     }
 
-    inline void setRequestedParts(const QVector<QByteArray> &requestedParts)
+    inline void setRequestedParts(const QList<QByteArray> &requestedParts)
     {
         mRequestedParts = requestedParts;
     }
-    inline QVector<QByteArray> requestedParts() const
+    inline QList<QByteArray> requestedParts() const
     {
         return mRequestedParts;
     }
-    QVector<QByteArray> requestedPayloads() const;
+    QList<QByteArray> requestedPayloads() const;
 
     inline void setChangedSince(const QDateTime &changedSince)
     {
@@ -403,10 +405,6 @@ public:
     {
         return mFlags & Tags;
     }
-    inline bool fetchRelations() const
-    {
-        return mFlags & Relations;
-    }
     inline bool fetchVirtualReferences() const
     {
         return mFlags & VirtReferences;
@@ -421,7 +419,7 @@ private:
     AncestorDepth mAncestorDepth = NoAncestor;
     // 2 bytes free
     FetchFlags mFlags = None;
-    QVector<QByteArray> mRequestedParts;
+    QList<QByteArray> mRequestedParts;
     QDateTime mChangedSince;
 
     friend AKONADIPRIVATE_EXPORT Akonadi::Protocol::DataStream &operator<<(Akonadi::Protocol::DataStream &stream,
@@ -488,7 +486,7 @@ public:
 
     inline bool hasContextId(Type type) const
     {
-        return ctx(type).type() == QVariant::LongLong;
+        return ctx(type).typeId() == QMetaType::LongLong;
     }
     inline qint64 contextId(Type type) const
     {
@@ -497,7 +495,7 @@ public:
 
     inline bool hasContextRID(Type type) const
     {
-        return ctx(type).type() == QVariant::String;
+        return ctx(type).typeId() == QMetaType::QString;
     }
     inline QString contextRID(Type type) const
     {
@@ -545,45 +543,12 @@ AKONADIPRIVATE_EXPORT Akonadi::Protocol::DataStream &operator>>(Akonadi::Protoco
 AKONADIPRIVATE_EXPORT QDebug operator<<(QDebug dbg, const Akonadi::Protocol::ChangeNotification &ntf);
 
 using ChangeNotificationPtr = QSharedPointer<ChangeNotification>;
-using ChangeNotificationList = QVector<ChangeNotificationPtr>;
+using ChangeNotificationList = QList<ChangeNotificationPtr>;
 
 class AKONADIPRIVATE_EXPORT ChangeNotification : public Command
 {
 public:
-    static QList<qint64> itemsToUids(const QVector<Akonadi::Protocol::FetchItemsResponse> &items);
-
-    class Relation
-    {
-    public:
-        Relation() = default;
-        Relation(const Relation &) = default;
-        Relation(Relation &&) = default;
-        inline Relation(qint64 leftId, qint64 rightId, const QString &type)
-            : leftId(leftId)
-            , rightId(rightId)
-            , type(type)
-        {
-        }
-
-        Relation &operator=(const Relation &) = default;
-        Relation &operator=(Relation &&) = default;
-
-        inline bool operator==(const Relation &other) const
-        {
-            return leftId == other.leftId && rightId == other.rightId && type == other.type;
-        }
-
-        void toJson(QJsonObject &json) const
-        {
-            json[QStringLiteral("leftId")] = leftId;
-            json[QStringLiteral("rightId")] = rightId;
-            json[QStringLiteral("type")] = type;
-        }
-
-        qint64 leftId = -1;
-        qint64 rightId = -1;
-        QString type;
-    };
+    static QList<qint64> itemsToUids(const QList<Akonadi::Protocol::FetchItemsResponse> &items);
 
     ChangeNotification &operator=(const ChangeNotification &) = default;
     ChangeNotification &operator=(ChangeNotification &&) = default;
@@ -614,7 +579,7 @@ public:
     {
         mMetaData.removeAll(metadata);
     }
-    QVector<QByteArray> metadata() const
+    QList<QByteArray> metadata() const
     {
         return mMetaData;
     }
@@ -634,7 +599,7 @@ protected:
     // For internal use only: Akonadi server can add some additional information
     // that might be useful when evaluating the notification for example, but
     // it is never transferred to clients
-    QVector<QByteArray> mMetaData;
+    QList<QByteArray> mMetaData;
 
     friend AKONADIPRIVATE_EXPORT Akonadi::Protocol::DataStream &operator<<(Akonadi::Protocol::DataStream &stream,
                                                                            const Akonadi::Protocol::ChangeNotification &ntf);
@@ -642,23 +607,11 @@ protected:
     friend AKONADIPRIVATE_EXPORT QDebug operator<<(QDebug dbg, const Akonadi::Protocol::ChangeNotification &ntf);
 };
 
-inline uint qHash(const ChangeNotification::Relation &rel)
-{
-    return ::qHash(rel.leftId + rel.rightId);
-}
-
-// TODO: Internalize?
-AKONADIPRIVATE_EXPORT Akonadi::Protocol::DataStream &operator<<(Akonadi::Protocol::DataStream &stream,
-                                                                const Akonadi::Protocol::ChangeNotification::Relation &relation);
-AKONADIPRIVATE_EXPORT Akonadi::Protocol::DataStream &operator>>(Akonadi::Protocol::DataStream &stream,
-                                                                Akonadi::Protocol::ChangeNotification::Relation &relation);
-
 } // namespace Protocol
 } // namespace Akonadi
 
 Q_DECLARE_METATYPE(Akonadi::Protocol::ChangeNotificationPtr)
 Q_DECLARE_METATYPE(Akonadi::Protocol::ChangeNotificationList)
-Q_DECLARE_TYPEINFO(Akonadi::Protocol::ChangeNotification::Relation, Q_MOVABLE_TYPE);
 
 /******************************************************************************/
 

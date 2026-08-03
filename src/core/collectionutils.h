@@ -19,42 +19,43 @@ namespace Akonadi
  */
 namespace CollectionUtils
 {
-Q_REQUIRED_RESULT inline bool isVirtualParent(const Collection &collection)
+[[nodiscard]] inline bool isVirtualParent(const Collection &collection)
 {
     return (collection.parentCollection() == Collection::root() && collection.isVirtual());
 }
 
-Q_REQUIRED_RESULT inline bool isReadOnly(const Collection &collection)
+[[nodiscard]] inline bool isReadOnly(const Collection &collection)
 {
     return !(collection.rights() & Collection::CanCreateItem);
 }
 
-Q_REQUIRED_RESULT inline bool isRoot(const Collection &collection)
+[[nodiscard]] inline bool isRoot(const Collection &collection)
 {
     return (collection == Collection::root());
 }
 
-Q_REQUIRED_RESULT inline bool isResource(const Collection &collection)
+[[nodiscard]] inline bool isResource(const Collection &collection)
 {
     return (collection.parentCollection() == Collection::root());
 }
 
-Q_REQUIRED_RESULT inline bool isStructural(const Collection &collection)
+[[nodiscard]] inline bool isStructural(const Collection &collection)
 {
     return collection.contentMimeTypes().isEmpty();
 }
 
-Q_REQUIRED_RESULT inline bool isFolder(const Collection &collection)
+[[nodiscard]] inline bool isFolder(const Collection &collection)
 {
-    return (!isRoot(collection) && !isResource(collection) && !isStructural(collection) && collection.resource() != QLatin1String("akonadi_search_resource"));
+    return (!isRoot(collection) && !isResource(collection) && !isStructural(collection)
+            && collection.resource() != QLatin1StringView("akonadi_search_resource"));
 }
 
-Q_REQUIRED_RESULT inline bool isUnifiedMailbox(const Collection &collection)
+[[nodiscard]] inline bool isUnifiedMailbox(const Collection &collection)
 {
-    return collection.resource() == QLatin1String("akonadi_unifiedmailbox_agent");
+    return collection.resource() == QLatin1StringView("akonadi_unifiedmailbox_agent");
 }
 
-Q_REQUIRED_RESULT inline QString defaultIconName(const Collection &col)
+[[nodiscard]] inline QString defaultIconName(const Collection &col)
 {
     if (CollectionUtils::isVirtualParent(col)) {
         return QStringLiteral("edit-find");
@@ -74,15 +75,15 @@ Q_REQUIRED_RESULT inline QString defaultIconName(const Collection &col)
 
     const QStringList content = col.contentMimeTypes();
     if ((content.size() == 1) || (content.size() == 2 && content.contains(Collection::mimeType()))) {
-        if (content.contains(QLatin1String("text/x-vcard")) || content.contains(QLatin1String("text/directory"))
-            || content.contains(QLatin1String("text/vcard"))) {
+        if (content.contains(QLatin1StringView("text/x-vcard")) || content.contains(QLatin1StringView("text/directory"))
+            || content.contains(QLatin1StringView("text/vcard"))) {
             return QStringLiteral("x-office-address-book");
         }
         // TODO: add all other content types and/or fix their mimetypes
-        if (content.contains(QLatin1String("akonadi/event")) || content.contains(QLatin1String("text/ical"))) {
+        if (content.contains(QLatin1StringView("akonadi/event")) || content.contains(QLatin1StringView("text/ical"))) {
             return QStringLiteral("view-pim-calendar");
         }
-        if (content.contains(QLatin1String("akonadi/task"))) {
+        if (content.contains(QLatin1StringView("akonadi/task"))) {
             return QStringLiteral("view-pim-tasks");
         }
     } else if (content.isEmpty()) {
@@ -90,7 +91,7 @@ Q_REQUIRED_RESULT inline QString defaultIconName(const Collection &col)
     }
     return QStringLiteral("folder");
 }
-Q_REQUIRED_RESULT inline QString displayIconName(const Collection &col)
+[[nodiscard]] inline QString displayIconName(const Collection &col)
 {
     QString iconName = defaultIconName(col);
     if (col.hasAttribute<EntityDisplayAttribute>() && !col.attribute<EntityDisplayAttribute>()->iconName().isEmpty()) {
@@ -102,7 +103,7 @@ Q_REQUIRED_RESULT inline QString displayIconName(const Collection &col)
     }
     return iconName;
 }
-Q_REQUIRED_RESULT inline bool hasValidHierarchicalRID(const Collection &col)
+[[nodiscard]] inline bool hasValidHierarchicalRID(const Collection &col)
 {
     if (col == Collection::root()) {
         return true;
@@ -112,7 +113,7 @@ Q_REQUIRED_RESULT inline bool hasValidHierarchicalRID(const Collection &col)
     }
     return hasValidHierarchicalRID(col.parentCollection());
 }
-Q_REQUIRED_RESULT inline bool hasValidHierarchicalRID(const Item &item)
+[[nodiscard]] inline bool hasValidHierarchicalRID(const Item &item)
 {
     return !item.remoteId().isEmpty() && hasValidHierarchicalRID(item.parentCollection());
 }
@@ -120,7 +121,7 @@ Q_REQUIRED_RESULT inline bool hasValidHierarchicalRID(const Item &item)
 /** Returns the collection represented by @p index.
  *  @param index has to be provided by an EntityTreeModel instance or a proxy model on top of one.
  */
-Q_REQUIRED_RESULT AKONADICORE_EXPORT Collection fromIndex(const QModelIndex &index);
+[[nodiscard]] AKONADICORE_EXPORT Collection fromIndex(const QModelIndex &index);
 }
 
 }

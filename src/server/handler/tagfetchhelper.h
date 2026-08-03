@@ -8,14 +8,15 @@
 
 #include <QSqlQuery>
 
-#include <private/protocol_p.h>
-#include <private/scope_p.h>
+#include "private/protocol_p.h"
+#include "private/scope_p.h"
 
 namespace Akonadi
 {
 namespace Server
 {
 class Connection;
+class QueryBuilder;
 
 class TagFetchHelper
 {
@@ -23,14 +24,14 @@ public:
     TagFetchHelper(Connection *connection, const Scope &scope, const Protocol::TagFetchScope &fetchScope);
     ~TagFetchHelper() = default;
 
-    bool fetchTags();
+    bool fetchTags(std::function<void(Protocol::FetchTagsResponse &&)> &&callback = {});
 
     static QMap<QByteArray, QByteArray> fetchTagAttributes(qint64 tagId, const Protocol::TagFetchScope &fetchScope);
 
 private:
-    QSqlQuery buildTagQuery();
-    QSqlQuery buildAttributeQuery() const;
-    static QSqlQuery buildAttributeQuery(qint64 id, const Protocol::TagFetchScope &fetchScope);
+    QueryBuilder buildTagQuery();
+    QueryBuilder buildAttributeQuery() const;
+    static QueryBuilder buildAttributeQuery(qint64 id, const Protocol::TagFetchScope &fetchScope);
 
 private:
     Connection *mConnection = nullptr;

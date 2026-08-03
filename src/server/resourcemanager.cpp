@@ -10,8 +10,8 @@
 #include "storage/transaction.h"
 #include "tracer.h"
 
-#include <private/capabilities_p.h>
-#include <shared/akranges.h>
+#include "private/capabilities_p.h"
+#include "shared/akranges.h"
 
 #include <QDBusConnection>
 
@@ -36,7 +36,7 @@ void ResourceManager::addResourceInstance(const QString &name, const QStringList
 
     // create the resource
     resource.setName(name);
-    resource.setIsVirtual(capabilities.contains(QLatin1String(AKONADI_AGENT_CAPABILITY_VIRTUAL)));
+    resource.setIsVirtual(capabilities.contains(QLatin1StringView(AKONADI_AGENT_CAPABILITY_VIRTUAL)));
     if (!resource.insert()) {
         mTracer.error("ResourceManager", QStringLiteral("Could not create resource '%1'.").arg(name));
     }
@@ -61,3 +61,5 @@ QStringList ResourceManager::resourceInstances() const
 {
     return Resource::retrieveAll() | Views::transform(&Resource::name) | Actions::toQList;
 }
+
+#include "moc_resourcemanager.cpp"

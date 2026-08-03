@@ -5,40 +5,39 @@ Maintainer: Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>
 Uploaders: Sune Vuorela <debian@pusling.com>,
            Sandro Knauß <hefee@debian.org>,
            Patrick Franz <deltaone@debian.org>,
-Build-Depends: cmake (>= 3.16~),
-               debhelper-compat (= 13),
-               default-libmysqlclient-dev,
+Build-Depends: debhelper-compat (= 13),
                dh-apparmor,
-               extra-cmake-modules (>= 5.99.0~),
+               dh-sequence-kf6,
+               dh-sequence-pkgkde-symbolshelper,
+               cmake (>= 3.16~),
+               default-libmysqlclient-dev,
+               extra-cmake-modules (>= 6.6.0~),
                gettext,
-               libaccounts-qt5-dev (>= 1.16~),
+               libaccounts-qt6-dev (>= 1.16~),
                libboost-dev (>= 1.34.0~),
-               libkaccounts-dev (>= 4:19.08.0~),
-               libkf5config-dev (>= 5.99.0~),
-               libkf5configwidgets-dev (>= 5.99.0~),
-               libkf5coreaddons-dev (>= 5.99.0~),
-               libkf5crash-dev (>= 5.99.0~),
-               libkf5i18n-dev (>= 5.99.0~),
-               libkf5iconthemes-dev (>= 5.99.0~),
-               libkf5itemmodels-dev (>= 5.99.0~),
-               libkf5itemviews-dev (>= 5.99.0~),
-               libkf5kio-dev (>= 5.99.0~),
-               libkf5widgetsaddons-dev (>= 5.99.0~),
-               libkf5windowsystem-dev (>= 5.99.0~),
-               libkf5xmlgui-dev (>= 5.99.0~),
+               libkaccounts6-dev (>= 4:19.08.0~),
+               libkf6config-dev (>= 6.6.0~),
+               libkf6configwidgets-dev (>= 6.6.0~),
+               libkf6coreaddons-dev (>= 6.6.0~),
+               libkf6crash-dev (>= 6.6.0~),
+               libkf6i18n-dev (>= 6.6.0~),
+               libkf6iconthemes-dev (>= 6.6.0~),
+               libkf6itemmodels-dev (>= 6.6.0~),
+               libkf6widgetsaddons-dev (>= 6.6.0~),
+               libkf6xmlgui-dev (>= 6.6.0~),
                liblzma-dev (>= 5.0.0~),
-               libsqlite3-dev (>= 3.6.23),
+               libpq-dev,
+               libsignon-qt6-dev,
                libxml2-dev,
                libxml2-utils,
                libxslt1-dev,
-               pkg-config,
-               pkg-kde-tools (>= 0.12),
-               qtbase5-dev (>= 5.15.2~),
-               qtbase5-private-dev (>= 5.15.2~),
-               qttools5-dev,
-               shared-mime-info (>= 1.3~),
+               pkgconf,
+               qt6-base-dev (>= 6.7.0~),
+               qt6-base-private-dev (>= 6.7.0~),
+               qt6-tools-dev (>= 6.6.0~),
+               shared-mime-info (>= 1.8~),
                xsltproc,
-Standards-Version: 4.6.2
+Standards-Version: 4.7.2
 Homepage: https://invent.kde.org/pim/akonadi
 Vcs-Browser: https://salsa.debian.org/qt-kde-team/kde/akonadi
 Vcs-Git: https://salsa.debian.org/qt-kde-team/kde/akonadi.git
@@ -49,11 +48,9 @@ Section: misc
 Architecture: all
 Depends: default-mysql-client-core | virtual-mysql-client-core,
          default-mysql-server-core | virtual-mysql-server-core,
-         libqt5sql5-mysql,
+         libqt6sql6-mysql,
          ${misc:Depends},
 Recommends: akonadi-server,
-Replaces: akonadi-server (<< 1.3.60~),
-Breaks: akonadi-server (<< 1.3.60~),
 Description: MySQL storage backend for Akonadi
  Akonadi is an extensible cross-desktop Personal Information Management (PIM)
  storage service. It provides a common framework for applications to store and
@@ -67,10 +64,8 @@ Description: MySQL storage backend for Akonadi
 Package: akonadi-backend-postgresql
 Section: misc
 Architecture: all
-Depends: libqt5sql5-psql, ${misc:Depends},
+Depends: libqt6sql6-psql, ${misc:Depends},
 Recommends: akonadi-server, postgresql,
-Replaces: akonadi-server (<< 1.3.60~),
-Breaks: akonadi-server (<< 1.3.60~),
 Description: PostgreSQL storage backend for Akonadi
  Akonadi is an extensible cross-desktop Personal Information Management (PIM)
  storage service. It provides a common framework for applications to store and
@@ -83,10 +78,8 @@ Description: PostgreSQL storage backend for Akonadi
 
 Package: akonadi-backend-sqlite
 Section: misc
-Multi-Arch: same
-Architecture: any
-Pre-Depends: ${misc:Pre-Depends},
-Depends: libqt5sql5-sqlite, ${misc:Depends}, ${shlibs:Depends},
+Architecture: all
+Depends: libqt6sql6-sqlite, ${misc:Depends}, ${shlibs:Depends},
 Recommends: akonadi-server,
 Description: SQLite storage backend for Akonadi
  Akonadi is an extensible cross-desktop Personal Information Management (PIM)
@@ -104,16 +97,12 @@ Description: SQLite storage backend for Akonadi
 Package: akonadi-server
 Section: net
 Architecture: any
-Depends: akonadi-backend-mysql (= ${source:Version}) | akonadi-backend-sqlite (= ${binary:Version}) | akonadi-backend-postgresql (= ${source:Version}),
+Depends: akonadi-backend-sqlite (= ${source:Version}) | akonadi-backend-mysql (= ${source:Version}) | akonadi-backend-postgresql (= ${source:Version}),
          ${misc:Depends},
          ${shlibs:Depends},
 Suggests: akonadi-backend-mysql (= ${source:Version}),
           akonadi-backend-postgresql (= ${source:Version}),
-          akonadi-backend-sqlite (= ${binary:Version}),
-Breaks: kdepimlibs-data (<< 4:16.04),
-        libkf5akonadi-data (<< 4:19.08.2-1~),
-        libkf5akonadi-dev-bin (<< 4:18.08.3-8~),
-Replaces: kdepimlibs-data (<< 4:16.04),
+          akonadi-backend-sqlite (= ${source:Version}),
 Description: Akonadi PIM storage service
  Akonadi is an extensible cross-desktop Personal Information Management (PIM)
  storage service. It provides a common framework for applications to store and
@@ -121,12 +110,10 @@ Description: Akonadi PIM storage service
  .
  This package contains the Akonadi PIM storage server and associated programs.
 
-Package: libkf5akonadi-data
+Package: libakonadi-data
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends},
-Breaks: akonadi-server (<< 4:19.08.2-1~), libkf5akonadicore5,
-Replaces: akonadi-server (<< 4:19.08.2-1~), libkf5akonadicore5,
 Description: Akonadi arch independent data
  Akonadi is an extensible cross-desktop Personal Information Management (PIM)
  storage service. It provides a common framework for applications to store and
@@ -134,42 +121,37 @@ Description: Akonadi arch independent data
  .
  This package ships arch independent data like translations etc.
 
-Package: libkf5akonadi-dev
+Package: libakonadi-dev
 Section: libdevel
 Architecture: any
-Depends: libboost-dev (>= 1.34.0~),
-         libkf5akonadiagentbase5 (= ${binary:Version}),
-         libkf5akonadicore5abi2 (= ${binary:Version}),
-         libkf5akonadiserver-dev (>= ${binary:Version}),
-         libkf5akonadiwidgets5abi1 (= ${binary:Version}),
-         libkf5akonadixml5 (= ${binary:Version}),
-         libkf5config-dev (>= 5.99.0~),
-         libkf5i18n-dev (>= 5.99.0~),
-         libkf5iconthemes-dev (>= 5.99.0~),
-         libkf5itemmodels-dev (>= 5.99.0~),
-         libkf5kio-dev (>= 5.99.0~),
-         libkf5xmlgui-dev (>= 5.99.0~),
-         qtbase5-dev (>= 5.15.2~),
+Depends: libakonadiserver-dev (>= ${binary:Version}),
+         libkf6config-dev (>= 6.6.0~),
+         libkf6configwidgets-dev (>= 6.6.0~),
+         libkf6coreaddons-dev (>= 6.6.0~),
+         libkf6itemmodels-dev (>= 6.6.0~),
+         libkf6xmlgui-dev (>= 6.6.0~),
+         libkpim6akonadiagentbase6 (= ${binary:Version}),
+         libkpim6akonadicore6 (= ${binary:Version}),
+         libkpim6akonadiwidgets6 (= ${binary:Version}),
+         libkpim6akonadixml6 (= ${binary:Version}),
+         qt6-base-dev (>= 6.7.0~),
          ${misc:Depends},
          ${shlibs:Depends},
-Replaces: kapptemplate (<< 4:17.08.3-2),
-          kdepim-runtime (<< 4:4.13),
-          kdepimlibs5-dev,
-Breaks: kapptemplate (<< 4:17.08.3-2), kdepim-runtime (<< 4:4.13),
-Conflicts: kdepimlibs5-dev,
+Breaks: libkf5akonadi-dev,
+Replaces: libkf5akonadi-dev,
 Description: development files for the KDE Development Platform PIM libraries
  This package contains development files for building software that uses
  the KDE Development Platform Personal Information Management libraries.
  .
  This package is part of the KDE Development Platform PIM libraries module.
 
-Package: libkf5akonadi-dev-bin
+Package: libakonadi-dev-bin
 Section: libdevel
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends},
-Breaks: akonadi-server (<< 4:18.08.3-8~), kdepimlibs5-dev,
-Replaces: akonadi-server (<< 4:18.08.3-8~), kdepimlibs5-dev,
+Breaks: libkf5akonadi-dev-bin,
+Replaces: libkf5akonadi-dev-bin,
 Description: Additional development binaries for the Akonadi KDE PIM libraries
  This package contains development files for building software that uses
  the KDE Development Platform Personal Information Management libraries.
@@ -178,40 +160,34 @@ Description: Additional development binaries for the Akonadi KDE PIM libraries
  .
  It contains files to run Akonadi based tests.
 
-Package: libkf5akonadiagentbase5
+Package: libkpim6akonadiagentbase6
+Provides: ${ABI:VirtualPackage},
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends}, ${shlibs:Depends},
-Provides: ${ABI:VirtualPackage},
 Description: Akonadi agent base library
  This library contains classes to implement agents for the Akonadi PIM
  data server.
  .
  This package is part of the KDE Development Platform PIM libraries module.
 
-Package: libkf5akonadicore5abi2
-X-Debian-ABI: 2
-X-CMake-Target: KF5AkonadiCore
+Package: libkpim6akonadicore6
+Provides: ${ABI:VirtualPackage},
 Architecture: any
 Multi-Arch: same
-Provides: ${ABI:VirtualPackage},
-Depends: libkf5akonadi-data (= ${source:Version}),
+Depends: libakonadi-data (= ${source:Version}),
          ${misc:Depends},
          ${shlibs:Depends},
-Breaks: libkf5akonadicore5,
-Replaces: libkf5akonadicore5,
-Recommends: libkf5akonadiwidgets5abi1 (= ${binary:Version}),
+Recommends: libkpim6akonadiwidgets6 (= ${binary:Version}),
 Description: Akonadi core library
  This library contains Akonadi PIM data server core classes.
  .
  This package is part of the KDE Development Platform PIM libraries module.
 
-Package: libkf5akonadiprivate5abi2
-X-Debian-ABI: 2
-X-CMake-Target: KF5AkonadiPrivate
+Package: libkpim6akonadiprivate6
+Provides: ${ABI:VirtualPackage},
 Architecture: any
 Multi-Arch: same
-Provides: ${ABI:VirtualPackage},
 Depends: ${misc:Depends}, ${shlibs:Depends},
 Suggests: akonadi-server (= ${binary:Version}),
 Description: libraries for the Akonadi PIM storage service
@@ -220,14 +196,13 @@ Description: libraries for the Akonadi PIM storage service
  access mail, calendars, addressbooks, and other PIM data.
  .
  This package contains libraries used by the Akonadi PIM storage service.
-Breaks: akonadiconsole (<< 4:17.08), kdepim-runtime (<< 4:17.08),
 
-Package: libkf5akonadiserver-dev
+Package: libakonadiserver-dev
 Section: libdevel
 Architecture: any
-Depends: libkf5akonadiprivate5abi2 (= ${binary:Version}), ${misc:Depends},
-Breaks: libakonadi-dev,
-Replaces: libakonadi-dev,
+Depends: libkpim6akonadiprivate6 (= ${binary:Version}), ${misc:Depends},
+Breaks: libkf5akonadiserver-dev,
+Replaces: libkf5akonadiserver-dev,
 Description: development files for the Akonadi PIM storage service
  Akonadi is an extensible cross-desktop Personal Information Management (PIM)
  storage service. It provides a common framework for applications to store and
@@ -236,24 +211,20 @@ Description: development files for the Akonadi PIM storage service
  This package contains development files for building software that uses the
  Akonadi PIM storage service.
 
-Package: libkf5akonadiwidgets5abi1
-X-Debian-ABI: 1
-X-CMake-Target: KF5AkonadiWidgets
+Package: libkpim6akonadiwidgets6
+Provides: ${ABI:VirtualPackage},
 Architecture: any
 Multi-Arch: same
-Provides: ${ABI:VirtualPackage},
 Depends: ${misc:Depends}, ${shlibs:Depends},
-Breaks: libkf5akonadicore5 (<< 4:15.07.90+git20150817.0936),
-Replaces: libkf5akonadicore5 (<< 4:15.07.90+git20150817.0936),
 Description: Akonadi widgets library
  This library contains standard widgets for the Akonadi PIM data server.
  .
  This package is part of the KDE Development Platform PIM libraries module.
 
-Package: libkf5akonadixml5
+Package: libkpim6akonadixml6
+Provides: ${ABI:VirtualPackage},
 Architecture: any
 Multi-Arch: same
-Provides: ${ABI:VirtualPackage},
 Depends: ${misc:Depends}, ${shlibs:Depends},
 Description: Akonadi XML helper library
  This library provides XML helpers using the Akonadi PIM data server.

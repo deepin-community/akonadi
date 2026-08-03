@@ -11,11 +11,11 @@
 #include "xmlreader.h"
 #include "xmlwriter.h"
 
+#include "agentfactory.h"
+#include "changerecorder.h"
+#include "itemfetchscope.h"
+#include "tagcreatejob.h"
 #include <QDBusConnection>
-#include <agentfactory.h>
-#include <changerecorder.h>
-#include <itemfetchscope.h>
-#include <tagcreatejob.h>
 
 #include <KLocalizedString>
 #include <QFileDialog>
@@ -62,7 +62,7 @@ void KnutResource::load()
     }
 
     if (!QFile::exists(fileName)) {
-        fileName = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kf5/akonadi_knut_resource/knut-template.xml"));
+        fileName = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kf6/akonadi_knut_resource/knut-template.xml"));
     }
 
     if (!mDocument.loadFile(fileName)) {
@@ -219,7 +219,7 @@ void KnutResource::collectionChanged(const Akonadi::Collection &collection)
         if (child.isNull()) {
             continue;
         }
-        if (child.tagName() == QLatin1String("item") || child.tagName() == QStringLiteral("collection")) {
+        if (child.tagName() == QLatin1StringView("item") || child.tagName() == QLatin1StringView("collection")) {
             newElem.appendChild(child); // reparents
             --i; // children, despite being const is modified by the reparenting
         }
@@ -338,7 +338,7 @@ QSet<qint64> KnutResource::parseQuery(const QString &queryString)
     Akonadi::SearchQuery query = Akonadi::SearchQuery::fromJSON(queryString.toLatin1());
     const QList<SearchTerm> subTerms = query.term().subTerms();
     for (const Akonadi::SearchTerm &term : subTerms) {
-        if (term.key() == QLatin1String("resource")) {
+        if (term.key() == QLatin1StringView("resource")) {
             resultSet << term.value().toInt();
         }
     }
@@ -348,7 +348,7 @@ QSet<qint64> KnutResource::parseQuery(const QString &queryString)
 void KnutResource::search(const QString &query, const Collection &collection)
 {
     Q_UNUSED(collection)
-    const QVector<qint64> result = parseQuery(query).values().toVector();
+    const QList<qint64> result = parseQuery(query).values().toVector();
     qCDebug(KNUTRESOURCE_LOG) << "KNUT QUERY:" << query;
     qCDebug(KNUTRESOURCE_LOG) << "KNUT RESOURCE:" << result;
     searchFinished(result, Akonadi::AgentSearchInterface::Uid);
@@ -369,3 +369,5 @@ void KnutResource::removeSearch(const Collection &resultCollection)
 }
 
 AKONADI_RESOURCE_MAIN(KnutResource)
+
+#include "moc_knutresource.cpp"

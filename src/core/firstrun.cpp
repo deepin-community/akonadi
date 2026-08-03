@@ -12,7 +12,7 @@
 #include "agentinstancecreatejob.h"
 #include "agentmanager.h"
 #include "agenttype.h"
-#include <private/standarddirs_p.h>
+#include "private/standarddirs_p.h"
 
 #include "akonadicore_debug.h"
 
@@ -41,7 +41,7 @@ Firstrun::Firstrun(QObject *parent)
         deleteLater();
         return;
     }
-    if (QDBusConnection::sessionBus().registerService(QLatin1String(FIRSTRUN_DBUSLOCK))) {
+    if (QDBusConnection::sessionBus().registerService(QLatin1StringView(FIRSTRUN_DBUSLOCK))) {
         findPendingDefaults();
         qCDebug(AKONADICORE_LOG) << "D-Bus lock acquired, pending defaults:" << mPendingDefaults;
         setupNext();
@@ -54,7 +54,7 @@ Firstrun::Firstrun(QObject *parent)
 Firstrun::~Firstrun()
 {
     if (qApp) {
-        QDBusConnection::sessionBus().unregisterService(QLatin1String(FIRSTRUN_DBUSLOCK));
+        QDBusConnection::sessionBus().unregisterService(QLatin1StringView(FIRSTRUN_DBUSLOCK));
     }
     delete mConfig;
     qCDebug(AKONADICORE_LOG) << "done";
@@ -62,14 +62,14 @@ Firstrun::~Firstrun()
 
 void Firstrun::findPendingDefaults()
 {
-    const KConfigGroup cfg(mConfig, "ProcessedDefaults");
+    const KConfigGroup cfg(mConfig, QStringLiteral("ProcessedDefaults"));
     const auto paths = StandardDirs::locateAllResourceDirs(QStringLiteral("akonadi/firstrun"));
     for (const QString &dirName : paths) {
         const QStringList files = QDir(dirName).entryList(QDir::Files | QDir::Readable);
         for (const QString &fileName : files) {
             const QString fullName = dirName + QLatin1Char('/') + fileName;
             KConfig c(fullName);
-            const QString id = KConfigGroup(&c, "Agent").readEntry("Id", QString());
+            const QString id = KConfigGroup(&c, QStringLiteral("Agent")).readEntry("Id", QString());
             if (id.isEmpty()) {
                 qCWarning(AKONADICORE_LOG) << "Found invalid default configuration in " << fullName;
                 continue;
@@ -93,7 +93,7 @@ void Firstrun::setupNext()
     }
 
     mCurrentDefault = new KConfig(mPendingDefaults.takeFirst());
-    const KConfigGroup agentCfg = KConfigGroup(mCurrentDefault, "Agent");
+    const KConfigGroup agentCfg = KConfigGroup(mCurrentDefault, QStringLiteral("Agent"));
 
     AgentType type = AgentManager::self()->type(agentCfg.readEntry("Type", QString()));
     if (!type.isValid()) {
@@ -101,12 +101,12 @@ void Firstrun::setupNext()
         setupNext();
         return;
     }
-    if (type.capabilities().contains(QLatin1String("Unique"))) {
+    if (type.capabilities().contains(QLatin1StringView("Unique"))) {
         const Akonadi::AgentInstance::List lstAgents = AgentManager::self()->instances();
         for (const AgentInstance &agent : lstAgents) {
             if (agent.type() == type) {
                 // remember we set this one up already
-                KConfigGroup cfg(mConfig, "ProcessedDefaults");
+                KConfigGroup cfg(mConfig, QStringLiteral("ProcessedDefaults"));
                 cfg.writeEntry(agentCfg.readEntry("Id", QString()), agent.identifier());
                 cfg.sync();
                 setupNext();
@@ -131,7 +131,7 @@ void Firstrun::instanceCreated(KJob *job)
     }
 
     AgentInstance instance = static_cast<AgentInstanceCreateJob *>(job)->instance();
-    const KConfigGroup agentCfg = KConfigGroup(mCurrentDefault, "Agent");
+    const KConfigGroup agentCfg = KConfigGroup(mCurrentDefault, QStringLiteral("Agent"));
     const QString agentName = agentCfg.readEntry("Name", QString());
     if (!agentName.isEmpty()) {
         instance.setName(agentName);
@@ -146,25 +146,25 @@ void Firstrun::instanceCreated(KJob *job)
         return;
     }
     // agent specific settings, using the D-Bus <-> KConfigXT bridge
-    const KConfigGroup settings = KConfigGroup(mCurrentDefault, "Settings");
+    const KConfigGroup settings = KConfigGroup(mCurrentDefault, QStringLiteral("Settings"));
 
     const QStringList lstSettings = settings.keyList();
     for (const QString &setting : lstSettings) {
         qCDebug(AKONADICORE_LOG) << "Setting up " << setting << " for agent " << instance.identifier();
         const QString methodName = QStringLiteral("set%1").arg(setting);
-        const QVariant::Type argType = argumentType(iface->metaObject(), methodName);
-        if (argType == QVariant::Invalid) {
+        const QMetaType::Type argType = argumentType(iface->metaObject(), methodName);
+        if (argType == QMetaType::UnknownType) {
             qCCritical(AKONADICORE_LOG) << "Setting " << setting << " not found in agent configuration interface of " << instance.identifier();
             continue;
         }
 
         QVariant arg;
-        if (argType == QVariant::String) {
+        if (argType == QMetaType::QString) {
             // Since a string could be a path we always use readPathEntry here,
             // that shouldn't harm any normal string settings
             arg = settings.readPathEntry(setting, QString());
         } else {
-            arg = settings.readEntry(setting, QVariant(argType));
+            arg = settings.readEntry(setting, QVariant(QMetaType(argType)));
         }
 
         const QDBusReply<void> reply = iface->call(methodName, arg);
@@ -180,33 +180,33 @@ void Firstrun::instanceCreated(KJob *job)
     delete iface;
 
     // remember we set this one up already
-    KConfigGroup cfg(mConfig, "ProcessedDefaults");
+    KConfigGroup cfg(mConfig, QStringLiteral("ProcessedDefaults"));
     cfg.writeEntry(agentCfg.readEntry("Id", QString()), instance.identifier());
     cfg.sync();
 
     setupNext();
 }
 
-QVariant::Type Firstrun::argumentType(const QMetaObject *mo, const QString &method)
+QMetaType::Type Firstrun::argumentType(const QMetaObject *metaObject, const QString &method)
 {
-    QMetaMethod m;
-    for (int i = 0; i < mo->methodCount(); ++i) {
-        const QString signature = QString::fromLatin1(mo->method(i).methodSignature());
+    QMetaMethod metaMethod;
+    for (int i = 0; i < metaObject->methodCount(); ++i) {
+        const QString signature = QString::fromLatin1(metaObject->method(i).methodSignature());
         if (signature.startsWith(method)) {
-            m = mo->method(i);
+            metaMethod = metaObject->method(i);
         }
     }
 
-    if (m.methodSignature().isEmpty()) {
-        return QVariant::Invalid;
+    if (metaMethod.methodSignature().isEmpty()) {
+        return QMetaType::UnknownType;
     }
 
-    const QList<QByteArray> argTypes = m.parameterTypes();
+    const QList<QByteArray> argTypes = metaMethod.parameterTypes();
     if (argTypes.count() != 1) {
-        return QVariant::Invalid;
+        return QMetaType::UnknownType;
     }
 
-    return QVariant::nameToType(argTypes.first().constData());
+    return static_cast<QMetaType::Type>(QMetaType::fromName(argTypes.first().constData()).id());
 }
 
 #include "moc_firstrun_p.cpp"

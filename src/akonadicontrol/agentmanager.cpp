@@ -19,12 +19,12 @@
 #include "resource_manager.h"
 #include "serverinterface.h"
 
-#include <private/dbus_p.h>
-#include <private/instance_p.h>
-#include <private/protocol_p.h>
-#include <private/standarddirs_p.h>
+#include "private/dbus_p.h"
+#include "private/instance_p.h"
+#include "private/protocol_p.h"
+#include "private/standarddirs_p.h"
 
-#include <shared/akapplication.h>
+#include "shared/akapplication.h"
 
 #include <QCoreApplication>
 #include <QDBusConnection>
@@ -36,6 +36,20 @@ using Akonadi::ProcessControl;
 using namespace std::chrono_literals;
 
 static const bool enableAgentServerDefault = false;
+
+// Here lie the once mighty resources, now deprecated and voided. They battled
+// valiantly against crashes and segfaults, and now, they can finally enjoy
+// their eternal null pointers. We'll miss you (not), but let's face it,
+// your stacks have overflown a long time ago. Farewell, old code comrades and
+// may your functions forever return void!
+//
+// Those are agent types that akonadicontrol can safely remove if it finds any leftover
+// instances of them configured in the agentsrc file or on Akonadi Server.
+static const QStringView retiredAgentTypes[] = {
+    u"akonadi_kolab_resource",
+    u"akonadi_akonotes_resources",
+    u"akonadi_notes_resource",
+};
 
 class StorageProcessControl : public Akonadi::ProcessControl
 {
@@ -398,6 +412,42 @@ void AgentManager::setAgentInstanceOnline(const QString &identifier, bool state)
     mAgentInstances.value(identifier)->statusInterface()->setOnline(state);
 }
 
+void AgentManager::setAgentInstanceActivities(const QString &identifier, const QStringList &activities)
+{
+    if (!checkAgentInterfaces(identifier, QStringLiteral("setAgentInstanceActivities"))) {
+        return;
+    }
+
+    mAgentInstances.value(identifier)->resourceInterface()->setActivities(activities);
+}
+
+QStringList AgentManager::agentInstanceActivities(const QString &identifier)
+{
+    if (!checkInstance(identifier)) {
+        return {};
+    }
+
+    return mAgentInstances.value(identifier)->resourceInterface()->activities();
+}
+
+void AgentManager::setAgentInstanceActivitiesEnabled(const QString &identifier, bool enabled)
+{
+    if (!checkAgentInterfaces(identifier, QStringLiteral("setAgentInstanceActivitiesEnabled"))) {
+        return;
+    }
+
+    mAgentInstances.value(identifier)->resourceInterface()->setActivitiesEnabled(enabled);
+}
+
+bool AgentManager::agentInstanceActivitiesEnabled(const QString &identifier)
+{
+    if (!checkInstance(identifier)) {
+        return {};
+    }
+
+    return mAgentInstances.value(identifier)->resourceInterface()->activitiesEnabled();
+}
+
 // resource specific methods //
 void AgentManager::setAgentInstanceName(const QString &identifier, const QString &name)
 {
@@ -465,15 +515,6 @@ void AgentManager::agentInstanceSynchronizeTags(const QString &identifier)
     }
 
     mAgentInstances.value(identifier)->resourceInterface()->synchronizeTags();
-}
-
-void AgentManager::agentInstanceSynchronizeRelations(const QString &identifier)
-{
-    if (!checkResourceInterface(identifier, QStringLiteral("agentInstanceSynchronizeRelations"))) {
-        return;
-    }
-
-    mAgentInstances.value(identifier)->resourceInterface()->synchronizeRelations();
 }
 
 void AgentManager::restartAgentInstance(const QString &identifier)
@@ -585,6 +626,16 @@ void AgentManager::load()
         const QString agentType = file.value(QStringLiteral("AgentType")).toString();
         const auto typeIter = mAgents.constFind(agentType);
         if (typeIter == mAgents.cend() || typeIter->exec.isEmpty()) {
+            // Check whether this is one of the obsolete agent types and just remove it.
+            if (std::find(std::begin(retiredAgentTypes), std::end(retiredAgentTypes), agentType) != std::end(retiredAgentTypes)) {
+                qCInfo(AKONADICONTROL_LOG) << agentType << "has been retired in a previous version, cleaning up " << entries[i];
+                file.endGroup();
+                file.remove(entries[i]);
+                // This will take care of removing all related data from Akonadi database
+                resmanager.removeResourceInstance(entries[i]);
+                continue;
+            }
+
             qCWarning(AKONADICONTROL_LOG) << "Reference to unknown agent type" << agentType << "in agentsrc, creating a fake entry.";
             if (typeIter == mAgents.cend()) {
                 AgentType type;
@@ -794,12 +845,12 @@ bool AgentManager::checkResourceInterface(const QString &identifier, const QStri
         return false;
     }
 
-    if (!mAgents[mAgentInstances[identifier]->agentType()].capabilities.contains(QLatin1String("Resource"))) {
+    if (!mAgents[mAgentInstances[identifier]->agentType()].capabilities.contains(QLatin1StringView("Resource"))) {
         return false;
     }
 
     if (!mAgentInstances[identifier]->hasResourceInterface()) {
-        qCWarning(AKONADICONTROL_LOG) << QLatin1String("AgentManager::") + method << " Agent instance " << identifier << " has no resource interface!";
+        qCWarning(AKONADICONTROL_LOG) << QLatin1StringView("AgentManager::") + method << " Agent instance " << identifier << " has no resource interface!";
         return false;
     }
 
@@ -906,3 +957,5 @@ void AgentManager::removeSearch(quint64 resultCollectionId)
 }
 
 #include "agentmanager.moc"
+
+#include "moc_agentmanager.cpp"

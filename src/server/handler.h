@@ -9,7 +9,7 @@
 #include "exception.h"
 #include "global.h"
 
-#include <private/protocol_p.h>
+#include "private/protocol_p.h"
 
 namespace Akonadi
 {
@@ -104,7 +104,7 @@ public:
      */
     virtual bool parseStream() = 0;
 
-    bool checkScopeConstraints(const Scope &scope, int permittedScopes);
+    bool checkScopeConstraints(const Scope &scope, const QList<Scope::SelectionScope> &permittedScopes) const;
 
 protected:
     Handler(AkonadiServer &akonadi);

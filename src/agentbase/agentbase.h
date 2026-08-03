@@ -12,7 +12,7 @@
 
 #include "akonadiagentbase_export.h"
 // AkonadiCore
-#include <akonadi/item.h>
+#include "akonadi/item.h"
 
 #include <QApplication>
 
@@ -348,18 +348,12 @@ public:
         virtual void itemsUnlinked(const Akonadi::Item::List &items, const Akonadi::Collection &collection);
     };
 
-    /**
-     * Observer that adds support for item tagging
-     *
-     * @warning ObserverV4 subclasses ObserverV3 which changes behavior of some of the
-     * virtual methods from Observer and ObserverV2. Please make sure you read
-     * documentation of ObserverV3 and adapt your agent accordingly.
-     *
-     * @since 4.13
-     */
-    class AKONADIAGENTBASE_EXPORT ObserverV4 : public ObserverV3 // krazy:exclude=dpointer
+    class AKONADIAGENTBASE_EXPORT TagObserver
     {
     public:
+        TagObserver();
+        virtual ~TagObserver();
+
         /**
          * Reimplement to handle tags additions
          *
@@ -393,25 +387,6 @@ public:
          * @param removedTags Set of tags that were removed from all @p items
          */
         virtual void itemsTagsChanged(const Akonadi::Item::List &items, const QSet<Akonadi::Tag> &addedTags, const QSet<Akonadi::Tag> &removedTags);
-
-        /**
-         * Reimplement to handle relations being added
-         */
-        virtual void relationAdded(const Akonadi::Relation &relation);
-
-        /**
-         * Reimplement to handle relations being removed
-         */
-        virtual void relationRemoved(const Akonadi::Relation &relation);
-
-        /**
-         * Reimplement to handled relations changing on items
-         * @param items Items that had relations added/removed from them
-         * @param addedRelations the list of relations that were added to all @p items
-         * @param removedRelations the list of relations that were removed from all @p items
-         */
-        virtual void
-        itemsRelationsChanged(const Akonadi::Item::List &items, const Akonadi::Relation::List &addedRelations, const Akonadi::Relation::List &removedRelations);
     };
 
     /**
@@ -479,22 +454,22 @@ public:
      *  - 2 - Broken
      *  - 3 - NotConfigured
      */
-    Q_REQUIRED_RESULT virtual int status() const;
+    [[nodiscard]] virtual int status() const;
 
     /**
      * This method returns an i18n'ed description of the current status code.
      */
-    Q_REQUIRED_RESULT virtual QString statusMessage() const;
+    [[nodiscard]] virtual QString statusMessage() const;
 
     /**
      * This method returns the current progress of the agent in percentage.
      */
-    Q_REQUIRED_RESULT virtual int progress() const;
+    [[nodiscard]] virtual int progress() const;
 
     /**
      * This method returns an i18n'ed description of the current progress.
      */
-    Q_REQUIRED_RESULT virtual QString progressMessage() const;
+    [[nodiscard]] virtual QString progressMessage() const;
 
 public Q_SLOTS:
     /**
@@ -513,7 +488,7 @@ public:
     /**
      * This method returns the windows id, which should be used for dialogs.
      */
-    Q_REQUIRED_RESULT WId winIdForDialogs() const;
+    [[nodiscard]] WId winIdForDialogs() const;
 
 #ifdef Q_OS_WIN
     /**
@@ -526,7 +501,7 @@ public:
     /**
      * Returns the instance identifier of this agent.
      */
-    Q_REQUIRED_RESULT QString identifier() const;
+    [[nodiscard]] QString identifier() const;
 
     /**
      * This method is called when the agent is removed from
@@ -560,7 +535,35 @@ public:
      *
      * @since 4.3
      */
-    Q_REQUIRED_RESULT QString agentName() const;
+    [[nodiscard]] QString agentName() const;
+
+    /**
+     * This method is used to set the activities of the agent.
+     *
+     * @since 6.3
+     */
+    void setActivities(const QStringList &activities);
+
+    /**
+     * Returns the activities of the agent.
+     *
+     * @since 6.3
+     */
+    [[nodiscard]] QStringList activities() const;
+
+    /**
+     * This method is used to enabled the activities of the agent.
+     *
+     * @since 6.3
+     */
+    void setActivitiesEnabled(bool enabled);
+
+    /**
+     * Returns the activities status of the agent.
+     *
+     * @since 6.3
+     */
+    [[nodiscard]] bool activitiesEnabled() const;
 
 Q_SIGNALS:
     /**
@@ -653,6 +656,20 @@ Q_SIGNALS:
      * @since 4.4
      */
     void configurationDialogRejected();
+
+    /**
+     * This signal is emitted whenever the user has changed activities.
+     *
+     * @since 6.3
+     */
+    void agentActivitiesChanged(const QStringList &activities);
+
+    /**
+     * This signal is emitted whenever the user has changed enabled activities.
+     *
+     * @since 6.3
+     */
+    void agentActivitiesEnabledChanged(bool enabled);
 
 protected:
     /**
@@ -766,9 +783,9 @@ private:
     void setOnlineInternal(bool state);
 
     // D-Bus interface stuff
-    void abort();
-    void reconfigure();
-    void quit();
+    AKONADIAGENTBASE_NO_EXPORT void abort();
+    AKONADIAGENTBASE_NO_EXPORT void reconfigure();
+    AKONADIAGENTBASE_NO_EXPORT void quit();
 
     // dbus agent interface
     friend class ::Akonadi__StatusAdaptor;

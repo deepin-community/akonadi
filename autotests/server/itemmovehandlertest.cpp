@@ -5,14 +5,13 @@
 */
 #include <QObject>
 
-#include <storage/entity.h>
+#include "storage/entity.h"
 
 #include "aktest.h"
 #include "entities.h"
 #include "fakeakonadiserver.h"
 
-#include <private/imapset_p.h>
-#include <private/scope_p.h>
+#include "private/scope_p.h"
 
 #include <QTest>
 
@@ -73,7 +72,7 @@ private Q_SLOTS:
         }
 
         {
-            auto cmd = Protocol::MoveItemsCommandPtr::create(QVector<qint64>{2, 3}, destCol.id());
+            auto cmd = Protocol::MoveItemsCommandPtr::create(QList<qint64>{2, 3}, destCol.id());
 
             TestScenario::List scenarios;
             scenarios << FakeAkonadiServer::loginScenario() << TestScenario::create(5, TestScenario::ClientCmd, cmd)
@@ -101,7 +100,7 @@ private Q_SLOTS:
             QVERIFY(notificationSpy->isEmpty() || notificationSpy->takeFirst().first().value<Protocol::ChangeNotificationList>().isEmpty());
             return;
         }
-        QCOMPARE(notificationSpy->count(), 1);
+        QTRY_COMPARE(notificationSpy->count(), 1);
         // Only one notify call
         QCOMPARE(notificationSpy->first().count(), 1);
         const auto receivedNotifications = notificationSpy->first().first().value<Protocol::ChangeNotificationList>();

@@ -6,7 +6,7 @@
  */
 
 #include "qtest_akonadi.h"
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
 #include "monitor.h"
 #include "tag.h"
@@ -30,8 +30,8 @@ class TagSelectionComboBoxTest : public QObject
 
     struct TestSetup {
         explicit TestSetup(bool checkable)
+            : widget(std::make_unique<TagSelectionComboBox>())
         {
-            widget = std::make_unique<TagSelectionComboBox>();
             widget->setCheckable(checkable);
             widget->show();
 

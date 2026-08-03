@@ -7,9 +7,9 @@
 #include "akonadicore_debug.h"
 #include "commandbuffer_p.h"
 #include "connection_p.h"
+#include "private/instance_p.h"
 #include "servermanager_p.h"
 #include "session_p.h"
-#include <private/instance_p.h>
 
 #include <QAbstractEventDispatcher>
 #include <QApplication>
@@ -19,9 +19,9 @@
 #include <QSettings>
 #include <QTimer>
 
-#include <private/datastream_p_p.h>
-#include <private/protocol_exception_p.h>
-#include <private/standarddirs_p.h>
+#include "private/datastream_p_p.h"
+#include "private/protocol_exception_p.h"
+#include "private/standarddirs_p.h"
 
 using namespace Akonadi;
 
@@ -70,14 +70,14 @@ void Connection::reconnect()
 
 QString Connection::defaultAddressForTypeAndMethod(ConnectionType type, const QString &method)
 {
-    if (method == QLatin1String("UnixPath")) {
+    if (method == QLatin1StringView("UnixPath")) {
         const QString defaultSocketDir = StandardDirs::saveDir("data");
         if (type == CommandConnection) {
             return defaultSocketDir % QStringLiteral("akonadiserver-cmd.socket");
         } else if (type == NotificationConnection) {
             return defaultSocketDir % QStringLiteral("akonadiserver-ntf.socket");
         }
-    } else if (method == QLatin1String("NamedPipe")) {
+    } else if (method == QLatin1StringView("NamedPipe")) {
         QString suffix;
         if (Instance::hasIdentifier()) {
             suffix += QStringLiteral("%1-").arg(Instance::identifier());
@@ -319,3 +319,5 @@ void Connection::doSendCommand(qint64 tag, const Protocol::CommandPtr &cmd)
         // TODO: Queue the commands and resend on reconnect?
     }
 }
+
+#include "moc_connection_p.cpp"

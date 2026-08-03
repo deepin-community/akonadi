@@ -13,13 +13,13 @@
 #include "storage/dbinitializer.cpp"
 #undef DBINITIALIZER_UNITTEST
 
-#include <shared/aktest.h>
+#include "shared/aktest.h"
 
-#define QL1S(x) QLatin1String(x)
+#define QL1S(x) QLatin1StringView(x)
 
 using namespace Akonadi::Server;
 
-Q_DECLARE_METATYPE(QVector<DbIntrospector::ForeignKey>)
+Q_DECLARE_METATYPE(QList<DbIntrospector::ForeignKey>)
 
 class StatementCollector : public TestInterface
 {
@@ -65,13 +65,29 @@ public:
         Q_UNUSED(tableName)
         return m_tableEmpty;
     }
-    QVector<ForeignKey> foreignKeyConstraints(const QString &tableName) override
+    QList<ForeignKey> foreignKeyConstraints(const QString &tableName) override
     {
         Q_UNUSED(tableName)
         return m_foreignKeys;
     }
 
-    QVector<ForeignKey> m_foreignKeys;
+    QString getAutoIncrementValueQuery(const QString &tableName, const QString &columnName) override
+    {
+        Q_UNUSED(tableName);
+        Q_UNUSED(columnName);
+        return {};
+    }
+
+    QString updateAutoIncrementValueQuery(const QString &tableName, const QString &columnName, qint64 value) override
+    {
+        Q_UNUSED(tableName);
+        Q_UNUSED(columnName);
+        Q_UNUSED(value);
+
+        return {};
+    }
+
+    QList<ForeignKey> m_foreignKeys;
     bool m_hasTable;
     bool m_hasIndex;
     bool m_tableEmpty;
@@ -87,17 +103,16 @@ void DbInitializerTest::testRun_data()
     QTest::addColumn<QString>("driverName");
     QTest::addColumn<QString>("filename");
     QTest::addColumn<bool>("hasTable");
-    QTest::addColumn<QVector<DbIntrospector::ForeignKey>>("fks");
-    QTest::addColumn<bool>("hasFks");
+    QTest::addColumn<QList<DbIntrospector::ForeignKey>>("fks");
 
-    QVector<DbIntrospector::ForeignKey> fks;
+    QList<DbIntrospector::ForeignKey> fks;
 
     QTest::newRow("mysql") << "QMYSQL"
-                           << ":dbinit_mysql" << false << fks << true;
+                           << ":dbinit_mysql" << false << fks;
     QTest::newRow("sqlite") << "QSQLITE"
-                            << ":dbinit_sqlite" << false << fks << true;
+                            << ":dbinit_sqlite" << false << fks;
     QTest::newRow("psql") << "QPSQL"
-                          << ":dbinit_psql" << false << fks << true;
+                          << ":dbinit_psql" << false << fks;
 
     DbIntrospector::ForeignKey fk;
     fk.name = QL1S("myForeignKeyIdentifier");
@@ -109,11 +124,11 @@ void DbInitializerTest::testRun_data()
     fks.push_back(fk);
 
     QTest::newRow("mysql (incremental)") << "QMYSQL"
-                                         << ":dbinit_mysql_incremental" << true << fks << true;
+                                         << ":dbinit_mysql_incremental" << true << fks;
     QTest::newRow("sqlite (incremental)") << "QSQLITE"
-                                          << ":dbinit_sqlite_incremental" << true << fks << true;
+                                          << ":dbinit_sqlite_incremental" << true << fks;
     QTest::newRow("psql (incremental)") << "QPSQL"
-                                        << ":dbinit_psql_incremental" << true << fks << true;
+                                        << ":dbinit_psql_incremental" << true << fks;
 }
 
 void DbInitializerTest::testRun()
@@ -121,8 +136,7 @@ void DbInitializerTest::testRun()
     QFETCH(QString, driverName);
     QFETCH(QString, filename);
     QFETCH(bool, hasTable);
-    QFETCH(QVector<DbIntrospector::ForeignKey>, fks);
-    QFETCH(bool, hasFks);
+    QFETCH(QList<DbIntrospector::ForeignKey>, fks);
 
     QFile file(filename);
     QVERIFY(file.open(QFile::ReadOnly));
@@ -150,13 +164,12 @@ void DbInitializerTest::testRun()
             const QString expected = readNextStatement(&file).simplified();
 
             QString normalized = statement.simplified();
-            normalized.replace(QLatin1String(" ,"), QLatin1String(","));
-            normalized.replace(QLatin1String(" )"), QLatin1String(")"));
+            normalized.replace(QLatin1StringView(" ,"), QLatin1StringView(","));
+            normalized.replace(QLatin1StringView(" )"), QLatin1StringView(")"));
             QCOMPARE(normalized, expected);
         }
 
         QVERIFY(initializer->errorMsg().isEmpty());
-        QCOMPARE(initializer->hasForeignKeyConstraints(), hasFks);
     }
 }
 
@@ -175,3 +188,5 @@ QString DbInitializerTest::readNextStatement(QIODevice *io)
 }
 
 AKTEST_MAIN(DbInitializerTest)
+
+#include "moc_dbinitializertest.cpp"

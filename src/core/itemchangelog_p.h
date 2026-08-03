@@ -17,16 +17,20 @@ namespace Akonadi
 class AKONADI_TESTS_EXPORT ItemChangeLog
 {
 public:
-    static ItemChangeLog *instance();
+    [[nodiscard]] static ItemChangeLog *instance();
 
-    Item::Flags &addedFlags(const ItemPrivate *priv);
-    Item::Flags &deletedFlags(const ItemPrivate *priv);
+    [[nodiscard]] Item::Flags &addedFlags(ItemPrivate *priv);
+    [[nodiscard]] Item::Flags addedFlags(const ItemPrivate *priv) const;
+    [[nodiscard]] Item::Flags &deletedFlags(ItemPrivate *priv);
+    [[nodiscard]] Item::Flags deletedFlags(const ItemPrivate *priv) const;
 
-    Tag::List &addedTags(const ItemPrivate *priv);
-    Tag::List &deletedTags(const ItemPrivate *priv);
+    [[nodiscard]] Tag::List &addedTags(ItemPrivate *priv);
+    [[nodiscard]] Tag::List addedTags(const ItemPrivate *priv) const;
+    [[nodiscard]] Tag::List &deletedTags(ItemPrivate *priv);
+    [[nodiscard]] Tag::List deletedTags(const ItemPrivate *priv) const;
 
-    const AttributeStorage &attributeStorage(const ItemPrivate *priv);
-    AttributeStorage &attributeStorage(ItemPrivate *priv);
+    [[nodiscard]] AttributeStorage &attributeStorage(ItemPrivate *priv);
+    [[nodiscard]] AttributeStorage attributeStorage(const ItemPrivate *priv) const;
 
     void removeItem(const ItemPrivate *priv);
     void clearItemChangelog(const ItemPrivate *priv);

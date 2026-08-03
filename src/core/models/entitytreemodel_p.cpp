@@ -163,7 +163,7 @@ void EntityTreeModelPrivate::changeFetchState(const Collection &parent)
 void EntityTreeModelPrivate::agentInstanceRemoved(const Akonadi::AgentInstance &instance)
 {
     Q_Q(EntityTreeModel);
-    if (!instance.type().capabilities().contains(QLatin1String("Resource"))) {
+    if (!instance.type().capabilities().contains(QLatin1StringView("Resource"))) {
         return;
     }
 
@@ -174,7 +174,7 @@ void EntityTreeModelPrivate::agentInstanceRemoved(const Akonadi::AgentInstance &
             }
             return;
         }
-        const auto &children = m_childEntities[Collection::root().id()];
+        const auto children = m_childEntities[Collection::root().id()];
         for (const Node *node : children) {
             Q_ASSERT(node->type == Node::Collection);
 

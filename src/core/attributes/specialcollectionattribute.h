@@ -46,12 +46,12 @@ public:
     /**
      * Returns the special collections type of the collection.
      */
-    QByteArray collectionType() const;
+    [[nodiscard]] QByteArray collectionType() const;
 
     /* reimpl */
     SpecialCollectionAttribute *clone() const override;
-    QByteArray type() const override;
-    QByteArray serialized() const override;
+    [[nodiscard]] QByteArray type() const override;
+    [[nodiscard]] QByteArray serialized() const override;
     void deserialize(const QByteArray &data) override;
 
 private:

@@ -8,11 +8,11 @@
 #pragma once
 
 #include <QFile>
+#include <QList>
 #include <QMap>
 #include <QMutex>
 #include <QObject>
 #include <QVariant>
-#include <QVector>
 
 #include <atomic>
 #include <memory>
@@ -65,7 +65,7 @@ public:
 
     void writeToFile(const QString &file);
 
-    Q_SCRIPTABLE QVector<DbConnection> connections() const;
+    Q_SCRIPTABLE QList<DbConnection> connections() const;
 
 Q_SIGNALS:
     void connectionOpened(qint64 id, qint64 timestamp, const QString &name);
@@ -74,17 +74,6 @@ Q_SIGNALS:
 
     void transactionStarted(qint64 connectionId, const QString &name, qint64 timestamp, uint duration, const QString &error);
     void transactionFinished(qint64 connectionId, bool commit, qint64 timestamp, uint duration, const QString &error);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    void queryExecuted(double sequence,
-                       qint64 connectionId,
-                       qint64 timestamp,
-                       uint duration,
-                       const QString &query,
-                       const QMap<QString, QVariant> &values,
-                       int resultsCount,
-                       const QList<QList<QVariant>> &result,
-                       const QString &error);
-#else
     void queryExecuted(double sequence,
                        qint64 connectionId,
                        qint64 timestamp,
@@ -95,7 +84,6 @@ Q_SIGNALS:
                        const QList<QList<QVariant>> &result,
                        const QString &error);
 
-#endif
 private:
     StorageDebugger();
 
@@ -106,7 +94,7 @@ private:
 
     std::atomic_bool mEnabled = {false};
     std::atomic_int64_t mSequence = {0};
-    QVector<DbConnection> mConnections;
+    QList<DbConnection> mConnections;
 };
 
 } // namespace Server

@@ -33,7 +33,7 @@
 // in order to work around exec() deadlocks. As a result of that Session knows to late about a finished job and still
 // sends responses for the next one to the already finished one
 #define PIPELINE_LENGTH 0
-//#define PIPELINE_LENGTH 2
+// #define PIPELINE_LENGTH 2
 
 using namespace Akonadi;
 using namespace std::chrono_literals;
@@ -293,7 +293,8 @@ void SessionPrivate::serverStateChanged(ServerManager::State state)
     } else if (!connected && state == ServerManager::Broken) {
         // If the server is broken, cancel all pending jobs, otherwise they will be
         // blocked forever and applications waiting for them to finish would be stuck
-        for (Job *job : std::as_const(queue)) {
+        auto q = queue;
+        for (Job *job : q) {
             job->setError(Job::ConnectionFailed);
             job->kill(KJob::EmitResult);
         }
@@ -325,7 +326,10 @@ SessionPrivate::SessionPrivate(Session *parent)
     // Shutdown the thread before QApplication event loop quits - the
     // thread()->wait() mechanism in Connection dtor crashes sometimes
     // when called from QApplication destructor
-    connThreadCleanUp = QObject::connect(qApp, &QCoreApplication::aboutToQuit, [this]() {
+    connThreadCleanUp = QObject::connect(qApp, &QCoreApplication::aboutToQuit, qApp, [this]() {
+        socketDisconnected();
+        connection = nullptr;
+
         delete mSessionThread;
         mSessionThread = nullptr;
     });
@@ -414,7 +418,7 @@ void SessionPrivate::createDefaultSession(const QByteArray &sessionId)
 void SessionPrivate::setDefaultSession(Session *session)
 {
     instances()->setLocalData({session});
-    QObject::connect(qApp, &QCoreApplication::aboutToQuit, []() {
+    QObject::connect(qApp, &QCoreApplication::aboutToQuit, qApp, []() {
         instances()->setLocalData({});
     });
 }
@@ -435,11 +439,13 @@ void Session::clear()
 
 void SessionPrivate::clear(bool forceReconnect)
 {
-    for (Job *job : std::as_const(queue)) {
+    auto q = queue;
+    for (Job *job : q) {
         job->kill(KJob::EmitResult); // safe, not started yet
     }
     queue.clear();
-    for (Job *job : std::as_const(pipeline)) {
+    auto p = pipeline;
+    for (Job *job : p) {
         job->d_ptr->mStarted = false; // avoid killing/reconnect loops
         job->kill(KJob::EmitResult);
     }

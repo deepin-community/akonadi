@@ -25,7 +25,7 @@ SessionThread::SessionThread(QObject *parent)
     qRegisterMetaType<CommandBuffer *>();
 
     auto thread = new QThread();
-    thread->setObjectName(QStringLiteral("SessionThread"));
+    thread->setObjectName(QLatin1StringView("SessionThread"));
     moveToThread(thread);
     thread->start();
 }
@@ -94,3 +94,5 @@ void SessionThread::doThreadQuit()
 
     thread()->quit();
 }
+
+#include "moc_sessionthread_p.cpp"

@@ -69,7 +69,7 @@ private Q_SLOTS:
         auto monitor = AkonadiTest::getTestMonitor();
         QSignalSpy spy(monitor.get(), &Monitor::itemsRemoved);
 
-        const QString path = QLatin1String("res1") + CollectionPathResolver::pathDelimiter() + QLatin1String("foo");
+        const QString path = QLatin1StringView("res1") + CollectionPathResolver::pathDelimiter() + QLatin1StringView("foo");
         auto rjob = new CollectionPathResolver(path, this);
         AKVERIFYEXEC(rjob);
 
@@ -197,7 +197,7 @@ private Q_SLOTS:
         QTRY_COMPARE(spy.count(), 1);
         auto ntfItems = spy.at(0).at(0).value<Akonadi::Item::List>();
         QCOMPARE(ntfItems.count(), items.count());
-        if (ntfItems.count() > 0) {
+        if (!ntfItems.isEmpty()) {
             QVERIFY(ntfItems.at(0).parentCollection().isValid());
         }
 

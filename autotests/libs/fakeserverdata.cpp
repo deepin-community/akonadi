@@ -15,15 +15,13 @@ using namespace std::chrono_literals;
 FakeServerData::FakeServerData(EntityTreeModel *model, FakeSession *session, FakeMonitor *monitor, QObject *parent)
     : QObject(parent)
     , m_model(model)
-    , m_session(session)
-    , m_monitor(monitor)
     , m_nextCollectionId(1)
     , m_nextItemId(0)
     , m_nextTagId(1)
 {
     // can't use QueuedConnection here, because the Job might self-deleted before
     // the slot gets called
-    connect(session, &FakeSession::jobAdded, [this](Akonadi::Job *job) {
+    connect(session, &FakeSession::jobAdded, this, [this](Akonadi::Job *job) {
         Collection::Id fetchColId = job->property("FetchCollectionId").toULongLong();
         QTimer::singleShot(0s, [this, fetchColId]() {
             jobAdded(fetchColId);
@@ -34,13 +32,11 @@ FakeServerData::FakeServerData(EntityTreeModel *model, FakeSession *session, Fak
 FakeServerData::FakeServerData(TagModel *model, FakeSession *session, FakeMonitor *monitor, QObject *parent)
     : QObject(parent)
     , m_model(model)
-    , m_session(session)
-    , m_monitor(monitor)
     , m_nextCollectionId(1)
     , m_nextItemId(0)
     , m_nextTagId(1)
 {
-    connect(session, &FakeSession::jobAdded, [this](Akonadi::Job * /*unused*/) {
+    connect(session, &FakeSession::jobAdded, this, [this](Akonadi::Job * /*unused*/) {
         QTimer::singleShot(0s, [this]() {
             jobAdded();
         });
@@ -139,3 +135,5 @@ void FakeServerData::returnTags()
         delete command;
     }
 }
+
+#include "moc_fakeserverdata.cpp"

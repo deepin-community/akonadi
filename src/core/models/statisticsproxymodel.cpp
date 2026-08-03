@@ -14,7 +14,7 @@
 #include "entitydisplayattribute.h"
 #include "entitytreemodel.h"
 
-#include <KIO/Global>
+#include <KFormat>
 #include <KIconLoader>
 #include <KLocalizedString>
 
@@ -95,19 +95,20 @@ public:
 
                 if (qAbs(percentage) >= 0.01) {
                     QString percentStr = QString::number(percentage, 'f', 2);
-                    tipInfo += QStringLiteral("      <strong>%1</strong>: %2%<br>\n").arg(i18n("Quota"), percentStr);
+                    tipInfo += i18n("<strong>Quota</strong>: %1%<br>\n", percentStr);
                 }
             }
         }
 
         qint64 currentFolderSize(collection.statistics().size());
-        tipInfo += QStringLiteral("      <strong>%1</strong>: %2<br>\n").arg(i18n("Storage Size"), KIO::convertSize(currentFolderSize));
+        KFormat format;
+        tipInfo += QStringLiteral("      <strong>%1</strong>: %2<br>\n").arg(i18n("Storage Size"), format.formatByteSize(currentFolderSize));
 
         qint64 totalSize = 0;
         getCountRecursive(index, totalSize);
         totalSize -= currentFolderSize;
         if (totalSize > 0) {
-            tipInfo += QStringLiteral("<strong>%1</strong>: %2<br>").arg(i18n("Subfolder Storage Size"), KIO::convertSize(totalSize));
+            tipInfo += QStringLiteral("<strong>%1</strong>: %2<br>").arg(i18n("Subfolder Storage Size"), format.formatByteSize(totalSize));
         }
 
         QString iconName = CollectionUtils::defaultIconName(collection);
@@ -136,13 +137,13 @@ public:
             iconPath = KIconLoader::global()->iconPath(QStringLiteral("folder"), -32, false);
         }
 
-        QString tipIcon = QStringLiteral(
-                              "      <table border=\"0\"><tr><td width=\"32\" height=\"32\" align=\"center\" valign=\"middle\">\n"
-                              "      <img src=\"%1\" width=\"%2\" height=\"32\">\n"
-                              "      </td></tr></table>\n"
-                              "    </td>\n")
-                              .arg(iconPath)
-                              .arg(icon_size_found);
+        const QString tipIcon = QStringLiteral(
+                                    "      <table border=\"0\"><tr><td width=\"32\" height=\"32\" align=\"center\" valign=\"middle\">\n"
+                                    "      <img src=\"%1\" width=\"%2\" height=\"32\">\n"
+                                    "      </td></tr></table>\n"
+                                    "    </td>\n")
+                                    .arg(iconPath)
+                                    .arg(icon_size_found);
 
         if (QApplication::layoutDirection() == Qt::LeftToRight) {
             tip += tipInfo + QStringLiteral("</td><td align=\"%3\" valign=\"top\">").arg(textDirection) + tipIcon;
@@ -150,14 +151,14 @@ public:
             tip += tipIcon + QStringLiteral("</td><td align=\"%3\" valign=\"top\">").arg(textDirection) + tipInfo;
         }
 
-        tip += QLatin1String(
+        tip += QLatin1StringView(
             "  </tr>"
             "</table>");
 
         return tip;
     }
 
-    void _k_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void _k_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles);
 
     StatisticsProxyModel *const q;
 
@@ -165,7 +166,7 @@ public:
     bool mExtraColumnsEnabled = false;
 };
 
-void StatisticsProxyModelPrivate::_k_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void StatisticsProxyModelPrivate::_k_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
 {
     QModelIndex proxyTopLeft(q->mapFromSource(topLeft));
     QModelIndex proxyBottomRight(q->mapFromSource(bottomRight));
@@ -184,11 +185,13 @@ void StatisticsProxyModel::setSourceModel(QAbstractItemModel *model)
     }
     KExtraColumnsProxyModel::setSourceModel(model);
     if (model) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
         // Disconnect the default handling of dataChanged in QIdentityProxyModel, so we can extend it to the whole row
         disconnect(model,
-                   SIGNAL(dataChanged(QModelIndex, QModelIndex, QVector<int>)), // clazy:exclude=old-style-connect
+                   SIGNAL(dataChanged(QModelIndex, QModelIndex, QList<int>)), // clazy:exclude=old-style-connect
                    this,
-                   SLOT(_q_sourceDataChanged(QModelIndex, QModelIndex, QVector<int>)));
+                   SLOT(_q_sourceDataChanged(QModelIndex, QModelIndex, QList<int>)));
+#endif
         connect(model, &QAbstractItemModel::dataChanged, this, [this](const auto &tl, const auto &br, const auto &roles) {
             d->_k_sourceDataChanged(tl, br, roles);
         });
@@ -200,6 +203,10 @@ StatisticsProxyModel::StatisticsProxyModel(QObject *parent)
     , d(new StatisticsProxyModelPrivate(this))
 {
     setExtraColumnsEnabled(true);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    // Disable the default handling of dataChanged in QIdentityProxyModel, so we can extend it to the whole row
+    setHandleSourceDataChanges(false);
+#endif
 }
 
 StatisticsProxyModel::~StatisticsProxyModel() = default;
@@ -245,7 +252,8 @@ QVariant StatisticsProxyModel::extraColumnData(const QModelIndex &parent, int ro
         if (collection.isValid() && collection.statistics().count() >= 0) {
             const CollectionStatistics stats = collection.statistics();
             if (extraColumn == 2) {
-                return KIO::convertSize(stats.size());
+                KFormat format;
+                return format.formatByteSize(stats.size());
             } else if (extraColumn == 1) {
                 return stats.count();
             } else if (extraColumn == 0) {
@@ -284,7 +292,7 @@ QVariant StatisticsProxyModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags StatisticsProxyModel::flags(const QModelIndex &index_) const
 {
-    if (index_.column() >= d->sourceColumnCount()) {
+    if (sourceModel() && index_.column() >= d->sourceColumnCount()) {
         const QModelIndex firstColumn = index_.sibling(index_.row(), 0);
         return KExtraColumnsProxyModel::flags(firstColumn)
             & (Qt::ItemIsSelectable | Qt::ItemIsDragEnabled // Allowed flags

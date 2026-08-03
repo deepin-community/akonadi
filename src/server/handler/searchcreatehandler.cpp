@@ -11,10 +11,10 @@
 #include "connection.h"
 #include "handlerhelper.h"
 #include "search/searchmanager.h"
+#include "shared/akranges.h"
 #include "storage/datastore.h"
 #include "storage/entity.h"
 #include "storage/transaction.h"
-#include <shared/akranges.h>
 
 using namespace Akonadi;
 using namespace Akonadi::Server;
@@ -49,7 +49,7 @@ bool SearchCreateHandler::parseStream()
         queryAttributes << QStringLiteral(AKONADI_PARAM_RECURSIVE);
     }
 
-    QVector<qint64> queryColIds = cmd.queryCollections();
+    QList<qint64> queryColIds = cmd.queryCollections();
     std::sort(queryColIds.begin(), queryColIds.end());
     const auto queryCollections = queryColIds | Views::transform([](const auto id) {
                                       return QString::number(id);

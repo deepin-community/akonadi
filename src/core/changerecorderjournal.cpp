@@ -7,6 +7,7 @@
 
 #include "akonadicore_debug.h"
 #include "changerecorderjournal_p.h"
+#include "protocol_p.h"
 
 #include <QDataStream>
 #include <QFile>
@@ -17,7 +18,7 @@ using namespace Akonadi;
 
 namespace
 {
-constexpr quint64 s_currentVersion = Q_UINT64_C(0x000800000000);
+constexpr quint64 s_currentVersion = Q_UINT64_C(0x000A00000000);
 constexpr quint64 s_versionMask = Q_UINT64_C(0xFFFF00000000);
 constexpr quint64 s_sizeMask = Q_UINT64_C(0x0000FFFFFFFF);
 }
@@ -84,7 +85,8 @@ QQueue<Protocol::ChangeNotificationPtr> ChangeRecorderJournalReader::loadFrom(QF
             msg = loadTagNotification(stream, version);
             break;
         case Relation:
-            msg = loadRelationNotification(stream, version);
+            // Just load it but discard the result, we don't support relations anymore
+            loadRelationNotification(stream, version);
             break;
         default:
             qCWarning(AKONADICORE_LOG) << "Unknown notification type";
@@ -136,9 +138,6 @@ void ChangeRecorderJournalWriter::saveTo(const QQueue<Protocol::ChangeNotificati
             break;
         case Protocol::Command::TagChangeNotification:
             saveTagNotification(stream, Protocol::cmdCast<Protocol::TagChangeNotification>(msg));
-            break;
-        case Protocol::Command::RelationChangeNotification:
-            saveRelationNotification(stream, Protocol::cmdCast<Protocol::RelationChangeNotification>(msg));
             break;
         default:
             qCWarning(AKONADICORE_LOG) << "Unexpected type?";
@@ -192,26 +191,30 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadQSettingsCollec
     return msg;
 }
 
-QSet<Protocol::ItemChangeNotification::Relation> ChangeRecorderJournalReader::extractRelations(QSet<QByteArray> &flags)
+QList<Protocol::FetchTagsResponse> loadTags(QDataStream &stream)
 {
-    QSet<Protocol::ItemChangeNotification::Relation> relations;
-    auto iter = flags.begin();
-    while (iter != flags.end()) {
-        if (iter->startsWith("RELATION")) {
-            const QByteArrayList parts = iter->split(' ');
-            Q_ASSERT(parts.size() == 4);
-            Protocol::ItemChangeNotification::Relation relation;
-            relation.type = QString::fromLatin1(parts[1]);
-            relation.leftId = parts[2].toLongLong();
-            relation.rightId = parts[3].toLongLong();
-            relations.insert(relation);
-            iter = flags.erase(iter);
-        } else {
-            ++iter;
-        }
+    QList<Protocol::FetchTagsResponse> tags;
+    int cnt = 0;
+    stream >> cnt;
+    tags.reserve(cnt);
+    for (int i = 0; i < cnt; ++i) {
+        qint64 id;
+        qint64 parentId;
+        QByteArray gid;
+        QByteArray type;
+        QByteArray remoteId;
+        QMap<QByteArray, QByteArray> attributes;
+        stream >> id >> parentId >> gid >> type >> remoteId >> attributes;
+        Protocol::FetchTagsResponse tag;
+        tag.setId(id);
+        tag.setParentId(parentId);
+        tag.setGid(gid);
+        tag.setType(type);
+        tag.setRemoteId(remoteId);
+        tag.setAttributes(attributes);
+        tags.emplace_back(std::move(tag));
     }
-
-    return relations;
+    return tags;
 }
 
 Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadItemNotification(QDataStream &stream, quint64 version)
@@ -229,9 +232,9 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadItemNotificatio
     QSet<QByteArray> itemParts;
     QSet<QByteArray> addedFlags;
     QSet<QByteArray> removedFlags;
-    QSet<qint64> addedTags;
-    QSet<qint64> removedTags;
-    QVector<Protocol::FetchItemsResponse> items;
+    QList<Protocol::FetchTagsResponse> addedTags;
+    QList<Protocol::FetchTagsResponse> removedTags;
+    QList<Protocol::FetchItemsResponse> items;
 
     auto msg = Protocol::ItemChangeNotificationPtr::create();
 
@@ -260,8 +263,8 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadItemNotificatio
             int i;
             QDateTime dt;
             QString str;
-            QVector<QByteArray> bav;
-            QVector<qint64> i64v;
+            QList<QByteArray> bav;
+            QList<qint64> i64v;
             QMap<QByteArray, QByteArray> babaMap;
             int cnt;
             for (int j = 0; j < entityCnt; ++j) {
@@ -286,49 +289,20 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadItemNotificatio
                 item.setMTime(dt);
                 stream >> bav;
                 item.setFlags(bav);
-                stream >> cnt;
-                QVector<Protocol::FetchTagsResponse> tags;
-                tags.reserve(cnt);
-                for (int k = 0; k < cnt; ++k) {
-                    Protocol::FetchTagsResponse tag;
-                    stream >> i64;
-                    tag.setId(i64);
-                    stream >> i64;
-                    tag.setParentId(i64);
-                    stream >> ba;
-                    tag.setGid(ba);
-                    stream >> ba;
-                    tag.setType(ba);
-                    stream >> ba;
-                    tag.setRemoteId(ba);
-                    stream >> babaMap;
-                    tag.setAttributes(babaMap);
-                    tags << tag;
-                }
-                item.setTags(tags);
+                item.setTags(loadTags(stream));
                 stream >> i64v;
                 item.setVirtualReferences(i64v);
                 stream >> cnt;
-                QVector<Protocol::FetchRelationsResponse> relations;
                 for (int k = 0; k < cnt; ++k) {
-                    Protocol::FetchRelationsResponse relation;
-                    stream >> i64;
-                    relation.setLeft(i64);
-                    stream >> ba;
-                    relation.setLeftMimeType(ba);
-                    stream >> i64;
-                    relation.setRight(i64);
-                    stream >> ba;
-                    relation.setRightMimeType(ba);
-                    stream >> ba;
-                    relation.setType(ba);
-                    stream >> ba;
-                    relation.setRemoteId(ba);
-                    relations << relation;
+                    stream >> i64; // left
+                    stream >> ba; // left mimetype
+                    stream >> i64; // right
+                    stream >> ba; // right mimetype
+                    stream >> ba; // type
+                    stream >> ba; // remoteid
                 }
-                item.setRelations(relations);
                 stream >> cnt;
-                QVector<Protocol::Ancestor> ancestors;
+                QList<Protocol::Ancestor> ancestors;
                 for (int k = 0; k < cnt; ++k) {
                     Protocol::Ancestor ancestor;
                     stream >> i64;
@@ -343,7 +317,7 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadItemNotificatio
                 }
                 item.setAncestors(ancestors);
                 stream >> cnt;
-                QVector<Protocol::StreamPayloadResponse> parts;
+                QList<Protocol::StreamPayloadResponse> parts;
                 for (int k = 0; k < cnt; ++k) {
                     Protocol::StreamPayloadResponse part;
                     stream >> ba;
@@ -393,9 +367,20 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadItemNotificatio
         stream >> itemParts;
         stream >> addedFlags;
         stream >> removedFlags;
-        if (version >= 3) {
-            stream >> addedTags;
-            stream >> removedTags;
+        if (version >= 0xA) {
+            addedTags = loadTags(stream);
+            removedTags = loadTags(stream);
+        } else if (version >= 3) {
+            QSet<qint64> tagIds;
+            stream >> tagIds;
+            for (const auto &tagId : tagIds) {
+                addedTags.emplace_back(tagId);
+            }
+            tagIds.clear();
+            stream >> tagIds;
+            for (const auto &tagId : tagIds) {
+                removedTags.emplace_back(tagId);
+            }
         }
         if (version >= 8) {
             bool boolean;
@@ -417,52 +402,40 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadItemNotificatio
     msg->setParentCollection(parentCollection);
     msg->setParentDestCollection(parentDestCollection);
     msg->setItemParts(itemParts);
-    msg->setAddedRelations(extractRelations(addedFlags));
     msg->setAddedFlags(addedFlags);
-    msg->setRemovedRelations(extractRelations(removedFlags));
     msg->setRemovedFlags(removedFlags);
     msg->setAddedTags(addedTags);
     msg->setRemovedTags(removedTags);
     return msg;
 }
 
-QSet<QByteArray> ChangeRecorderJournalWriter::encodeRelations(const QSet<Protocol::ItemChangeNotification::Relation> &relations)
+void saveTags(QDataStream &stream, const QList<Protocol::FetchTagsResponse> &tags)
 {
-    QSet<QByteArray> rv;
-    for (const auto &rel : relations) {
-        rv.insert("RELATION " + rel.type.toLatin1() + ' ' + QByteArray::number(rel.leftId) + ' ' + QByteArray::number(rel.rightId));
+    stream << static_cast<int>(tags.count());
+    for (const auto &tag : tags) {
+        stream << tag.id() << tag.parentId() << tag.gid() << tag.type() << tag.remoteId() << tag.attributes();
     }
-    return rv;
 }
 
 void ChangeRecorderJournalWriter::saveItemNotification(QDataStream &stream, const Protocol::ItemChangeNotification &msg)
 {
-    // Version 8
+    // Version 10
 
     stream << int(msg.operation());
     const auto &items = msg.items();
-    stream << items.count();
+    stream << static_cast<int>(items.count());
     for (const auto &item : items) {
         stream << item.id() << item.revision() << item.parentId() << item.remoteId() << item.remoteRevision() << item.gid() << item.size() << item.mimeType()
                << item.mTime() << item.flags();
-        const auto tags = item.tags();
-        stream << tags.count();
-        for (const auto &tag : tags) {
-            stream << tag.id() << tag.parentId() << tag.gid() << tag.type() << tag.remoteId() << tag.attributes();
-        }
+        saveTags(stream, item.tags());
         stream << item.virtualReferences();
-        const auto relations = item.relations();
-        stream << relations.count();
-        for (const auto &relation : relations) {
-            stream << relation.left() << relation.leftMimeType() << relation.right() << relation.rightMimeType() << relation.type() << relation.remoteId();
-        }
         const auto ancestors = item.ancestors();
-        stream << ancestors.count();
+        stream << static_cast<int>(ancestors.count());
         for (const auto &ancestor : ancestors) {
             stream << ancestor.id() << ancestor.remoteId() << ancestor.name() << ancestor.attributes();
         }
         const auto parts = item.parts();
-        stream << parts.count();
+        stream << static_cast<int>(parts.count());
         for (const auto &part : parts) {
             const auto metaData = part.metaData();
             stream << part.payloadName() << metaData.name() << metaData.size() << metaData.version() << static_cast<int>(metaData.storageType()) << part.data();
@@ -474,10 +447,10 @@ void ChangeRecorderJournalWriter::saveItemNotification(QDataStream &stream, cons
     stream << quint64(msg.parentCollection());
     stream << quint64(msg.parentDestCollection());
     stream << msg.itemParts();
-    stream << msg.addedFlags() + encodeRelations(msg.addedRelations());
-    stream << msg.removedFlags() + encodeRelations(msg.removedRelations());
-    stream << msg.addedTags();
-    stream << msg.removedTags();
+    stream << msg.addedFlags();
+    stream << msg.removedFlags();
+    saveTags(stream, msg.addedTags());
+    saveTags(stream, msg.removedTags());
     stream << msg.mustRetrieve();
 }
 
@@ -521,7 +494,7 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadCollectionNotif
             QString str;
             QStringList stringList;
             qint64 i64;
-            QVector<qint64> vb;
+            QList<qint64> vb;
             QMap<QByteArray, QByteArray> attrs;
             bool b;
             int i;
@@ -556,7 +529,7 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadCollectionNotif
             stream >> vb;
             collection.setSearchCollections(vb);
             stream >> entityCnt;
-            QVector<Protocol::Ancestor> ancestors;
+            QList<Protocol::Ancestor> ancestors;
             for (int j = 0; j < entityCnt; ++j) {
                 Protocol::Ancestor ancestor;
                 stream >> i64;
@@ -673,7 +646,7 @@ void Akonadi::ChangeRecorderJournalWriter::saveCollectionNotification(QDataStrea
     stream << col.searchQuery();
     stream << col.searchCollections();
     const auto ancestors = col.ancestors();
-    stream << ancestors.count();
+    stream << static_cast<int>(ancestors.count());
     for (const auto &ancestor : ancestors) {
         stream << ancestor.id() << ancestor.remoteId() << ancestor.name() << ancestor.attributes();
     }
@@ -810,6 +783,9 @@ void Akonadi::ChangeRecorderJournalWriter::saveTagNotification(QDataStream &stre
 
 Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadRelationNotification(QDataStream &stream, quint64 version)
 {
+    // NOTE: While relations have been deprecated and removed from Akonadi, we still need to support reading them from
+    // the journal, otherwise we would not be able to read old journals.
+
     QByteArray dummyBa;
     int operation;
     int entityCnt;
@@ -819,33 +795,19 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadRelationNotific
     QSet<QByteArray> dummyBaV;
     QSet<qint64> dummyIv;
 
-    auto msg = Protocol::RelationChangeNotificationPtr::create();
-
     if (version == 1) {
         qCWarning(AKONADICORE_LOG) << "Invalid version of relation notification";
-        return msg;
+        return {};
     } else if (version >= 2) {
         stream >> operation;
         stream >> entityCnt;
         if (version >= 7) {
-            Protocol::FetchRelationsResponse relation;
-            qint64 i64;
-            QByteArray ba;
-            stream >> i64;
-            relation.setLeft(i64);
-            stream >> ba;
-            relation.setLeftMimeType(ba);
-            stream >> i64;
-            relation.setRight(i64);
-            stream >> ba;
-            relation.setRightMimeType(ba);
-            stream >> ba;
-            relation.setRemoteId(ba);
-            stream >> ba;
-            relation.setType(ba);
-
-            msg->setRelation(std::move(relation));
-
+            stream >> dummyI; // left
+            stream >> dummyBa; // left mimetype
+            stream >> dummyI; // right
+            stream >> dummyBa; // right mimetype
+            stream >> dummyBa; // remoteid
+            stream >> dummyBa; // type
         } else {
             for (int j = 0; j < entityCnt; ++j) {
                 stream >> dummyI;
@@ -854,7 +816,7 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadRelationNotific
                 stream >> dummyString;
                 if (stream.status() != QDataStream::Ok) {
                     qCWarning(AKONADICORE_LOG) << "Error reading saved notifications! Aborting";
-                    return msg;
+                    return {};
                 }
             }
             stream >> dummyBa;
@@ -875,46 +837,10 @@ Protocol::ChangeNotificationPtr ChangeRecorderJournalReader::loadRelationNotific
                 stream >> dummyIv;
                 stream >> dummyIv;
             }
-
-            Protocol::FetchRelationsResponse relation;
-            for (const QByteArray &part : std::as_const(itemParts)) {
-                const QByteArrayList p = part.split(' ');
-                if (p.size() < 2) {
-                    continue;
-                }
-                if (p[0] == "LEFT") {
-                    relation.setLeft(p[1].toLongLong());
-                } else if (p[0] == "RIGHT") {
-                    relation.setRight(p[1].toLongLong());
-                } else if (p[0] == "RID") {
-                    relation.setRemoteId(p[1]);
-                } else if (p[0] == "TYPE") {
-                    relation.setType(p[1]);
-                }
-            }
-            msg->setRelation(std::move(relation));
-        }
-        if (version >= 5) {
-            msg->setOperation(static_cast<Protocol::RelationChangeNotification::Operation>(operation));
-        } else {
-            msg->setOperation(mapRelationOperation(static_cast<LegacyOp>(operation)));
         }
     }
 
-    return msg;
-}
-
-void Akonadi::ChangeRecorderJournalWriter::saveRelationNotification(QDataStream &stream, const Protocol::RelationChangeNotification &msg)
-{
-    const auto &rel = msg.relation();
-    stream << int(msg.operation());
-    stream << int(0);
-    stream << rel.left();
-    stream << rel.leftMimeType();
-    stream << rel.right();
-    stream << rel.rightMimeType();
-    stream << rel.remoteId();
-    stream << rel.type();
+    return {};
 }
 
 Protocol::ItemChangeNotification::Operation ChangeRecorderJournalReader::mapItemOperation(LegacyOp op)
@@ -937,7 +863,7 @@ Protocol::ItemChangeNotification::Operation ChangeRecorderJournalReader::mapItem
     case ModifyTags:
         return Protocol::ItemChangeNotification::ModifyTags;
     case ModifyRelations:
-        return Protocol::ItemChangeNotification::ModifyRelations;
+        [[fallthrough]];
     default:
         qWarning() << "Unexpected operation type in item notification";
         return Protocol::ItemChangeNotification::InvalidOp;
@@ -980,19 +906,6 @@ Protocol::TagChangeNotification::Operation ChangeRecorderJournalReader::mapTagOp
     }
 }
 
-Protocol::RelationChangeNotification::Operation ChangeRecorderJournalReader::mapRelationOperation(LegacyOp op)
-{
-    switch (op) {
-    case Add:
-        return Protocol::RelationChangeNotification::Add;
-    case Remove:
-        return Protocol::RelationChangeNotification::Remove;
-    default:
-        qCWarning(AKONADICORE_LOG) << "Unexpected operation type in relation notification";
-        return Protocol::RelationChangeNotification::InvalidOp;
-    }
-}
-
 ChangeRecorderJournalReader::LegacyType ChangeRecorderJournalWriter::mapToLegacyType(Protocol::Command::Type type)
 {
     switch (type) {
@@ -1002,8 +915,6 @@ ChangeRecorderJournalReader::LegacyType ChangeRecorderJournalWriter::mapToLegacy
         return ChangeRecorderJournalReader::Collection;
     case Protocol::Command::TagChangeNotification:
         return ChangeRecorderJournalReader::Tag;
-    case Protocol::Command::RelationChangeNotification:
-        return ChangeRecorderJournalReader::Relation;
     default:
         qCWarning(AKONADICORE_LOG) << "Unexpected notification type";
         return ChangeRecorderJournalReader::InvalidType;

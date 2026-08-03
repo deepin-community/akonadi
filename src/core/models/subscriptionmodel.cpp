@@ -10,8 +10,8 @@
 #include "specialcollectionattribute.h"
 #include "subscriptionmodel_p.h"
 
+#include "shared/akranges.h"
 #include <qnamespace.h>
-#include <shared/akranges.h>
 
 #include <QFont>
 #include <QSortFilterProxyModel>
@@ -28,7 +28,6 @@ class FilterProxyModel : public QSortFilterProxyModel
 public:
     FilterProxyModel()
     {
-        setDynamicSortFilter(true);
     }
 
     void setShowHidden(bool showHidden)
@@ -159,7 +158,7 @@ QVariant SubscriptionModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags SubscriptionModel::flags(const QModelIndex &index) const
 {
-    Qt::ItemFlags flags = QIdentityProxyModel::flags(index);
+    const Qt::ItemFlags flags = QIdentityProxyModel::flags(index);
     const auto col = index.data(EntityTreeModel::CollectionRole).value<Collection>();
     if (d->isSubscribable(col)) {
         return flags | Qt::ItemIsUserCheckable;
@@ -206,3 +205,5 @@ bool SubscriptionModel::showHiddenCollections() const
 }
 
 #include "subscriptionmodel.moc"
+
+#include "moc_subscriptionmodel_p.cpp"
